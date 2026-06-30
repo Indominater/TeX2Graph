@@ -26,10 +26,12 @@
       --false-rgb: 255, 69, 58;
       --false: rgb(var(--false-rgb));
       --false-soft: rgba(var(--false-rgb), 0.18);
-      --blocked: #9ca3af;
-      --blocked-soft: #2f3038;
-      --blocked-hatch: #55545f;
-      --blocked-text: rgba(251, 251, 254, 0.72);
+      --blocked: #b8bfcc;
+      --blocked-soft: #30313a;
+      --blocked-hatch: #4c4d59;
+      --blocked-accent: #f2b84b;
+      --blocked-accent-soft: rgba(242, 184, 75, 0.18);
+      --blocked-text: rgba(251, 251, 254, 0.84);
       --pending: #6b7280;
       --pending-soft: rgba(251, 251, 254, 0.12);
       --shadow: 0 12px 30px rgba(17, 24, 39, 0.08);
@@ -60,11 +62,11 @@
       --status-pending-stroke: var(--firefox-menu-border);
       --status-pending-active-fill: var(--firefox-menu-hover-bg);
       --status-pending-separator: var(--firefox-menu-separator);
-      --status-true-fill: rgba(var(--true-rgb), 0.10);
+      --status-true-fill: #1e2d27;
       --status-true-stroke: rgba(var(--true-rgb), 0.72);
       --status-true-active-fill: rgba(var(--true-rgb), 0.28);
       --status-true-separator: rgba(var(--true-rgb), 0.36);
-      --status-false-fill: var(--false-soft);
+      --status-false-fill: #452326;
       --status-false-stroke: var(--false);
       --status-false-active-fill: rgba(var(--false-rgb), 0.28);
       --status-false-separator: rgba(var(--false-rgb), 0.38);
@@ -196,37 +198,9 @@
       padding-bottom: 2px;
     }
 
-    .toolbar input[type="search"],
-    .toolbar input[type="text"] {
-      min-width: 190px;
-      width: min(260px, 24vw);
-      border: 1px solid var(--line);
-      border-radius: var(--ui-radius);
-      height: 34px;
-      padding: 0 8px;
-      background: rgba(var(--white_font_rgb), 0.08);
-      color: var(--ink);
-      outline: none;
-    }
-
-    .toolbar input[type="text"]:focus,
     textarea:focus {
       border-color: var(--selection-outline);
       box-shadow: 0 0 0 2px var(--selection-highlight);
-    }
-
-    .toolbar input[type="search"]:focus,
-    .toolbar input[type="search"]:focus-visible {
-      border-color: var(--line);
-      box-shadow: none;
-      outline: none;
-    }
-
-    input[type="search"]::-webkit-search-cancel-button,
-    input[type="search"]::-webkit-search-decoration {
-      -webkit-appearance: none;
-      appearance: none;
-      display: none;
     }
 
     .workspace {
@@ -387,12 +361,14 @@
     .swatch.blocked {
       border-color: var(--blocked);
       background:
+        linear-gradient(90deg, var(--blocked-accent-soft), transparent 58%),
         repeating-linear-gradient(
-          -45deg,
-          var(--blocked-soft) 0 5px,
-          var(--blocked-hatch) 5px 8px
+          135deg,
+          var(--blocked-soft) 0 8px,
+          var(--blocked-hatch) 8px 11px,
+          var(--blocked-soft) 11px 18px
         );
-      box-shadow: inset 0 0 0 2px rgba(100, 116, 139, 0.18);
+      box-shadow: inset 3px 0 0 var(--blocked-accent);
     }
 
     .details {
@@ -458,10 +434,12 @@
     .pill.status-blocked {
       border-color: rgba(156, 163, 175, 0.55);
       background:
+        linear-gradient(90deg, var(--blocked-accent-soft), transparent 60%),
         repeating-linear-gradient(
-          -45deg,
-          var(--blocked-soft) 0 6px,
-          var(--blocked-hatch) 6px 9px
+          135deg,
+          var(--blocked-soft) 0 8px,
+          var(--blocked-hatch) 8px 11px,
+          var(--blocked-soft) 11px 18px
         );
       color: var(--blocked-text);
     }
@@ -636,6 +614,20 @@
       opacity: 1;
     }
 
+    .edge.false-source,
+    .edge.false-source.blocked,
+    .edge.false-source.relation {
+      stroke: var(--status-false-stroke);
+      opacity: 1;
+    }
+
+    .edge.unrelated,
+    .edge.blocked.unrelated,
+    .edge.false-source.unrelated,
+    .edge.false-source.blocked.unrelated {
+      opacity: 0.16;
+    }
+
     .node,
     .status-slider {
       --status-fill: var(--status-pending-fill);
@@ -670,10 +662,6 @@
 
     .node.unrelated {
       opacity: 0.16;
-    }
-
-    .node.search-dim {
-      opacity: 0.18;
     }
 
     .node.relation.direct {
@@ -740,8 +728,8 @@
     }
 
     .node.blocked:not(.status-false) .body {
-      fill: url(#blockedHatch);
-      stroke: var(--blocked);
+      fill: var(--canvas-bg);
+      stroke: var(--status-stroke);
       stroke-width: 1;
       stroke-dasharray: none;
     }
@@ -801,7 +789,7 @@
     }
 
     .status-slider {
-      cursor: pointer;
+      cursor: default;
       pointer-events: all;
       touch-action: none;
       outline: none;
@@ -880,7 +868,7 @@
     }
 
     .node.blocked:not(.status-false) .final-mark {
-      fill: var(--blocked);
+      fill: var(--blocked-accent);
     }
 
     .menu {
@@ -992,74 +980,6 @@
       pointer-events: none;
     }
 
-    .ctx-search {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      min-width: 0;
-      padding: 0 8px;
-      color: var(--firefox-menu-text);
-      font: var(--text-font-style) var(--bold_text) var(--menu-item-font-size) var(--text-font-family);
-      line-height: var(--menu-item-line-height);
-      letter-spacing: var(--menu-item-letter-spacing);
-    }
-
-    .ctx-search:last-child {
-      padding-right: 1px;
-    }
-
-    .ctx-search input {
-      width: clamp(96px, 16vw, 160px);
-      height: 30px;
-      border: 1px solid rgba(var(--white_font_rgb), 0.22);
-      border-radius: var(--menu-item-radius);
-      background: rgba(var(--white_font_rgb), 0.10);
-      color: var(--firefox-menu-text);
-      padding: 0 10px;
-      outline: none;
-      user-select: text;
-      -webkit-user-select: text;
-    }
-
-    .ctx-search input::placeholder {
-      color: rgba(var(--white_font_rgb), 0.58);
-    }
-
-    .ctx-search input:focus,
-    .ctx-search input:focus-visible {
-      border-color: rgba(var(--white_font_rgb), 0.22);
-      box-shadow: none;
-      outline: none;
-    }
-
-    .toast {
-      position: fixed;
-      left: 50%;
-      bottom: 5%;
-      transform: translateX(-50%);
-      background: var(--firefox-menu-bg);
-      color: var(--firefox-menu-text);
-      padding: var(--menu-shell-padding);
-      border: 1px solid var(--firefox-menu-border);
-      border-radius: var(--menu-shell-radius);
-      box-shadow: var(--firefox-menu-shadow);
-      z-index: 9000;
-      opacity: 0;
-      pointer-events: none;
-      transition:
-        opacity var(--smooth-slide-duration) var(--smooth-slide-ease),
-        transform var(--smooth-slide-duration) var(--smooth-slide-ease);
-      max-width: min(680px, calc(100vw - 56px));
-      text-align: center;
-      font: var(--text-font-style) var(--bold_text) var(--menu-item-font-size) var(--text-font-family);
-      line-height: 18px;
-    }
-
-    .toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(-2px);
-    }
-
     @media (max-width: 860px) {
       .sidebar {
         left: 8px;
@@ -1081,15 +1001,14 @@
   <div class="app">
     <header class="topbar" aria-hidden="true">
       <div class="brand">Proogh</div>
-      <div class="toolbar" role="toolbar" aria-label="Proof map actions">
+      <div class="toolbar" role="toolbar" aria-label="Proof graph actions">
         <button id="openTexBtn" type="button" tabindex="-1">Upload TeX</button>
         <input id="texFile" type="file" accept=".tex,.txt,text/plain" hidden>
-        <button id="openMapBtn" type="button" tabindex="-1">Open</button>
-        <input id="mapFile" type="file" accept=".html,.json,.proofmap,text/html,application/json" hidden>
+        <button id="openGraphBtn" type="button" tabindex="-1">Open</button>
+        <input id="graphFile" type="file" accept=".html,.htm,.json,.proofgraph,.proofmap,text/html,application/json" hidden>
         <button id="exportHtmlBtn" type="button" tabindex="-1">Save</button>
         <button id="exportJsonBtn" type="button" tabindex="-1">Export JSON</button>
         <button id="fitBtn" type="button" tabindex="-1">Fit</button>
-        <input id="searchInput" type="search" placeholder="Search" tabindex="-1">
       </div>
     </header>
 
@@ -1130,21 +1049,20 @@ Lemma~\ref{lem:routeC-separated-height}
         <div id="graphScroll" class="graph-scroll">
           <svg id="graphSvg" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Proof dependency graph">
             <defs>
-              <pattern id="blockedHatch" patternUnits="userSpaceOnUse" width="10" height="10">
-                <rect width="10" height="10" fill="#2f3038"></rect>
-                <path d="M -2 10 L 10 -2 M 2 12 L 12 2" stroke="#55545f" stroke-width="2"></path>
-              </pattern>
               <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
                 <path d="M 0 0 L 10 5 L 0 10 z" fill="#777681"></path>
               </marker>
               <marker id="arrowRelation" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
                 <path d="M 0 0 L 10 5 L 0 10 z" fill="#0a84ff"></path>
               </marker>
-              <marker id="arrowRelationIndirect" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <marker id="arrowRelationIndirect" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
                 <path d="M 0 0 L 10 5 L 0 10 z" fill="#9ca3af" fill-opacity="0.72"></path>
               </marker>
               <marker id="arrowBlocked" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
                 <path d="M 0 0 L 10 5 L 0 10 z" fill="#9ca3af"></path>
+              </marker>
+              <marker id="arrowFalse" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--status-false-stroke)"></path>
               </marker>
             </defs>
             <g id="graphZoom">
@@ -1164,18 +1082,14 @@ Lemma~\ref{lem:routeC-separated-height}
     <div id="appActionGroup">
       <button class="ctx-item" type="button" data-action="open-tex"><span class="ctx-label">Upload TeX</span><span class="ctx-shortcut"></span></button>
       <div class="ctx-sep"></div>
-      <button class="ctx-item" type="button" data-action="open-map"><span class="ctx-label">Open</span><span class="ctx-shortcut"></span></button>
+      <button class="ctx-item" type="button" data-action="open-graph"><span class="ctx-label">Open</span><span class="ctx-shortcut"></span></button>
       <div class="ctx-sep"></div>
       <button class="ctx-item" type="button" data-action="export-html"><span class="ctx-label">Save</span><span class="ctx-shortcut"></span></button>
       <div class="ctx-sep"></div>
-      <label class="ctx-search">
-        <input id="contextSearchInput" type="search" placeholder="Search" aria-label="Search">
-      </label>
+      <button class="ctx-item" type="button" data-action="save-as"><span class="ctx-label">Save As</span><span class="ctx-shortcut"></span></button>
     </div>
   </div>
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
-
-  <script id="embedded-map-data" type="application/json">null</script>
+  <script id="embedded-graph-data" type="application/json">null</script>
   <script id="app-script">
     "use strict";
 
@@ -1210,6 +1124,10 @@ Lemma~\ref{lem:routeC-separated-height}
     const ZOOM_MAX = 100;
     const MENU_VIEWPORT_EDGE_MARGIN = 8;
     const PINNED_CONTEXT_MENU_BOTTOM_RATIO = 0.05;
+    const GRAPH_DATA_KIND = "tex-proof-graph";
+    const LEGACY_MAP_DATA_KIND = "tex-proof-map";
+    const SMOOTH_SLIDE_DURATION_MS =
+      Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--smooth-slide-duration")) || 220;
     const MENU_ITEM_FONT_SIZE = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--menu-item-font-size")) || 13;
     const BOARDFISH_ACTION_ICON_SIZE = 20;
     const STATUS_ACTION_SCALE = MENU_ITEM_FONT_SIZE / BOARDFISH_ACTION_ICON_SIZE;
@@ -1249,6 +1167,23 @@ Lemma~\ref{lem:routeC-separated-height}
         STATUS_ACTION_SIZE / 2,
       cy: STATUS_SLIDER_H / 2
     };
+    const COPY_JIGGLE_DEFAULTS = Object.freeze({
+      duration: 500,
+      translateXPx: 5.0,
+      translateYPx: 10.75,
+      yFreqHz: 3.55,
+      xFreqHz: 4.65,
+      yDamping: 0.24,
+      xDamping: 0.34,
+      yLagMs: 16,
+      attackMs: 26,
+      settleStart: 0.88,
+      sagGain: 0.18,
+      sagDecay: 2.15,
+      lateralCoupling: 0.16,
+      normalizePath: true
+    });
+    const copyJiggleNormalizerCache = new Map();
 
     const state = {
       sourceName: "unsaved",
@@ -1257,12 +1192,16 @@ Lemma~\ref{lem:routeC-separated-height}
       nodes: [],
       edges: [],
       selectedId: null,
+      saveTargetName: "",
       zoom: 1,
       panX: 0,
       panY: 0,
       graphWidth: 0,
       graphHeight: 0,
       transformRaf: 0,
+      copyJiggleRaf: 0,
+      copyJiggleMotions: new Map(),
+      statusRenderTimer: 0,
       statusClickSuppress: null,
       spaceDown: false,
       panning: false,
@@ -1274,13 +1213,12 @@ Lemma~\ref{lem:routeC-separated-height}
       texInput: document.getElementById("texInput"),
       sidebar: document.querySelector(".sidebar"),
       texFile: document.getElementById("texFile"),
-      mapFile: document.getElementById("mapFile"),
+      graphFile: document.getElementById("graphFile"),
       openTexBtn: document.getElementById("openTexBtn"),
-      openMapBtn: document.getElementById("openMapBtn"),
+      openGraphBtn: document.getElementById("openGraphBtn"),
       exportHtmlBtn: document.getElementById("exportHtmlBtn"),
       exportJsonBtn: document.getElementById("exportJsonBtn"),
       fitBtn: document.getElementById("fitBtn"),
-      searchInput: document.getElementById("searchInput"),
       sourceName: document.getElementById("sourceName"),
       stats: document.getElementById("stats"),
       details: document.getElementById("details"),
@@ -1292,13 +1230,11 @@ Lemma~\ref{lem:routeC-separated-height}
       nodesLayer: document.getElementById("nodesLayer"),
       emptyState: document.getElementById("emptyState"),
       contextMenu: document.getElementById("contextMenu"),
-      contextSearchInput: document.getElementById("contextSearchInput"),
       appActionGroup: document.getElementById("appActionGroup"),
-      toast: document.getElementById("toast"),
       zoomRange: document.getElementById("zoomRange"),
       zoomOutBtn: document.getElementById("zoomOutBtn"),
       zoomInBtn: document.getElementById("zoomInBtn"),
-      embeddedData: document.getElementById("embedded-map-data")
+      embeddedData: document.getElementById("embedded-graph-data") || document.getElementById("embedded-map-data")
     };
 
     function lineStartsFor(text) {
@@ -1402,24 +1338,6 @@ Lemma~\ref{lem:routeC-separated-height}
       return null;
     }
 
-    function findAttachedProof(text, start) {
-      let i = start;
-      while (i < text.length && /\s/.test(text[i])) i += 1;
-      const beginProof = /\\begin\s*\{\s*proof\s*\}/y;
-      beginProof.lastIndex = i;
-      const match = beginProof.exec(text);
-      if (!match) return null;
-      const optional = readOptionalBracket(text, beginProof.lastIndex);
-      const contentStart = optional.end === beginProof.lastIndex ? beginProof.lastIndex : optional.end;
-      const end = findEnvironmentEnd(text, "proof", contentStart);
-      if (!end) return null;
-      return {
-        block: text.slice(i, end.end),
-        body: text.slice(contentStart, end.start),
-        endIndex: end.end
-      };
-    }
-
     function cleanTitle(value) {
       return value
         .replace(/\\label\s*\{[^}]+\}/g, "")
@@ -1507,6 +1425,21 @@ Lemma~\ref{lem:routeC-separated-height}
       return unique(refs);
     }
 
+    function sectionBoundaryIndexes(text) {
+      const indexes = [];
+      const section = /\\(?:section|subsection)\*?\s*(?:\[[^\]]*\]\s*)?\{/g;
+      let match;
+      while ((match = section.exec(text))) indexes.push(match.index);
+      return indexes;
+    }
+
+    function nextIndexAfter(indexes, index) {
+      for (const value of indexes) {
+        if (value > index) return value;
+      }
+      return null;
+    }
+
     function snippetFor(block) {
       return block
         .replace(/\s+/g, " ")
@@ -1520,6 +1453,8 @@ Lemma~\ref{lem:routeC-separated-height}
       const envSet = new Set(discoverProofEnvironments(stripped));
       const begin = /\\begin\s*\{\s*([A-Za-z*]+)\s*\}/g;
       const counters = new Map();
+      const blockStarts = [];
+      const sectionBoundaries = sectionBoundaryIndexes(stripped);
       const blocks = [];
       let match;
 
@@ -1527,16 +1462,29 @@ Lemma~\ref{lem:routeC-separated-height}
         const rawEnv = match[1];
         const env = normalizeEnv(rawEnv);
         if (!envSet.has(env)) continue;
-        const optional = readOptionalBracket(stripped, begin.lastIndex);
-        const contentStart = optional.end === begin.lastIndex ? begin.lastIndex : optional.end;
+        blockStarts.push({
+          index: match.index,
+          beginEnd: begin.lastIndex,
+          rawEnv,
+          env
+        });
+      }
+
+      blockStarts.forEach((blockStart, index) => {
+        const { rawEnv, env } = blockStart;
+        const nextBlock = blockStarts[index + 1];
+        const nextNodeStart = nextBlock ? nextBlock.index : stripped.length;
+        const nextSection = nextIndexAfter(sectionBoundaries, blockStart.index);
+        const blockEnd = Math.min(nextNodeStart, nextSection ?? stripped.length);
+        const optional = readOptionalBracket(stripped, blockStart.beginEnd);
+        const contentStart = optional.end === blockStart.beginEnd ? blockStart.beginEnd : optional.end;
         const end = findEnvironmentEnd(stripped, rawEnv, contentStart);
-        if (!end) continue;
-        const proof = findAttachedProof(stripped, end.end);
-        const fullBlock = stripped.slice(match.index, end.end);
-        const attachedBlock = proof ? fullBlock + "\n" + proof.block : fullBlock;
-        const body = stripped.slice(contentStart, end.start);
-        const labels = unique(labelsIn(fullBlock));
-        const allLabels = unique(labelsIn(attachedBlock));
+        const initialBlockEnd = end ? Math.min(end.end, blockEnd) : blockEnd;
+        const initialBlock = stripped.slice(blockStart.index, initialBlockEnd);
+        const nodeBlock = stripped.slice(blockStart.index, blockEnd);
+        const body = stripped.slice(contentStart, blockEnd);
+        const labels = unique(labelsIn(initialBlock));
+        const allLabels = unique(labelsIn(nodeBlock));
         const equationLabels = allLabels.filter(isEquationLabel);
         const title = cleanTitle(optional.value) || humanType(env) + " " + ((counters.get(env) || 0) + 1);
         counters.set(env, (counters.get(env) || 0) + 1);
@@ -1547,13 +1495,12 @@ Lemma~\ref{lem:routeC-separated-height}
           labels,
           allLabels,
           equationLabels,
-          body: proof ? body + "\n" + proof.body : body,
-          block: attachedBlock,
-          startIndex: match.index,
-          line: lineFromIndex(starts, match.index)
+          body,
+          block: nodeBlock,
+          startIndex: blockStart.index,
+          line: lineFromIndex(starts, blockStart.index)
         });
-        begin.lastIndex = end.end;
-      }
+      });
 
       const usedIds = new Map();
       const nodes = blocks.map((block, index) => {
@@ -2065,6 +2012,10 @@ Lemma~\ref{lem:routeC-separated-height}
       return from.status === "false" || (from.blocked && from.status !== "false");
     }
 
+    function isFalseSourceNode(from) {
+      return from.status === "false";
+    }
+
     function isFocusedEdge(edge, focus = null) {
       if (!focus) return true;
       const key = edgeKey(edge.from, edge.to);
@@ -2077,6 +2028,7 @@ Lemma~\ref{lem:routeC-separated-height}
 
     function classForEdge(edge, from, to, focus = null) {
       const classes = ["edge"];
+      if (isFalseSourceNode(from)) classes.push("false-source");
       const blockedEdge = isBlockingEdge(edge, from, focus);
       if (blockedEdge) classes.push("blocked");
       if (focus) {
@@ -2086,6 +2038,7 @@ Lemma~\ref{lem:routeC-separated-height}
         const directEdge = focus.directDependencyEdges.has(key) || focus.directDependentEdges.has(key);
         if (dependencyEdge) classes.push("relation", "dependency", directEdge ? "direct" : "indirect");
         if (dependentEdge) classes.push("relation", "dependent", directEdge ? "direct" : "indirect");
+        if (!dependencyEdge && !dependentEdge) classes.push("unrelated");
       }
       return classes.join(" ");
     }
@@ -2103,8 +2056,9 @@ Lemma~\ref{lem:routeC-separated-height}
     }
 
     function markerForEdgeClass(edgeClass, blockedEdge) {
-      if (blockedEdge) return "url(#arrowBlocked)";
       const tokens = classTokenSet(edgeClass);
+      if (tokens.has("false-source")) return "url(#arrowFalse)";
+      if (blockedEdge) return "url(#arrowBlocked)";
       if (!tokens.has("relation")) return "url(#arrow)";
       return tokens.has("direct") ? "url(#arrowRelation)" : "url(#arrowRelationIndirect)";
     }
@@ -2114,12 +2068,70 @@ Lemma~\ref{lem:routeC-separated-height}
     }
 
     function statusSliderValue(status) {
-      if (status === "false") return 0;
-      if (status === "true") return 2;
+      if (status === "true") return 0;
+      if (status === "false") return 2;
       return 1;
     }
 
-    function setNodeStatus(id, nextStatus, toggle = true) {
+    function replaceStatusClass(element, status) {
+      if (!element) return;
+      element.classList.remove("status-pending", "status-false", "status-true");
+      element.classList.add("status-" + status);
+    }
+
+    function applyRenderedNodeStatus(id, status) {
+      const nodeEl = findRenderedNodeElement(id);
+      if (!nodeEl) return;
+      const node = state.nodes.find((item) => item.id === id);
+      replaceStatusClass(nodeEl, status);
+      nodeEl.classList.toggle("blocked", !!node?.blocked);
+      const slider = nodeEl.querySelector(".status-slider");
+      replaceStatusClass(slider, status);
+      if (slider) {
+        slider.setAttribute("aria-valuenow", String(statusSliderValue(status)));
+        slider.setAttribute("aria-valuetext", status);
+        slider.querySelector(".false-action")?.classList.toggle("active", status === "false");
+        slider.querySelector(".true-action")?.classList.toggle("active", status === "true");
+      }
+      nodeEl.setAttribute("aria-label", (node?.title || id) + ", " + status);
+    }
+
+    function applyRenderedBlockedNodeStatuses() {
+      const byId = new Map(state.nodes.map((node) => [node.id, node]));
+      for (const nodeEl of els.nodesLayer.children) {
+        const node = byId.get(nodeEl.dataset?.nodeId);
+        if (!node) continue;
+        nodeEl.classList.toggle("blocked", !!node.blocked);
+      }
+    }
+
+    function applyRenderedEdgeStatuses() {
+      const byId = new Map(state.nodes.map((node) => [node.id, node]));
+      const focus = selectionFocusSets();
+      els.edgesLayer.querySelectorAll(".edge").forEach((path) => {
+        const edge = {
+          from: path.dataset.edgeFrom,
+          to: path.dataset.edgeTo
+        };
+        const from = byId.get(edge.from);
+        const to = byId.get(edge.to);
+        if (!from || !to) return;
+        const edgeClass = classForEdge(edge, from, to, focus);
+        const blockedEdge = isBlockingEdge(edge, from, focus);
+        path.setAttribute("class", edgeClass);
+        path.setAttribute("marker-end", markerForEdgeClass(edgeClass, blockedEdge));
+      });
+    }
+
+    function scheduleStatusRender() {
+      clearTimeout(state.statusRenderTimer);
+      state.statusRenderTimer = setTimeout(() => {
+        state.statusRenderTimer = 0;
+        renderGraph();
+      }, SMOOTH_SLIDE_DURATION_MS + 40);
+    }
+
+    function setNodeStatus(id, nextStatus, toggle = true, options = {}) {
       const node = state.nodes.find((item) => item.id === id);
       if (!node) return;
       const priorStatus = normalizeStatus(node.status);
@@ -2128,6 +2140,18 @@ Lemma~\ref{lem:routeC-separated-height}
       if (priorStatus === status) return;
       node.status = status;
       saveLocalStatuses();
+      if (options.deferRender) {
+        computeBlocked(state.nodes);
+        applyRenderedNodeStatus(id, status);
+        applyRenderedBlockedNodeStatuses();
+        applyRenderedEdgeStatuses();
+        renderStats();
+        renderDetails();
+        scheduleStatusRender();
+        return;
+      }
+      clearTimeout(state.statusRenderTimer);
+      state.statusRenderTimer = 0;
       renderGraph();
     }
 
@@ -2135,7 +2159,7 @@ Lemma~\ref{lem:routeC-separated-height}
       const hitbox = slider.querySelector(".slider-hitbox");
       const rect = (hitbox || slider).getBoundingClientRect();
       const x = rect.width ? (event.clientX - rect.left) / rect.width : 0.5;
-      return x < 0.5 ? "false" : "true";
+      return x < 0.5 ? "true" : "false";
     }
 
     function updateStatusSliderHotspotState(event, slider, active = false) {
@@ -2157,6 +2181,295 @@ Lemma~\ref{lem:routeC-separated-height}
       event.preventDefault();
       if (event.stopImmediatePropagation) event.stopImmediatePropagation();
       event.stopPropagation();
+    }
+
+    function fallbackCopyText(value) {
+      const textarea = document.createElement("textarea");
+      textarea.value = value;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "fixed";
+      textarea.style.left = "-9999px";
+      textarea.style.top = "0";
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      let copied = false;
+      try {
+        copied = document.execCommand("copy");
+      } catch {
+        copied = false;
+      }
+      textarea.remove();
+      return copied;
+    }
+
+    async function copyText(value) {
+      if (navigator.clipboard?.writeText) {
+        try {
+          await navigator.clipboard.writeText(value);
+          return true;
+        } catch {
+          return fallbackCopyText(value);
+        }
+      }
+      return fallbackCopyText(value);
+    }
+
+    function motionNow() {
+      return performance?.now ? performance.now() : Date.now();
+    }
+
+    function clamp01(value) {
+      return Math.max(0, Math.min(1, value));
+    }
+
+    function smoothstep(value) {
+      const t = clamp01(value);
+      return t * t * (3 - 2 * t);
+    }
+
+    function numberInRange(value, fallback, min, max) {
+      if (value == null || value === "") return fallback;
+      const numeric = Number(value);
+      if (!Number.isFinite(numeric)) return fallback;
+      return Math.max(min, Math.min(max, numeric));
+    }
+
+    function prefersReducedMotion() {
+      try {
+        return !!window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+      } catch {
+        return false;
+      }
+    }
+
+    function normalizeCopyJiggleParams(options = {}, base = COPY_JIGGLE_DEFAULTS) {
+      return {
+        yFreqHz: numberInRange(options.yFreqHz, base.yFreqHz, 0.1, 12),
+        xFreqHz: numberInRange(options.xFreqHz, base.xFreqHz, 0.1, 12),
+        yDamping: numberInRange(options.yDamping, base.yDamping, 0.001, 0.999),
+        xDamping: numberInRange(options.xDamping, base.xDamping, 0.001, 0.999),
+        yLagMs: numberInRange(options.yLagMs, base.yLagMs, 0, 160),
+        attackMs: numberInRange(options.attackMs, base.attackMs, 0, 240),
+        settleStart: numberInRange(options.settleStart, base.settleStart, 0, 0.99),
+        sagGain: numberInRange(options.sagGain, base.sagGain, -1, 1),
+        sagDecay: numberInRange(options.sagDecay, base.sagDecay, 0, 12),
+        lateralCoupling: numberInRange(options.lateralCoupling, base.lateralCoupling, -1, 1),
+        normalizePath: options.normalizePath == null ? base.normalizePath : options.normalizePath !== false
+      };
+    }
+
+    function copyJiggleParamKey(p) {
+      return [
+        p.duration,
+        p.yFreqHz,
+        p.xFreqHz,
+        p.yDamping,
+        p.xDamping,
+        p.yLagMs,
+        p.attackMs,
+        p.settleStart,
+        p.sagGain,
+        p.sagDecay,
+        p.lateralCoupling,
+        p.normalizePath ? 1 : 0
+      ].join("|");
+    }
+
+    function dampedSpringImpulse(timeSec, freqHz, dampingRatio) {
+      const zeta = numberInRange(dampingRatio, 0.5, 0.001, 0.999);
+      const omega0 = 2 * Math.PI * freqHz;
+      const omegaD = omega0 * Math.sqrt(1 - zeta * zeta);
+      return Math.exp(-zeta * omega0 * timeSec) * Math.sin(omegaD * timeSec);
+    }
+
+    function copyJiggleUnit(t, p) {
+      const durationSec = p.duration / 1000;
+      const timeSec = t * durationSec;
+      const attack = smoothstep(timeSec / Math.max(0.001, p.attackMs / 1000));
+      const settle = 1 - smoothstep((t - p.settleStart) / Math.max(0.001, 1 - p.settleStart));
+      const yTimeSec = Math.max(0, timeSec - p.yLagMs / 1000);
+      const xBase = dampedSpringImpulse(timeSec, p.xFreqHz, p.xDamping);
+      const yBase = dampedSpringImpulse(yTimeSec, p.yFreqHz, p.yDamping);
+      const coupledX = (
+        dampedSpringImpulse(yTimeSec, p.yFreqHz * 1.32, p.yDamping + 0.08)
+        * p.lateralCoupling
+      );
+      const sag = (
+        Math.sin(t * Math.PI)
+        * Math.exp(-p.sagDecay * timeSec)
+        * p.sagGain
+      );
+      return {
+        x: (xBase + coupledX) * attack * settle,
+        y: (yBase + sag) * attack * settle
+      };
+    }
+
+    function getCopyJiggleNormalizer(p) {
+      if (!p.normalizePath) return { x: 1, y: 1 };
+      const key = copyJiggleParamKey(p);
+      const cached = copyJiggleNormalizerCache.get(key);
+      if (cached) return cached;
+      let maxX = 0.0001;
+      let maxY = 0.0001;
+      const samples = 192;
+      for (let i = 0; i <= samples; i += 1) {
+        const point = copyJiggleUnit(i / samples, p);
+        maxX = Math.max(maxX, Math.abs(point.x));
+        maxY = Math.max(maxY, Math.abs(point.y));
+      }
+      const normalizer = Object.freeze({
+        x: 1 / maxX,
+        y: 1 / maxY
+      });
+      if (copyJiggleNormalizerCache.size > 32) copyJiggleNormalizerCache.clear();
+      copyJiggleNormalizerCache.set(key, normalizer);
+      return normalizer;
+    }
+
+    function copyJiggleActionOptions(options = {}) {
+      return {
+        duration: numberInRange(options.duration, COPY_JIGGLE_DEFAULTS.duration, 180, 1200),
+        translateXPx: numberInRange(options.translateXPx, COPY_JIGGLE_DEFAULTS.translateXPx, 0, 48),
+        translateYPx: numberInRange(options.translateYPx, COPY_JIGGLE_DEFAULTS.translateYPx, 0, 48),
+        ...normalizeCopyJiggleParams(options)
+      };
+    }
+
+    function copyJiggleMotionFields(options = {}, baseMotion = {}) {
+      const translateXPx = numberInRange(options.translateXPx, 0, 0, 48);
+      const translateYPx = numberInRange(options.translateYPx, 0, 0, 48);
+      if (!translateXPx && !translateYPx) {
+        return { translateXPx, translateYPx };
+      }
+      const params = normalizeCopyJiggleParams(options);
+      return {
+        ...params,
+        translateXPx,
+        translateYPx,
+        copyJiggleNormalizer: getCopyJiggleNormalizer({
+          ...baseMotion,
+          ...params,
+          translateXPx,
+          translateYPx
+        })
+      };
+    }
+
+    function motionProgress(motion, cutoff) {
+      const elapsed = cutoff - motion.startedAt - motion.delay;
+      if (elapsed < 0) return { waiting: true, done: false, t: 0 };
+      const raw = elapsed / motion.duration;
+      return { waiting: false, done: raw >= 1, t: clamp01(raw) };
+    }
+
+    function screenPxToWorldValue(value) {
+      const safeZoom = Number.isFinite(state.zoom) && state.zoom > 0 ? state.zoom : 1;
+      return value / safeZoom;
+    }
+
+    function findRenderedNodeElement(id) {
+      for (const nodeEl of els.nodesLayer.children) {
+        if (nodeEl.dataset?.nodeId === id) return nodeEl;
+      }
+      return null;
+    }
+
+    function copyJiggleTransformForMotion(motion, t) {
+      const point = copyJiggleUnit(t, motion);
+      const normalizer = motion.copyJiggleNormalizer || getCopyJiggleNormalizer(motion);
+      return {
+        translateX: motion.translateXPx
+          ? screenPxToWorldValue(point.x * normalizer.x * motion.translateXPx)
+          : 0,
+        translateY: motion.translateYPx
+          ? screenPxToWorldValue(point.y * normalizer.y * motion.translateYPx)
+          : 0
+      };
+    }
+
+    function setNodeTransform(node, translateX = 0, translateY = 0) {
+      const nodeEl = findRenderedNodeElement(node.id);
+      if (!nodeEl) return;
+      nodeEl.setAttribute("transform", "translate(" + (node.x + translateX) + " " + (node.y + translateY) + ")");
+    }
+
+    function applyCopyJiggleFrame() {
+      state.copyJiggleRaf = 0;
+      if (!state.copyJiggleMotions.size || prefersReducedMotion()) {
+        state.copyJiggleMotions.clear();
+        return;
+      }
+      const cutoff = motionNow();
+      for (const [id, motion] of state.copyJiggleMotions) {
+        const node = state.nodes.find((item) => item.id === id);
+        if (!node) {
+          state.copyJiggleMotions.delete(id);
+          continue;
+        }
+        const progress = motionProgress(motion, cutoff);
+        if (progress.done) {
+          state.copyJiggleMotions.delete(id);
+          setNodeTransform(node);
+          continue;
+        }
+        if (progress.waiting) {
+          setNodeTransform(node);
+          continue;
+        }
+        const transform = copyJiggleTransformForMotion(motion, progress.t);
+        setNodeTransform(node, transform.translateX, transform.translateY);
+      }
+      if (state.copyJiggleMotions.size) {
+        state.copyJiggleRaf = requestAnimationFrame(applyCopyJiggleFrame);
+      }
+    }
+
+    function requestCopyJiggleFrame() {
+      if (state.copyJiggleRaf || prefersReducedMotion()) return;
+      state.copyJiggleRaf = requestAnimationFrame(applyCopyJiggleFrame);
+    }
+
+    function startNodeCopyJiggle(node) {
+      if (!node?.id || prefersReducedMotion()) return;
+      const options = copyJiggleActionOptions({ action: "copy-text-object" });
+      const baseMotion = {
+        phase: "pulse",
+        startedAt: motionNow(),
+        delay: 0,
+        duration: options.duration
+      };
+      state.copyJiggleMotions.set(node.id, {
+        ...baseMotion,
+        ...copyJiggleMotionFields(options, baseMotion)
+      });
+      requestCopyJiggleFrame();
+    }
+
+    function copyNodeTitle(node) {
+      copyText(node.title).then((copied) => {
+        if (copied) startNodeCopyJiggle(node);
+      });
+    }
+
+    function hasEditableCopyTarget() {
+      const target = document.activeElement;
+      if (!target) return false;
+      if (target.isContentEditable) return true;
+      return ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName);
+    }
+
+    function handleNodeCopyShortcut(event) {
+      if (!(event.metaKey || event.ctrlKey) || event.altKey || event.shiftKey) return;
+      if (String(event.key || "").toLowerCase() !== "c") return;
+      if (hasEditableCopyTarget()) return;
+      const selection = window.getSelection?.();
+      if (selection && !selection.isCollapsed && String(selection).trim()) return;
+      const node = state.nodes.find((item) => item.id === state.selectedId);
+      if (!node) return;
+      event.preventDefault();
+      copyNodeTitle(node);
     }
 
     function attachStatusSliderEvents(slider, node) {
@@ -2214,7 +2527,7 @@ Lemma~\ref{lem:routeC-separated-height}
         setTimeout(() => {
           suppressClick = false;
         }, 0);
-        setNodeStatus(node.id, status, true);
+        setNodeStatus(node.id, status, true, { deferRender: true });
       });
 
       slider.addEventListener("pointercancel", releasePointer);
@@ -2232,7 +2545,8 @@ Lemma~\ref{lem:routeC-separated-height}
           return;
         }
         state.statusClickSuppress = null;
-        setNodeStatus(node.id, statusFromSliderPointer(event, slider), true);
+        const status = statusFromSliderPointer(event, slider);
+        setNodeStatus(node.id, status, true, { deferRender: true });
       });
       slider.addEventListener("dblclick", stopStatusSliderEvent);
       slider.addEventListener("contextmenu", stopStatusSliderEvent);
@@ -2240,16 +2554,16 @@ Lemma~\ref{lem:routeC-separated-height}
       slider.addEventListener("keydown", (event) => {
         if (event.key === "ArrowLeft") {
           stopStatusSliderEvent(event);
-          setNodeStatus(node.id, "false", true);
+          setNodeStatus(node.id, "true", true);
         } else if (event.key === "ArrowRight") {
           stopStatusSliderEvent(event);
-          setNodeStatus(node.id, "true", true);
+          setNodeStatus(node.id, "false", true);
         } else if (event.key === "Home") {
           stopStatusSliderEvent(event);
-          setNodeStatus(node.id, "false", false);
+          setNodeStatus(node.id, "true", false);
         } else if (event.key === "End") {
           stopStatusSliderEvent(event);
-          setNodeStatus(node.id, "true", false);
+          setNodeStatus(node.id, "false", false);
         } else if (event.key === "Escape") {
           stopStatusSliderEvent(event);
           setNodeStatus(node.id, "pending", false);
@@ -2295,8 +2609,8 @@ Lemma~\ref{lem:routeC-separated-height}
         ry: slider.rx
       }));
 
-      const falseAction = makeSvg("g", { class: "status-action false-action" + (status === "false" ? " active" : "") });
-      falseAction.appendChild(makeSvg("rect", {
+      const trueAction = makeSvg("g", { class: "status-action true-action" + (status === "true" ? " active" : "") });
+      trueAction.appendChild(makeSvg("rect", {
         class: "status-action-bg",
         x: slider.contentX,
         y: slider.contentY,
@@ -2305,10 +2619,10 @@ Lemma~\ref{lem:routeC-separated-height}
         rx: Math.min(UI_RADIUS, slider.itemSize / 2),
         ry: Math.min(UI_RADIUS, slider.itemSize / 2)
       }));
-      const falseLabel = makeSvg("text", { class: "status-label false-label", x: slider.leftX, y: slider.cy + 0.5 });
-      falseLabel.textContent = "F";
-      falseAction.appendChild(falseLabel);
-      group.appendChild(falseAction);
+      const trueLabel = makeSvg("text", { class: "status-label true-label", x: slider.leftX, y: slider.cy });
+      trueLabel.textContent = "T";
+      trueAction.appendChild(trueLabel);
+      group.appendChild(trueAction);
 
       const separatorX = slider.contentX + slider.itemSize + slider.separatorGap + slider.separatorWidth / 2;
       group.appendChild(makeSvg("line", {
@@ -2319,8 +2633,8 @@ Lemma~\ref{lem:routeC-separated-height}
         y2: slider.contentY + slider.itemSize
       }));
 
-      const trueAction = makeSvg("g", { class: "status-action true-action" + (status === "true" ? " active" : "") });
-      trueAction.appendChild(makeSvg("rect", {
+      const falseAction = makeSvg("g", { class: "status-action false-action" + (status === "false" ? " active" : "") });
+      falseAction.appendChild(makeSvg("rect", {
         class: "status-action-bg",
         x: slider.contentX + slider.itemSize + slider.separatorGap * 2 + slider.separatorWidth,
         y: slider.contentY,
@@ -2329,10 +2643,10 @@ Lemma~\ref{lem:routeC-separated-height}
         rx: Math.min(UI_RADIUS, slider.itemSize / 2),
         ry: Math.min(UI_RADIUS, slider.itemSize / 2)
       }));
-      const trueLabel = makeSvg("text", { class: "status-label true-label", x: slider.rightX, y: slider.cy + 0.5 });
-      trueLabel.textContent = "T";
-      trueAction.appendChild(trueLabel);
-      group.appendChild(trueAction);
+      const falseLabel = makeSvg("text", { class: "status-label false-label", x: slider.rightX, y: slider.cy });
+      falseLabel.textContent = "F";
+      falseAction.appendChild(falseLabel);
+      group.appendChild(falseAction);
 
       attachStatusSliderEvents(group, node);
       return group;
@@ -2582,6 +2896,8 @@ Lemma~\ref{lem:routeC-separated-height}
         const { from, to, edgeClass, blockedEdge, fromPortOffset, toPortOffset } = item;
         const path = makeSvg("path", {
           class: edgeClass,
+          "data-edge-from": from.id,
+          "data-edge-to": to.id,
           d: edgePath(from, to, fromPortOffset, toPortOffset),
           "marker-end": markerForEdgeClass(edgeClass, blockedEdge)
         });
@@ -2676,7 +2992,6 @@ Lemma~\ref{lem:routeC-separated-height}
         els.nodesLayer.appendChild(g);
       }
 
-      applySearch();
       renderStats();
       renderSummary();
       renderDetails();
@@ -2745,7 +3060,6 @@ Lemma~\ref{lem:routeC-separated-height}
 
     function pinContextMenu() {
       els.appActionGroup.hidden = false;
-      if (els.contextSearchInput) els.contextSearchInput.value = els.searchInput.value;
       delete els.contextMenu.dataset.nodeId;
       openMenuBottomCenter(els.contextMenu);
     }
@@ -2777,7 +3091,7 @@ Lemma~\ref{lem:routeC-separated-height}
       return { ...stored, ...prior };
     }
 
-    function runParse(showMessage = true, options = {}) {
+    function runParse(options = {}) {
       const {
         usePriorStatuses = true,
         selectFirstNode = true,
@@ -2797,30 +3111,15 @@ Lemma~\ref{lem:routeC-separated-height}
       els.sourceName.textContent = state.sourceName;
       if (saveStatuses) saveLocalStatuses();
       renderGraph();
-      fitGraph(false);
-      if (showMessage) showToast("Updated " + state.nodes.length + " nodes and " + state.edges.length + " dependencies");
+      fitGraph();
     }
 
     function scheduleAutoParse() {
       clearTimeout(scheduleAutoParse.timer);
-      scheduleAutoParse.timer = setTimeout(() => runParse(false), 650);
+      scheduleAutoParse.timer = setTimeout(runParse, 650);
     }
 
-    function applySearch() {
-      const query = els.searchInput.value.trim().toLowerCase();
-      const nodeEls = els.nodesLayer.querySelectorAll(".node");
-      if (!query) {
-        nodeEls.forEach((nodeEl) => nodeEl.classList.remove("search-dim"));
-        return;
-      }
-      for (const nodeEl of nodeEls) {
-        const node = state.nodes.find((item) => item.id === nodeEl.dataset.nodeId);
-        const haystack = node ? [node.title, node.id, node.type, (node.aliases || []).join(" "), (node.equationLabels || []).join(" ")].join(" ").toLowerCase() : "";
-        nodeEl.classList.toggle("search-dim", !haystack.includes(query));
-      }
-    }
-
-    function fitGraph(showMessage = true) {
+    function fitGraph() {
       if (!state.nodes.length) return;
       const maxX = Math.max(...state.nodes.map((node) => node.x + NODE_W)) + PAD;
       const maxY = Math.max(...state.nodes.map((node) => node.y + NODE_H)) + PAD;
@@ -2835,7 +3134,6 @@ Lemma~\ref{lem:routeC-separated-height}
         insetLeft + (usableWidth - maxX * zoom) / 2,
         (size.height - maxY * zoom) / 2
       );
-      if (showMessage) showToast("Graph fitted");
     }
 
     function setZoom(value) {
@@ -2852,8 +3150,12 @@ Lemma~\ref{lem:routeC-separated-height}
       return (hash >>> 0).toString(16);
     }
 
-    function localStatusKey() {
-      return "tex-proof-map:statuses:" + (state.sourceHash || "unsaved");
+    function isGraphData(data) {
+      return data?.kind === GRAPH_DATA_KIND || data?.kind === LEGACY_MAP_DATA_KIND;
+    }
+
+    function localStatusKey(kind = GRAPH_DATA_KIND) {
+      return kind + ":statuses:" + (state.sourceHash || "unsaved");
     }
 
     function saveLocalStatuses() {
@@ -2874,7 +3176,11 @@ Lemma~\ref{lem:routeC-separated-height}
       }
       if (!state.sourceHash) return {};
       try {
-        return JSON.parse(localStorage.getItem(localStatusKey()) || "{}") || {};
+        const stored =
+          localStorage.getItem(localStatusKey()) ||
+          localStorage.getItem(localStatusKey(LEGACY_MAP_DATA_KIND)) ||
+          "{}";
+        return JSON.parse(stored) || {};
       } catch {
         return {};
       }
@@ -2885,7 +3191,7 @@ Lemma~\ref{lem:routeC-separated-height}
       for (const node of state.nodes) statusById[node.id] = node.status;
       return {
         version: 1,
-        kind: "tex-proof-map",
+        kind: GRAPH_DATA_KIND,
         exportedAt: new Date().toISOString(),
         sourceName: state.sourceName,
         sourceHash: state.sourceHash,
@@ -2920,31 +3226,82 @@ Lemma~\ref{lem:routeC-separated-height}
     }
 
     function baseName(name) {
-      return (name || "proof-map").replace(/\.[^.]+$/, "").replace(/[^\w.-]+/g, "_") || "proof-map";
+      return (name || "proof-graph").replace(/\.[^.]+$/, "").replace(/[^\w.-]+/g, "_") || "proof-graph";
+    }
+
+    function graphHtmlFilename(name = state.sourceName) {
+      return baseName(name) + ".proofgraph.html";
+    }
+
+    function defaultGraphHtmlFilename() {
+      return state.saveTargetName || graphHtmlFilename();
+    }
+
+    function normalizeGraphHtmlFilename(name) {
+      const trimmed = String(name || "").trim();
+      if (!trimmed) return "";
+      return /\.(?:html?|proofgraph)$/i.test(trimmed) ? trimmed : trimmed + ".proofgraph.html";
+    }
+
+    function currentDocumentFilename() {
+      const raw = (window.location.pathname || "").split("/").pop() || "";
+      try {
+        return decodeURIComponent(raw);
+      } catch {
+        return raw;
+      }
+    }
+
+    function htmlWithEmbeddedGraphData(data) {
+      const selectedId = state.selectedId;
+      if (selectedId) {
+        state.selectedId = null;
+        renderGraph();
+      }
+      try {
+        els.embeddedData.textContent = safeJson(data);
+        return "<!doctype html>\n" + document.documentElement.outerHTML;
+      } finally {
+        els.embeddedData.textContent = "null";
+        if (selectedId) {
+          state.selectedId = selectedId;
+          renderGraph();
+        }
+      }
+    }
+
+    function saveGraphHtml(filename) {
+      if (!state.nodes.length) runParse({ selectFirstNode: false });
+      const data = exportData();
+      const html = htmlWithEmbeddedGraphData(data);
+      download(filename, "text/html;charset=utf-8", html);
     }
 
     function exportHtml() {
-      if (!state.nodes.length) runParse();
-      const data = exportData();
-      els.embeddedData.textContent = safeJson(data);
-      const html = "<!doctype html>\n" + document.documentElement.outerHTML;
-      download(baseName(state.sourceName) + ".proofmap.html", "text/html;charset=utf-8", html);
-      els.embeddedData.textContent = "null";
-      showToast("Exported editable HTML map");
+      if (!state.saveTargetName) {
+        saveAsHtml();
+        return;
+      }
+      saveGraphHtml(state.saveTargetName);
+    }
+
+    function saveAsHtml() {
+      const filename = normalizeGraphHtmlFilename(window.prompt("Save graph as", defaultGraphHtmlFilename()));
+      if (!filename) return;
+      saveGraphHtml(filename);
     }
 
     function exportJson() {
-      if (!state.nodes.length) runParse();
-      download(baseName(state.sourceName) + ".proofmap.json", "application/json;charset=utf-8", safeJson(exportData()));
-      showToast("Exported JSON map");
+      if (!state.nodes.length) runParse({ selectFirstNode: false });
+      download(baseName(state.sourceName) + ".proofgraph.json", "application/json;charset=utf-8", safeJson(exportData()));
     }
 
-    function loadMapData(data) {
-      if (!data || data.kind !== "tex-proof-map") {
-        showToast("Map data not recognized");
+    function loadGraphData(data, options = {}) {
+      if (!isGraphData(data)) {
         return;
       }
-      state.sourceName = data.sourceName || "imported.proofmap";
+      state.saveTargetName = options.saveTargetName || "";
+      state.sourceName = data.sourceName || "imported.proofgraph";
       state.sourceHash = data.sourceHash || hashString(data.tex || "");
       state.tex = data.tex || "";
       els.texInput.value = state.tex;
@@ -2963,7 +3320,7 @@ Lemma~\ref{lem:routeC-separated-height}
         rebuildDependents();
         state.duplicateLabels = data.duplicateLabels || [];
         state.unresolvedRefs = data.unresolvedRefs || [];
-        state.selectedId = state.nodes[0]?.id || null;
+        state.selectedId = null;
         if (data.viewport) {
           state.zoom = clampZoom(data.viewport.zoom);
           state.panX = Number.isFinite(data.viewport.panX) ? data.viewport.panX : 0;
@@ -2971,11 +3328,10 @@ Lemma~\ref{lem:routeC-separated-height}
         }
         saveLocalStatuses();
         renderGraph();
-        if (!data.viewport) fitGraph(false);
+        if (!data.viewport) fitGraph();
       } else {
-        runParse();
+        runParse({ selectFirstNode: false });
       }
-      showToast("Loaded map");
     }
 
     function rebuildDependents() {
@@ -3003,12 +3359,44 @@ Lemma~\ref{lem:routeC-separated-height}
       });
     }
 
-    function extractMapJsonFromHtml(text) {
+    function extractGraphJsonFromHtml(text) {
       const doc = new DOMParser().parseFromString(text, "text/html");
-      const script = doc.getElementById("embedded-map-data");
+      const script = doc.getElementById("embedded-graph-data") || doc.getElementById("embedded-map-data");
       if (!script) return null;
       const raw = script.textContent.trim();
       return raw && raw !== "null" ? JSON.parse(raw) : null;
+    }
+
+    function looksLikeHtmlFile(file, text) {
+      const name = (file?.name || "").toLowerCase();
+      const type = (file?.type || "").toLowerCase();
+      const trimmed = text.trimStart();
+      return (
+        name.endsWith(".html") ||
+        name.endsWith(".htm") ||
+        type === "text/html" ||
+        /^<!doctype\s+html/i.test(trimmed) ||
+        /^<html[\s>]/i.test(trimmed)
+      );
+    }
+
+    function parseGraphJson(text) {
+      const data = JSON.parse(text);
+      return isGraphData(data) ? data : null;
+    }
+
+    function parseGraphFileData(file, text) {
+      const parsers = looksLikeHtmlFile(file, text)
+        ? [extractGraphJsonFromHtml, parseGraphJson]
+        : [parseGraphJson, extractGraphJsonFromHtml];
+      for (const parse of parsers) {
+        try {
+          const data = parse(text);
+          if (isGraphData(data)) return data;
+        } catch {
+        }
+      }
+      return null;
     }
 
     function isEditableTarget(target) {
@@ -3096,24 +3484,16 @@ Lemma~\ref{lem:routeC-separated-height}
       document.addEventListener("mouseup", end, true);
     }
 
-    function showToast(message) {
-      els.toast.textContent = message;
-      els.toast.classList.add("show");
-      clearTimeout(showToast.timer);
-      showToast.timer = setTimeout(() => els.toast.classList.remove("show"), 1900);
-    }
-
-    function bootEmbeddedMap() {
+    function bootEmbeddedGraph() {
       const raw = els.embeddedData.textContent.trim();
       if (!raw || raw === "null") {
         renderGraph();
         return;
       }
       try {
-        loadMapData(JSON.parse(raw));
+        loadGraphData(JSON.parse(raw), { saveTargetName: currentDocumentFilename() });
       } catch {
         renderGraph();
-        showToast("Embedded map data could not be loaded");
       }
     }
 
@@ -3123,23 +3503,27 @@ Lemma~\ref{lem:routeC-separated-height}
         els.texFile.click();
         return;
       }
-      if (action === "open-map") {
+      if (action === "open-graph") {
         closeContextMenu();
-        els.mapFile.click();
+        els.graphFile.click();
         return;
       }
       if (action === "export-html") {
         closeContextMenu();
         exportHtml();
+        return;
+      }
+      if (action === "save-as") {
+        closeContextMenu();
+        saveAsHtml();
       }
     }
 
     els.openTexBtn.addEventListener("click", () => els.texFile.click());
-    els.openMapBtn.addEventListener("click", () => els.mapFile.click());
+    els.openGraphBtn.addEventListener("click", () => els.graphFile.click());
     els.exportHtmlBtn.addEventListener("click", exportHtml);
     els.exportJsonBtn.addEventListener("click", exportJson);
-    els.fitBtn.addEventListener("click", () => fitGraph(true));
-    els.searchInput.addEventListener("input", applySearch);
+    els.fitBtn.addEventListener("click", fitGraph);
     els.texInput.addEventListener("input", scheduleAutoParse);
     els.zoomRange.addEventListener("input", () => setZoom(Number(els.zoomRange.value) / 100));
     els.zoomOutBtn.addEventListener("click", () => setZoom(state.zoom / 1.1));
@@ -3164,27 +3548,32 @@ Lemma~\ref{lem:routeC-separated-height}
       const text = await readFile(file);
       state.sourceName = file.name;
       state.sourceHash = "";
+      state.saveTargetName = "";
       els.texInput.value = text;
       els.sourceName.textContent = file.name;
-      runParse(true, {
+      runParse({
         usePriorStatuses: false,
         selectFirstNode: false
       });
       els.texFile.value = "";
     });
 
-    els.mapFile.addEventListener("change", async () => {
-      const file = els.mapFile.files?.[0];
+    els.graphFile.addEventListener("change", async () => {
+      const file = els.graphFile.files?.[0];
       if (!file) return;
-      const text = await readFile(file);
       try {
-        const data = file.name.endsWith(".html") ? extractMapJsonFromHtml(text) : JSON.parse(text);
-        if (data) loadMapData(data);
-        else showToast("No embedded map data found");
-      } catch {
-        showToast("Could not load map file");
+        const text = await readFile(file);
+        const data = parseGraphFileData(file, text);
+        if (data) {
+          loadGraphData(data, {
+            saveTargetName: looksLikeHtmlFile(file, text) ? file.name : ""
+          });
+        }
+      } catch (error) {
+        console.warn("Could not load graph file", error);
+      } finally {
+        els.graphFile.value = "";
       }
-      els.mapFile.value = "";
     });
 
     els.contextMenu.addEventListener("click", (event) => {
@@ -3208,14 +3597,8 @@ Lemma~\ref{lem:routeC-separated-height}
       if (!els.contextMenu.hidden && !els.contextMenu.contains(event.target)) closeContextMenu();
     });
 
-    els.contextSearchInput.addEventListener("input", () => {
-      els.searchInput.value = els.contextSearchInput.value;
-      applySearch();
-    });
-
-    els.contextSearchInput.addEventListener("click", (event) => event.stopPropagation());
-
     document.addEventListener("keydown", (event) => {
+      handleNodeCopyShortcut(event);
       handleEscapeKeyDown(event);
       handleSpaceKeyDown(event);
     });
@@ -3229,7 +3612,7 @@ Lemma~\ref{lem:routeC-separated-height}
       }
     });
 
-    bootEmbeddedMap();
+    bootEmbeddedGraph();
     pinContextMenu();
   </script>
 </body>
