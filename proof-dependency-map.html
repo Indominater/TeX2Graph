@@ -20,10 +20,12 @@
       --accent-soft: rgba(10, 132, 255, 0.18);
       --warn: #ffb020;
       --warn-soft: rgba(255, 176, 32, 0.18);
-      --true: #30d158;
-      --true-soft: rgba(48, 209, 88, 0.16);
-      --false: #ff453a;
-      --false-soft: rgba(255, 69, 58, 0.18);
+      --true-rgb: 48, 209, 88;
+      --true: rgb(var(--true-rgb));
+      --true-soft: rgba(var(--true-rgb), 0.16);
+      --false-rgb: 255, 69, 58;
+      --false: rgb(var(--false-rgb));
+      --false-soft: rgba(var(--false-rgb), 0.18);
       --blocked: #9ca3af;
       --blocked-soft: #2f3038;
       --blocked-hatch: #55545f;
@@ -31,7 +33,6 @@
       --pending: #6b7280;
       --pending-soft: rgba(251, 251, 254, 0.12);
       --shadow: 0 12px 30px rgba(17, 24, 39, 0.08);
-      --radius: 25px;
       --text-font-family: 'Geist Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       --text-font-style: normal;
       --text-font-kerning: none;
@@ -55,6 +56,18 @@
       --firefox-menu-shadow:
         0 8px 24px rgba(0, 0, 0, 0.32),
         0 0 0 1px rgba(0, 0, 0, 0.10);
+      --status-pending-fill: var(--firefox-menu-bg);
+      --status-pending-stroke: var(--firefox-menu-border);
+      --status-pending-active-fill: var(--firefox-menu-hover-bg);
+      --status-pending-separator: var(--firefox-menu-separator);
+      --status-true-fill: rgba(var(--true-rgb), 0.10);
+      --status-true-stroke: rgba(var(--true-rgb), 0.72);
+      --status-true-active-fill: rgba(var(--true-rgb), 0.28);
+      --status-true-separator: rgba(var(--true-rgb), 0.36);
+      --status-false-fill: var(--false-soft);
+      --status-false-stroke: var(--false);
+      --status-false-active-fill: rgba(var(--false-rgb), 0.28);
+      --status-false-separator: rgba(var(--false-rgb), 0.38);
       --ui-radius: 25px;
       --menu-shell-radius: var(--ui-radius);
       --menu-shell-padding: 8px;
@@ -70,10 +83,10 @@
       --highlight-nudge-x: 2px;
       --selection-outline: rgba(10, 132, 255, 1);
       --selection-highlight: rgba(10, 132, 255, 0.3);
-      --danger-text: #ff453a;
-      --danger-bg: rgba(255, 69, 58, 0.18);
-      --danger-hover-bg: rgba(255, 69, 58, 0.26);
-      --danger-active-bg: rgba(255, 69, 58, 0.34);
+      --danger-text: var(--false);
+      --danger-bg: var(--false-soft);
+      --danger-hover-bg: rgba(var(--false-rgb), 0.26);
+      --danger-active-bg: rgba(var(--false-rgb), 0.34);
     }
 
     * {
@@ -196,11 +209,24 @@
       outline: none;
     }
 
-    .toolbar input[type="search"]:focus,
     .toolbar input[type="text"]:focus,
     textarea:focus {
       border-color: var(--selection-outline);
       box-shadow: 0 0 0 2px var(--selection-highlight);
+    }
+
+    .toolbar input[type="search"]:focus,
+    .toolbar input[type="search"]:focus-visible {
+      border-color: var(--line);
+      box-shadow: none;
+      outline: none;
+    }
+
+    input[type="search"]::-webkit-search-cancel-button,
+    input[type="search"]::-webkit-search-decoration {
+      -webkit-appearance: none;
+      appearance: none;
+      display: none;
     }
 
     .workspace {
@@ -418,7 +444,7 @@
     }
 
     .pill.status-false {
-      border-color: rgba(255, 69, 58, 0.42);
+      border-color: rgba(var(--false-rgb), 0.42);
       background: var(--danger-bg);
       color: var(--danger-text);
     }
@@ -467,7 +493,7 @@
 
     .snippet {
       border: 1px solid rgba(var(--white_font_rgb), 0.14);
-      border-radius: 16px;
+      border-radius: var(--ui-radius);
       background: rgba(var(--white_font_rgb), 0.06);
       color: rgba(var(--white_font_rgb), 0.78);
       padding: 9px;
@@ -570,10 +596,6 @@
       vector-effect: non-scaling-stroke;
     }
 
-    .edge.dim {
-      opacity: 0.14;
-    }
-
     .edge.relation {
       stroke: var(--selection-outline);
       stroke-width: 1;
@@ -582,16 +604,16 @@
 
     .edge.relation.direct {
       stroke: var(--selection-outline);
-      stroke-width: 1.65;
+      stroke-width: 1;
       stroke-dasharray: none;
       opacity: 0.98;
     }
 
-    .edge.relation.indirect {
-      stroke: rgba(10, 132, 255, 0.46);
-      stroke-width: 0.9;
-      stroke-dasharray: 4 8;
-      opacity: 0.68;
+    .edge.relation.indirect:not(.direct) {
+      stroke: rgba(156, 163, 175, 0.72);
+      stroke-width: 1;
+      stroke-dasharray: none;
+      opacity: 0.74;
     }
 
     .edge.dependency {
@@ -614,8 +636,32 @@
       opacity: 1;
     }
 
+    .node,
+    .status-slider {
+      --status-fill: var(--status-pending-fill);
+      --status-stroke: var(--status-pending-stroke);
+      --status-active-fill: var(--status-pending-active-fill);
+      --status-separator-color: var(--status-pending-separator);
+    }
+
     .node {
       cursor: default;
+    }
+
+    .node.status-true,
+    .status-slider.status-true {
+      --status-fill: var(--status-true-fill);
+      --status-stroke: var(--status-true-stroke);
+      --status-active-fill: var(--status-true-active-fill);
+      --status-separator-color: var(--status-true-separator);
+    }
+
+    .node.status-false,
+    .status-slider.status-false {
+      --status-fill: var(--status-false-fill);
+      --status-stroke: var(--status-false-stroke);
+      --status-active-fill: var(--status-false-active-fill);
+      --status-separator-color: var(--status-false-separator);
     }
 
     .node:focus {
@@ -634,7 +680,7 @@
       opacity: 1;
     }
 
-    .node.relation.indirect {
+    .node.relation.indirect:not(.direct) {
       opacity: 1;
     }
 
@@ -647,7 +693,7 @@
       stroke-dasharray: none;
     }
 
-    .node.relation.indirect .body {
+    .node.relation.indirect:not(.direct) .body {
       stroke-width: 1;
       stroke-dasharray: none;
     }
@@ -656,10 +702,10 @@
       opacity: 1;
       stroke: var(--selection-outline);
       stroke-width: 1;
-      stroke-dasharray: 7 5;
+      stroke-dasharray: none;
     }
 
-    .node.relation.indirect .selection-frame {
+    .node.relation.indirect:not(.direct) .selection-frame {
       opacity: 0;
       stroke-dasharray: none;
     }
@@ -673,8 +719,8 @@
     }
 
     .node .body {
-      fill: var(--firefox-menu-bg);
-      stroke: var(--firefox-menu-border);
+      fill: var(--status-fill);
+      stroke: var(--status-stroke);
       stroke-width: 1;
       vector-effect: non-scaling-stroke;
     }
@@ -688,26 +734,9 @@
       vector-effect: non-scaling-stroke;
     }
 
-    .node:hover .selection-frame,
     .node:focus-visible .selection-frame,
     .node.selected .selection-frame {
       opacity: 1;
-    }
-
-    .node.status-true .body {
-      fill: rgba(48, 209, 88, 0.10);
-      stroke: rgba(48, 209, 88, 0.72);
-    }
-
-    .node.status-false .body {
-      fill: var(--false-soft);
-      stroke: var(--false);
-      stroke-width: 1;
-    }
-
-    .node.status-pending .body {
-      fill: var(--firefox-menu-bg);
-      stroke: var(--firefox-menu-border);
     }
 
     .node.blocked:not(.status-false) .body {
@@ -739,25 +768,25 @@
     .node.selected .selection-frame {
       opacity: 1;
       stroke: var(--selection-outline);
-      stroke-width: 1;
+      stroke-width: 2;
       stroke-dasharray: none;
     }
 
     .node .title {
       font-weight: var(--bold_text);
       fill: var(--firefox-menu-text);
-      font-size: 13px;
+      font-size: var(--menu-item-font-size);
     }
 
     .node .id {
       fill: rgba(var(--white_font_rgb), 0.68);
-      font-size: 10.5px;
+      font-size: var(--menu-item-font-size);
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
     }
 
     .node .type {
       fill: rgba(var(--white_font_rgb), 0.78);
-      font-size: 10.5px;
+      font-size: var(--menu-item-font-size);
       font-weight: var(--bold_text);
       text-transform: uppercase;
     }
@@ -768,73 +797,79 @@
 
     .node .count {
       fill: rgba(var(--white_font_rgb), 0.68);
-      font-size: 10.5px;
+      font-size: var(--menu-item-font-size);
     }
 
     .status-slider {
-      cursor: default;
+      cursor: pointer;
       pointer-events: all;
-      transform-box: fill-box;
-      transform-origin: center;
-      transition: transform 170ms cubic-bezier(0.2, 1.35, 0.3, 1);
-    }
-
-    .status-slider.pressed {
-      transform: scale(0.98);
+      touch-action: none;
+      outline: none;
     }
 
     .status-slider * {
       pointer-events: none;
     }
 
-    .status-slider .slider-track {
-      fill: rgba(var(--white_font_rgb), 0.10);
-      stroke: rgba(var(--white_font_rgb), 0.26);
+    .status-slider .slider-hitbox {
+      fill: transparent;
+      pointer-events: all;
+    }
+
+    .status-slider .status-shell {
+      fill: var(--status-fill);
+      stroke: var(--status-stroke);
       stroke-width: 1;
       vector-effect: non-scaling-stroke;
     }
 
-    .status-slider .slider-knob {
-      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.24));
+    .status-slider .status-action {
+      --ui-highlight-nudge-transform: translateX(0);
+      transform: var(--ui-highlight-nudge-transform);
+      transform-box: fill-box;
+      transform-origin: center;
+      transition:
+        transform var(--smooth-slide-duration) var(--smooth-slide-ease),
+        color var(--smooth-slide-duration) var(--smooth-slide-ease);
     }
 
-    .status-slider .slider-label {
-      fill: rgba(var(--white_font_rgb), 0.62);
-      font-size: 12px;
+    .status-slider .status-action.hotspot-hover {
+      --ui-highlight-nudge-transform: translateX(var(--highlight-nudge-x));
+    }
+
+    .status-slider .status-action-bg {
+      fill: transparent;
+      transition: fill var(--smooth-slide-duration) var(--smooth-slide-ease);
+    }
+
+    .status-slider .status-action.hotspot-hover .status-action-bg,
+    .status-slider .status-action.active .status-action-bg {
+      fill: var(--status-active-fill);
+    }
+
+    .status-slider .status-action.hotspot-active .status-action-bg {
+      fill: var(--firefox-menu-active-bg);
+      transition-duration: 0ms;
+    }
+
+    .status-slider .status-label {
+      fill: rgba(var(--white_font_rgb), 0.72);
+      font-size: var(--menu-item-font-size);
       font-weight: var(--bold_text);
       text-anchor: middle;
       dominant-baseline: central;
+      transition: fill var(--smooth-slide-duration) var(--smooth-slide-ease);
     }
 
-    .status-slider .slider-dot {
-      fill: rgba(var(--white_font_rgb), 0.62);
-    }
-
-    .status-slider.status-false .slider-track {
-      fill: rgba(255, 69, 58, 0.12);
-      stroke: rgba(255, 69, 58, 0.42);
-    }
-
-    .status-slider.status-false .slider-knob {
-      fill: var(--false);
-    }
-
-    .status-slider.status-false .slider-label.false-label,
-    .status-slider.status-true .slider-label.true-label {
+    .status-slider .status-action.hotspot-hover .status-label,
+    .status-slider .status-action.active .status-label {
       fill: var(--white_font);
     }
 
-    .status-slider.status-true .slider-track {
-      fill: rgba(48, 209, 88, 0.12);
-      stroke: rgba(48, 209, 88, 0.42);
-    }
-
-    .status-slider.status-true .slider-knob {
-      fill: var(--true);
-    }
-
-    .status-slider.status-pending .slider-knob {
-      fill: rgba(var(--white_font_rgb), 0.24);
+    .status-slider .status-separator {
+      stroke: var(--status-separator-color);
+      stroke-width: 1;
+      vector-effect: non-scaling-stroke;
     }
 
     .node.blocked:not(.status-false) .title,
@@ -855,16 +890,20 @@
       width: auto;
       max-width: calc(100vw - 24px);
       background: var(--firefox-menu-bg);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
       border: 1px solid var(--firefox-menu-border);
       border-radius: var(--menu-shell-radius);
       box-shadow: var(--firefox-menu-shadow);
       color: var(--firefox-menu-text);
+      font-family: inherit;
       padding: var(--menu-shell-padding);
-      overflow-x: auto;
-      overflow-y: hidden;
+      overflow: hidden;
       user-select: none;
       -webkit-user-select: none;
       isolation: isolate;
+      clip-path: none;
+      filter: none;
       transform: translateZ(0);
       -webkit-mask-image: -webkit-radial-gradient(white, black);
       mask-image: radial-gradient(white, black);
@@ -906,14 +945,18 @@
       cursor: default;
       letter-spacing: var(--menu-item-letter-spacing);
       box-shadow: none;
+      --ui-highlight-nudge-transform: translateX(0);
+      transform: var(--ui-highlight-nudge-transform);
       transition:
         background-color var(--smooth-slide-duration) var(--smooth-slide-ease),
         color var(--smooth-slide-duration) var(--smooth-slide-ease),
-        opacity var(--smooth-slide-duration) var(--smooth-slide-ease);
+        opacity var(--smooth-slide-duration) var(--smooth-slide-ease),
+        transform var(--smooth-slide-duration) var(--smooth-slide-ease);
     }
 
     .ctx-item:hover,
     .ctx-item:focus-visible {
+      --ui-highlight-nudge-transform: translateX(var(--highlight-nudge-x));
       background: var(--firefox-menu-hover-bg);
       color: var(--firefox-menu-text);
       box-shadow: none;
@@ -961,6 +1004,10 @@
       letter-spacing: var(--menu-item-letter-spacing);
     }
 
+    .ctx-search:last-child {
+      padding-right: 1px;
+    }
+
     .ctx-search input {
       width: clamp(96px, 16vw, 160px);
       height: 30px;
@@ -978,9 +1025,11 @@
       color: rgba(var(--white_font_rgb), 0.58);
     }
 
-    .ctx-search input:focus {
-      border-color: rgba(var(--white_font_rgb), 0.45);
-      box-shadow: 0 0 0 2px rgba(var(--white_font_rgb), 0.12);
+    .ctx-search input:focus,
+    .ctx-search input:focus-visible {
+      border-color: rgba(var(--white_font_rgb), 0.22);
+      box-shadow: none;
+      outline: none;
     }
 
     .toast {
@@ -1033,14 +1082,14 @@
     <header class="topbar" aria-hidden="true">
       <div class="brand">Proogh</div>
       <div class="toolbar" role="toolbar" aria-label="Proof map actions">
-        <button id="openTexBtn" type="button" tabindex="-1">Open TeX</button>
+        <button id="openTexBtn" type="button" tabindex="-1">Upload TeX</button>
         <input id="texFile" type="file" accept=".tex,.txt,text/plain" hidden>
-        <button id="openMapBtn" type="button" tabindex="-1">Open Map</button>
+        <button id="openMapBtn" type="button" tabindex="-1">Open</button>
         <input id="mapFile" type="file" accept=".html,.json,.proofmap,text/html,application/json" hidden>
-        <button id="exportHtmlBtn" type="button" tabindex="-1">Export HTML</button>
+        <button id="exportHtmlBtn" type="button" tabindex="-1">Save</button>
         <button id="exportJsonBtn" type="button" tabindex="-1">Export JSON</button>
         <button id="fitBtn" type="button" tabindex="-1">Fit</button>
-        <input id="searchInput" type="search" placeholder="Search nodes" tabindex="-1">
+        <input id="searchInput" type="search" placeholder="Search" tabindex="-1">
       </div>
     </header>
 
@@ -1092,7 +1141,7 @@ Lemma~\ref{lem:routeC-separated-height}
                 <path d="M 0 0 L 10 5 L 0 10 z" fill="#0a84ff"></path>
               </marker>
               <marker id="arrowRelationIndirect" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                <path d="M 0 0 L 10 5 L 0 10 z" fill="#0a84ff" fill-opacity="0.46"></path>
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#9ca3af" fill-opacity="0.72"></path>
               </marker>
               <marker id="arrowBlocked" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
                 <path d="M 0 0 L 10 5 L 0 10 z" fill="#9ca3af"></path>
@@ -1113,15 +1162,15 @@ Lemma~\ref{lem:routeC-separated-height}
 
   <div id="contextMenu" class="menu" hidden>
     <div id="appActionGroup">
-      <button class="ctx-item" type="button" data-action="open-tex"><span class="ctx-label">Open TeX</span><span class="ctx-shortcut"></span></button>
+      <button class="ctx-item" type="button" data-action="open-tex"><span class="ctx-label">Upload TeX</span><span class="ctx-shortcut"></span></button>
       <div class="ctx-sep"></div>
-      <button class="ctx-item" type="button" data-action="open-map"><span class="ctx-label">Open Map</span><span class="ctx-shortcut"></span></button>
+      <button class="ctx-item" type="button" data-action="open-map"><span class="ctx-label">Open</span><span class="ctx-shortcut"></span></button>
+      <div class="ctx-sep"></div>
+      <button class="ctx-item" type="button" data-action="export-html"><span class="ctx-label">Save</span><span class="ctx-shortcut"></span></button>
       <div class="ctx-sep"></div>
       <label class="ctx-search">
-        <input id="contextSearchInput" type="search" placeholder="Search Nodes" aria-label="Search Nodes">
+        <input id="contextSearchInput" type="search" placeholder="Search" aria-label="Search">
       </label>
-      <div class="ctx-sep"></div>
-      <button class="ctx-item" type="button" data-action="export-html"><span class="ctx-label">Export HTML</span><span class="ctx-shortcut"></span></button>
     </div>
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
@@ -1147,25 +1196,58 @@ Lemma~\ref{lem:routeC-separated-height}
     ];
     const SKIPPED_PROOF_ENVS = new Set(["document", "proof"]);
 
-    const NODE_W = 270;
-    const NODE_H = 128;
-    const X_GAP = 138;
-    const Y_GAP = 42;
-    const PAD = 70;
+    const UI_RADIUS = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--ui-radius")) || 25;
+    const BOARD_ITEM_SIZE = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--menu-item-height")) || 32;
+    const BOARD_SHELL_PADDING = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--menu-shell-padding")) || 8;
+    const NODE_W = BOARD_ITEM_SIZE * 12;
+    const NODE_H = BOARD_ITEM_SIZE * 5;
+    const X_GAP = BOARD_ITEM_SIZE * 5;
+    const Y_GAP = BOARD_ITEM_SIZE * 2;
+    const PAD = BOARD_ITEM_SIZE * 2;
+    const EDGE_PORT_MARGIN = BOARD_ITEM_SIZE * 0.75;
+    const EDGE_PORT_STEP = BOARD_ITEM_SIZE * 0.56;
     const ZOOM_MIN = 0.01;
     const ZOOM_MAX = 100;
     const MENU_VIEWPORT_EDGE_MARGIN = 8;
+    const PINNED_CONTEXT_MENU_BOTTOM_RATIO = 0.05;
+    const MENU_ITEM_FONT_SIZE = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--menu-item-font-size")) || 13;
+    const BOARDFISH_ACTION_ICON_SIZE = 20;
+    const STATUS_ACTION_SCALE = MENU_ITEM_FONT_SIZE / BOARDFISH_ACTION_ICON_SIZE;
+    const STATUS_ACTION_SIZE = Math.round(BOARD_ITEM_SIZE * STATUS_ACTION_SCALE);
+    const STATUS_ACTION_PADDING = Math.round(BOARD_SHELL_PADDING * STATUS_ACTION_SCALE);
+    const STATUS_ACTION_SEPARATOR = 1;
+    const STATUS_ACTION_SEPARATOR_GAP = STATUS_ACTION_PADDING;
+    const STATUS_ACTION_BORDER_ALLOWANCE = 2;
+    const STATUS_ACTION_BORDER_INSET = STATUS_ACTION_BORDER_ALLOWANCE / 2;
+    const STATUS_SLIDER_W =
+      STATUS_ACTION_BORDER_ALLOWANCE +
+      STATUS_ACTION_PADDING * 2 +
+      STATUS_ACTION_SIZE * 2 +
+      STATUS_ACTION_SEPARATOR_GAP * 2 +
+      STATUS_ACTION_SEPARATOR;
+    const STATUS_SLIDER_H = STATUS_ACTION_BORDER_ALLOWANCE + STATUS_ACTION_PADDING * 2 + STATUS_ACTION_SIZE;
+    const STATUS_SLIDER_CORNER_INSET = 8;
     const STATUS_SLIDER = {
-      x: NODE_W - 84,
-      y: 14,
-      width: 68,
-      height: 26,
-      rx: 13,
-      cy: 13,
-      leftX: 14,
-      centerX: 34,
-      rightX: 54,
-      knobR: 11
+      x: NODE_W - STATUS_SLIDER_W - STATUS_SLIDER_CORNER_INSET,
+      y: STATUS_SLIDER_CORNER_INSET,
+      width: STATUS_SLIDER_W,
+      height: STATUS_SLIDER_H,
+      rx: Math.min(UI_RADIUS, STATUS_SLIDER_H / 2),
+      itemSize: STATUS_ACTION_SIZE,
+      padding: STATUS_ACTION_PADDING,
+      contentX: STATUS_ACTION_BORDER_INSET + STATUS_ACTION_PADDING,
+      contentY: STATUS_ACTION_BORDER_INSET + STATUS_ACTION_PADDING,
+      separatorWidth: STATUS_ACTION_SEPARATOR,
+      separatorGap: STATUS_ACTION_SEPARATOR_GAP,
+      leftX: STATUS_ACTION_BORDER_INSET + STATUS_ACTION_PADDING + STATUS_ACTION_SIZE / 2,
+      rightX:
+        STATUS_ACTION_BORDER_INSET +
+        STATUS_ACTION_PADDING +
+        STATUS_ACTION_SIZE +
+        STATUS_ACTION_SEPARATOR_GAP * 2 +
+        STATUS_ACTION_SEPARATOR +
+        STATUS_ACTION_SIZE / 2,
+      cy: STATUS_SLIDER_H / 2
     };
 
     const state = {
@@ -1181,6 +1263,7 @@ Lemma~\ref{lem:routeC-separated-height}
       graphWidth: 0,
       graphHeight: 0,
       transformRaf: 0,
+      statusClickSuppress: null,
       spaceDown: false,
       panning: false,
       duplicateLabels: [],
@@ -1545,7 +1628,7 @@ Lemma~\ref{lem:routeC-separated-height}
         node.isFinal = node.dependents.length === 0;
       }
 
-      return { nodes, edges, duplicateLabels, unresolvedRefs };
+      return { nodes, edges: uniqueEdges(edges), duplicateLabels, unresolvedRefs };
     }
 
     function stronglyConnectedComponents(nodes, edges) {
@@ -1811,28 +1894,102 @@ Lemma~\ref{lem:routeC-separated-height}
       return lines.length ? lines : [""];
     }
 
-    function edgePath(from, to) {
-      const x1 = from.x + NODE_W;
-      const y1 = from.y + NODE_H / 2;
-      const x2 = to.x;
-      const y2 = to.y + NODE_H / 2;
-      const dx = Math.max(54, (x2 - x1) * 0.48);
-      return "M " + x1 + " " + y1 + " C " + (x1 + dx) + " " + y1 + ", " + (x2 - dx) + " " + y2 + ", " + x2 + " " + y2;
-    }
-
     function edgeKey(from, to) {
       return from + "\u0000" + to;
     }
 
+    function edgePath(from, to, fromPortOffset = 0, toPortOffset = 0) {
+      const x1 = from.x + NODE_W;
+      const y1 = from.y + NODE_H / 2 + fromPortOffset;
+      const x2 = to.x;
+      const y2 = to.y + NODE_H / 2 + toPortOffset;
+      const dx = Math.max(54, (x2 - x1) * 0.48);
+      return "M " + x1 + " " + y1 + " C " + (x1 + dx) + " " + y1 + ", " + (x2 - dx) + " " + y2 + ", " + x2 + " " + y2;
+    }
+
+    function uniqueEdges(edges) {
+      const seen = new Set();
+      const result = [];
+      for (const edge of Array.isArray(edges) ? edges : []) {
+        if (!edge || edge.from == null || edge.to == null) continue;
+        const from = String(edge.from);
+        const to = String(edge.to);
+        if (!from || !to) continue;
+        const key = edgeKey(from, to);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        result.push({ ...edge, from, to });
+      }
+      return result;
+    }
+
+    function edgePortOffsets(count) {
+      if (count <= 1) return [0];
+      const usableHeight = Math.max(0, NODE_H - EDGE_PORT_MARGIN * 2);
+      const step = Math.min(EDGE_PORT_STEP, usableHeight / (count - 1));
+      const center = (count - 1) / 2;
+      return Array.from({ length: count }, (_, index) => Math.round((index - center) * step));
+    }
+
+    function compareEdgePortOrder(a, b, direction) {
+      const aNode = direction === "outgoing" ? a.to : a.from;
+      const bNode = direction === "outgoing" ? b.to : b.from;
+      return (
+        (aNode.y + NODE_H / 2) - (bNode.y + NODE_H / 2) ||
+        aNode.x - bNode.x ||
+        a.key.localeCompare(b.key)
+      );
+    }
+
+    function assignEdgePortOffsets(renderedEdges) {
+      const outgoing = new Map();
+      const incoming = new Map();
+      for (const item of renderedEdges) {
+        item.fromPortOffset = 0;
+        item.toPortOffset = 0;
+        if (!outgoing.has(item.from.id)) outgoing.set(item.from.id, []);
+        if (!incoming.has(item.to.id)) incoming.set(item.to.id, []);
+        outgoing.get(item.from.id).push(item);
+        incoming.get(item.to.id).push(item);
+      }
+
+      for (const items of outgoing.values()) {
+        items.sort((a, b) => compareEdgePortOrder(a, b, "outgoing"));
+        const offsets = edgePortOffsets(items.length);
+        items.forEach((item, index) => {
+          item.fromPortOffset = offsets[index];
+        });
+      }
+
+      for (const items of incoming.values()) {
+        items.sort((a, b) => compareEdgePortOrder(a, b, "incoming"));
+        const offsets = edgePortOffsets(items.length);
+        items.forEach((item, index) => {
+          item.toPortOffset = offsets[index];
+        });
+      }
+    }
+
     function collectSelectionFocus(startId) {
       const byId = new Map(state.nodes.map((node) => [node.id, node]));
-      const selected = byId.get(startId);
       const dependencies = new Set();
       const dependents = new Set();
       const dependencyEdges = new Set();
       const dependentEdges = new Set();
-      const directDependencies = new Set((selected?.dependsOn || []).filter((id) => byId.has(id)));
-      const directDependents = new Set((selected?.dependents || []).filter((id) => byId.has(id)));
+      const incoming = new Map();
+      const outgoing = new Map();
+      for (const node of state.nodes) {
+        incoming.set(node.id, []);
+        outgoing.set(node.id, []);
+      }
+      for (const edge of state.edges) {
+        if (!byId.has(edge.from) || !byId.has(edge.to)) continue;
+        incoming.get(edge.to).push(edge.from);
+        outgoing.get(edge.from).push(edge.to);
+      }
+
+      const directDependencies = new Set((incoming.get(startId) || []).filter((id) => byId.has(id)));
+      const directDependents = new Set((outgoing.get(startId) || []).filter((id) => byId.has(id)));
       const directDependencyEdges = new Set(Array.from(directDependencies).map((id) => edgeKey(id, startId)));
       const directDependentEdges = new Set(Array.from(directDependents).map((id) => edgeKey(startId, id)));
 
@@ -1840,10 +1997,7 @@ Lemma~\ref{lem:routeC-separated-height}
       const dependencyVisited = new Set([startId]);
       while (dependencyQueue.length) {
         const id = dependencyQueue.shift();
-        const node = byId.get(id);
-        if (!node) continue;
-        for (const depId of node.dependsOn) {
-          if (!byId.has(depId)) continue;
+        for (const depId of incoming.get(id) || []) {
           dependencyEdges.add(edgeKey(depId, id));
           if (dependencyVisited.has(depId)) continue;
           dependencyVisited.add(depId);
@@ -1856,10 +2010,7 @@ Lemma~\ref{lem:routeC-separated-height}
       const dependentVisited = new Set([startId]);
       while (dependentQueue.length) {
         const id = dependentQueue.shift();
-        const node = byId.get(id);
-        if (!node) continue;
-        for (const dependentId of node.dependents) {
-          if (!byId.has(dependentId)) continue;
+        for (const dependentId of outgoing.get(id) || []) {
           dependentEdges.add(edgeKey(id, dependentId));
           if (dependentVisited.has(dependentId)) continue;
           dependentVisited.add(dependentId);
@@ -1897,22 +2048,36 @@ Lemma~\ref{lem:routeC-separated-height}
       if (node.blocked) classes.push("blocked");
       if (node.id === state.selectedId) classes.push("selected");
       if (focus) {
+        const dependency = focus.dependencies.has(node.id);
+        const dependent = focus.dependents.has(node.id);
         const directDependency = focus.directDependencies.has(node.id);
         const directDependent = focus.directDependents.has(node.id);
-        if (focus.dependencies.has(node.id)) classes.push("relation", "dependency", directDependency ? "direct" : "indirect");
-        if (focus.dependents.has(node.id)) classes.push("relation", "dependent", directDependent ? "direct" : "indirect");
+        const direct = directDependency || directDependent;
+        if (dependency || dependent) classes.push("relation", direct ? "direct" : "indirect");
+        if (dependency) classes.push("dependency");
+        if (dependent) classes.push("dependent");
         if (!focus.related.has(node.id)) classes.push("unrelated");
       }
       return classes.join(" ");
     }
 
-    function isBlockingEdge(from) {
+    function isBlockedSourceNode(from) {
       return from.status === "false" || (from.blocked && from.status !== "false");
+    }
+
+    function isFocusedEdge(edge, focus = null) {
+      if (!focus) return true;
+      const key = edgeKey(edge.from, edge.to);
+      return focus.dependencyEdges.has(key) || focus.dependentEdges.has(key);
+    }
+
+    function isBlockingEdge(edge, from, focus = null) {
+      return isBlockedSourceNode(from) && isFocusedEdge(edge, focus);
     }
 
     function classForEdge(edge, from, to, focus = null) {
       const classes = ["edge"];
-      const blockedEdge = isBlockingEdge(from);
+      const blockedEdge = isBlockingEdge(edge, from, focus);
       if (blockedEdge) classes.push("blocked");
       if (focus) {
         const key = edgeKey(edge.from, edge.to);
@@ -1921,7 +2086,6 @@ Lemma~\ref{lem:routeC-separated-height}
         const directEdge = focus.directDependencyEdges.has(key) || focus.directDependentEdges.has(key);
         if (dependencyEdge) classes.push("relation", "dependency", directEdge ? "direct" : "indirect");
         if (dependentEdge) classes.push("relation", "dependent", directEdge ? "direct" : "indirect");
-        if (!dependencyEdge && !dependentEdge) classes.push("dim");
       }
       return classes.join(" ");
     }
@@ -1958,27 +2122,46 @@ Lemma~\ref{lem:routeC-separated-height}
     function setNodeStatus(id, nextStatus, toggle = true) {
       const node = state.nodes.find((item) => item.id === id);
       if (!node) return;
+      const priorStatus = normalizeStatus(node.status);
       const normalized = normalizeStatus(nextStatus);
-      const status = toggle && node.status === normalized ? "pending" : normalized;
-      if (node.status === status) return;
+      const status = toggle && priorStatus === normalized ? "pending" : normalized;
+      if (priorStatus === status) return;
       node.status = status;
       saveLocalStatuses();
       renderGraph();
     }
 
     function statusFromSliderPointer(event, slider) {
-      const rect = slider.getBoundingClientRect();
+      const hitbox = slider.querySelector(".slider-hitbox");
+      const rect = (hitbox || slider).getBoundingClientRect();
       const x = rect.width ? (event.clientX - rect.left) / rect.width : 0.5;
       return x < 0.5 ? "false" : "true";
     }
 
+    function updateStatusSliderHotspotState(event, slider, active = false) {
+      const hotStatus = statusFromSliderPointer(event, slider);
+      slider.querySelectorAll(".status-action").forEach((action) => {
+        const hot = action.classList.contains(hotStatus + "-action");
+        action.classList.toggle("hotspot-hover", hot);
+        action.classList.toggle("hotspot-active", active && hot);
+      });
+    }
+
+    function clearStatusSliderHotspotState(slider) {
+      slider.querySelectorAll(".status-action").forEach((action) => {
+        action.classList.remove("hotspot-hover", "hotspot-active");
+      });
+    }
+
     function stopStatusSliderEvent(event) {
       event.preventDefault();
+      if (event.stopImmediatePropagation) event.stopImmediatePropagation();
       event.stopPropagation();
     }
 
     function attachStatusSliderEvents(slider, node) {
       let activePointer = null;
+      let suppressClick = false;
 
       function releasePointer(event) {
         slider.classList.remove("pressed");
@@ -1990,9 +2173,18 @@ Lemma~\ref{lem:routeC-separated-height}
           }
         }
         activePointer = null;
+        clearStatusSliderHotspotState(slider);
         event.preventDefault();
         event.stopPropagation();
       }
+
+      slider.addEventListener("pointermove", (event) => {
+        updateStatusSliderHotspotState(event, slider, activePointer !== null);
+      });
+
+      slider.addEventListener("pointerleave", () => {
+        if (activePointer === null) clearStatusSliderHotspotState(slider);
+      });
 
       slider.addEventListener("pointerdown", (event) => {
         if (event.button !== undefined && event.button !== 0) return;
@@ -2000,6 +2192,7 @@ Lemma~\ref{lem:routeC-separated-height}
         event.stopPropagation();
         activePointer = event.pointerId;
         slider.classList.add("pressed");
+        updateStatusSliderHotspotState(event, slider, true);
         if (slider.setPointerCapture) {
           try {
             slider.setPointerCapture(event.pointerId);
@@ -2013,13 +2206,34 @@ Lemma~\ref{lem:routeC-separated-height}
         if (activePointer === null) return;
         const status = statusFromSliderPointer(event, slider);
         releasePointer(event);
+        suppressClick = true;
+        state.statusClickSuppress = {
+          id: node.id,
+          until: Date.now() + 260
+        };
+        setTimeout(() => {
+          suppressClick = false;
+        }, 0);
         setNodeStatus(node.id, status, true);
       });
 
       slider.addEventListener("pointercancel", releasePointer);
       slider.addEventListener("mousedown", stopStatusSliderEvent);
       slider.addEventListener("mouseup", stopStatusSliderEvent);
-      slider.addEventListener("click", stopStatusSliderEvent);
+      slider.addEventListener("click", (event) => {
+        stopStatusSliderEvent(event);
+        const suppressed = state.statusClickSuppress;
+        if (suppressed && suppressed.id === node.id && Date.now() <= suppressed.until) {
+          state.statusClickSuppress = null;
+          return;
+        }
+        if (suppressClick) {
+          suppressClick = false;
+          return;
+        }
+        state.statusClickSuppress = null;
+        setNodeStatus(node.id, statusFromSliderPointer(event, slider), true);
+      });
       slider.addEventListener("dblclick", stopStatusSliderEvent);
       slider.addEventListener("contextmenu", stopStatusSliderEvent);
 
@@ -2030,9 +2244,18 @@ Lemma~\ref{lem:routeC-separated-height}
         } else if (event.key === "ArrowRight") {
           stopStatusSliderEvent(event);
           setNodeStatus(node.id, "true", true);
-        } else if (event.key === "Enter" || event.key === " ") {
+        } else if (event.key === "Home") {
+          stopStatusSliderEvent(event);
+          setNodeStatus(node.id, "false", false);
+        } else if (event.key === "End") {
+          stopStatusSliderEvent(event);
+          setNodeStatus(node.id, "true", false);
+        } else if (event.key === "Escape") {
           stopStatusSliderEvent(event);
           setNodeStatus(node.id, "pending", false);
+        } else if (event.key === "Enter" || event.key === " ") {
+          stopStatusSliderEvent(event);
+          setNodeStatus(node.id, node.status === "true" ? "false" : "true", false);
         }
       });
     }
@@ -2040,8 +2263,6 @@ Lemma~\ref{lem:routeC-separated-height}
     function makeStatusSlider(node) {
       const slider = STATUS_SLIDER;
       const status = normalizeStatus(node.status);
-      const knobX = status === "false" ? slider.leftX : status === "true" ? slider.rightX : slider.centerX;
-      const knobR = status === "pending" ? 4.5 : slider.knobR;
       const group = makeSvg("g", {
         class: "status-slider status-" + status,
         transform: "translate(" + slider.x + " " + slider.y + ")",
@@ -2055,7 +2276,7 @@ Lemma~\ref{lem:routeC-separated-height}
       });
 
       group.appendChild(makeSvg("rect", {
-        class: "slider-track",
+        class: "slider-hitbox",
         x: 0,
         y: 0,
         width: slider.width,
@@ -2063,26 +2284,55 @@ Lemma~\ref{lem:routeC-separated-height}
         rx: slider.rx,
         ry: slider.rx
       }));
-      group.appendChild(makeSvg("circle", {
-        class: "slider-dot",
-        cx: slider.centerX,
-        cy: slider.cy,
-        r: 2.2
-      }));
-      group.appendChild(makeSvg("circle", {
-        class: "slider-knob",
-        cx: knobX,
-        cy: slider.cy,
-        r: knobR
+
+      group.appendChild(makeSvg("rect", {
+        class: "status-shell",
+        x: 0,
+        y: 0,
+        width: slider.width,
+        height: slider.height,
+        rx: slider.rx,
+        ry: slider.rx
       }));
 
-      const falseLabel = makeSvg("text", { class: "slider-label false-label", x: slider.leftX, y: slider.cy + 0.5 });
+      const falseAction = makeSvg("g", { class: "status-action false-action" + (status === "false" ? " active" : "") });
+      falseAction.appendChild(makeSvg("rect", {
+        class: "status-action-bg",
+        x: slider.contentX,
+        y: slider.contentY,
+        width: slider.itemSize,
+        height: slider.itemSize,
+        rx: Math.min(UI_RADIUS, slider.itemSize / 2),
+        ry: Math.min(UI_RADIUS, slider.itemSize / 2)
+      }));
+      const falseLabel = makeSvg("text", { class: "status-label false-label", x: slider.leftX, y: slider.cy + 0.5 });
       falseLabel.textContent = "F";
-      group.appendChild(falseLabel);
+      falseAction.appendChild(falseLabel);
+      group.appendChild(falseAction);
 
-      const trueLabel = makeSvg("text", { class: "slider-label true-label", x: slider.rightX, y: slider.cy + 0.5 });
+      const separatorX = slider.contentX + slider.itemSize + slider.separatorGap + slider.separatorWidth / 2;
+      group.appendChild(makeSvg("line", {
+        class: "status-separator",
+        x1: separatorX,
+        y1: slider.contentY,
+        x2: separatorX,
+        y2: slider.contentY + slider.itemSize
+      }));
+
+      const trueAction = makeSvg("g", { class: "status-action true-action" + (status === "true" ? " active" : "") });
+      trueAction.appendChild(makeSvg("rect", {
+        class: "status-action-bg",
+        x: slider.contentX + slider.itemSize + slider.separatorGap * 2 + slider.separatorWidth,
+        y: slider.contentY,
+        width: slider.itemSize,
+        height: slider.itemSize,
+        rx: Math.min(UI_RADIUS, slider.itemSize / 2),
+        ry: Math.min(UI_RADIUS, slider.itemSize / 2)
+      }));
+      const trueLabel = makeSvg("text", { class: "status-label true-label", x: slider.rightX, y: slider.cy + 0.5 });
       trueLabel.textContent = "T";
-      group.appendChild(trueLabel);
+      trueAction.appendChild(trueLabel);
+      group.appendChild(trueAction);
 
       attachStatusSliderEvents(group, node);
       return group;
@@ -2316,20 +2566,23 @@ Lemma~\ref{lem:routeC-separated-height}
           if (!from || !to) return null;
           const edgeClass = classForEdge(edge, from, to, focus);
           return {
+            key: edgeKey(edge.from, edge.to),
             from,
             to,
             edgeClass,
-            blockedEdge: isBlockingEdge(from)
+            blockedEdge: isBlockingEdge(edge, from, focus)
           };
         })
-        .filter(Boolean)
-        .sort((a, b) => focusRenderRank(a.edgeClass) - focusRenderRank(b.edgeClass));
+        .filter(Boolean);
+
+      assignEdgePortOffsets(renderedEdges);
+      renderedEdges.sort((a, b) => focusRenderRank(a.edgeClass) - focusRenderRank(b.edgeClass));
 
       for (const item of renderedEdges) {
-        const { from, to, edgeClass, blockedEdge } = item;
+        const { from, to, edgeClass, blockedEdge, fromPortOffset, toPortOffset } = item;
         const path = makeSvg("path", {
           class: edgeClass,
-          d: edgePath(from, to),
+          d: edgePath(from, to, fromPortOffset, toPortOffset),
           "marker-end": markerForEdgeClass(edgeClass, blockedEdge)
         });
         els.edgesLayer.appendChild(path);
@@ -2363,8 +2616,8 @@ Lemma~\ref{lem:routeC-separated-height}
           y: 0,
           width: NODE_W,
           height: NODE_H,
-          rx: 25,
-          ry: 25
+          rx: UI_RADIUS,
+          ry: UI_RADIUS
         });
         g.appendChild(rect);
 
@@ -2374,35 +2627,35 @@ Lemma~\ref{lem:routeC-separated-height}
           y: 0,
           width: NODE_W,
           height: NODE_H,
-          rx: 25,
-          ry: 25
+          rx: UI_RADIUS,
+          ry: UI_RADIUS
         }));
 
-        const typeText = makeSvg("text", { class: "type", x: 16, y: 23 });
+        const typeText = makeSvg("text", { class: "type", x: BOARD_SHELL_PADDING * 2, y: 27 });
         typeText.textContent = humanType(node.type);
         g.appendChild(typeText);
 
         if (node.isFinal) {
-          g.appendChild(makeSvg("path", { class: "final-mark", d: "M " + (NODE_W - 43) + " 46 L " + (NODE_W - 18) + " 46 L " + (NODE_W - 18) + " 70 L " + (NODE_W - 30) + " 63 L " + (NODE_W - 43) + " 70 Z" }));
+          g.appendChild(makeSvg("path", { class: "final-mark", d: "M " + (NODE_W - 43) + " 54 L " + (NODE_W - 18) + " 54 L " + (NODE_W - 18) + " 78 L " + (NODE_W - 30) + " 71 L " + (NODE_W - 43) + " 78 Z" }));
         }
 
         g.appendChild(makeStatusSlider(node));
 
-        const titleLines = wrapText(node.title, 32, 3);
+        const titleLines = wrapText(node.title, 36, 3);
         titleLines.forEach((line, i) => {
-          const text = makeSvg("text", { class: "title", x: 16, y: 50 + i * 16 });
+          const text = makeSvg("text", { class: "title", x: BOARD_SHELL_PADDING * 2, y: 58 + i * 18 });
           text.textContent = line;
           g.appendChild(text);
         });
 
-        const idLines = wrapText(node.id, 40, 2);
+        const idLines = wrapText(node.id, 56, 2);
         idLines.forEach((line, i) => {
-          const text = makeSvg("text", { class: "id", x: 16, y: 101 + i * 13 });
+          const text = makeSvg("text", { class: "id", x: BOARD_SHELL_PADDING * 2, y: 116 + i * 16 });
           text.textContent = line;
           g.appendChild(text);
         });
 
-        const counts = makeSvg("text", { class: "count", x: NODE_W - 16, y: NODE_H - 15, "text-anchor": "end" });
+        const counts = makeSvg("text", { class: "count", x: NODE_W - BOARD_SHELL_PADDING * 2, y: NODE_H - 17, "text-anchor": "end" });
         counts.textContent = node.dependsOn.length + " in · " + node.dependents.length + " out";
         g.appendChild(counts);
 
@@ -2463,6 +2716,7 @@ Lemma~\ref{lem:routeC-separated-height}
     }
 
     function openMenuAt(menu, x, y) {
+      delete menu.dataset.pinnedPosition;
       menu.style.left = x + "px";
       menu.style.top = y + "px";
       menu.hidden = false;
@@ -2472,31 +2726,65 @@ Lemma~\ref{lem:routeC-separated-height}
       menu.style.top = Math.round(clampMenuTop(y, rect.height)) + "px";
     }
 
-    function openContextMenu(event) {
-      event.preventDefault();
-      event.stopPropagation();
+    function positionMenuBottomCenter(menu) {
+      const rect = menu.getBoundingClientRect();
+      const x = (window.innerWidth - rect.width) / 2;
+      const y = window.innerHeight - rect.height - window.innerHeight * PINNED_CONTEXT_MENU_BOTTOM_RATIO;
+      menu.style.left = Math.round(clampMenuCoord(x, rect.width)) + "px";
+      menu.style.top = Math.round(clampMenuTop(y, rect.height)) + "px";
+    }
+
+    function openMenuBottomCenter(menu) {
+      menu.style.left = "0px";
+      menu.style.top = "0px";
+      menu.hidden = false;
+      menu.classList.add("visible");
+      menu.dataset.pinnedPosition = "bottom-center";
+      positionMenuBottomCenter(menu);
+    }
+
+    function pinContextMenu() {
       els.appActionGroup.hidden = false;
       if (els.contextSearchInput) els.contextSearchInput.value = els.searchInput.value;
       delete els.contextMenu.dataset.nodeId;
-      openMenuAt(els.contextMenu, event.clientX, event.clientY);
+      openMenuBottomCenter(els.contextMenu);
+    }
+
+    function openContextMenu(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      pinContextMenu();
     }
 
     function closeContextMenu() {
+      delete els.contextMenu.dataset.nodeId;
+      if (els.contextMenu.dataset.pinnedPosition === "bottom-center") {
+        els.appActionGroup.hidden = false;
+        positionMenuBottomCenter(els.contextMenu);
+        return;
+      }
       els.contextMenu.classList.remove("visible");
       els.contextMenu.hidden = true;
-      delete els.contextMenu.dataset.nodeId;
+      delete els.contextMenu.dataset.pinnedPosition;
     }
 
-    function getPriorStatuses() {
+    function getPriorStatuses({ includeStored = true, includeCurrent = true } = {}) {
       const prior = {};
-      for (const node of state.nodes) prior[node.id] = node.status;
-      const stored = loadLocalStatuses();
+      if (includeCurrent) {
+        for (const node of state.nodes) prior[node.id] = node.status;
+      }
+      const stored = includeStored ? loadLocalStatuses() : {};
       return { ...stored, ...prior };
     }
 
-    function runParse(showMessage = true) {
+    function runParse(showMessage = true, options = {}) {
+      const {
+        usePriorStatuses = true,
+        selectFirstNode = true,
+        saveStatuses = true
+      } = options;
       const tex = els.texInput.value;
-      const priorStatuses = getPriorStatuses();
+      const priorStatuses = usePriorStatuses ? getPriorStatuses() : {};
       const parsed = parseTex(tex, priorStatuses);
       state.tex = tex;
       state.sourceHash = hashString(tex);
@@ -2504,9 +2792,10 @@ Lemma~\ref{lem:routeC-separated-height}
       state.edges = parsed.edges;
       state.duplicateLabels = parsed.duplicateLabels;
       state.unresolvedRefs = parsed.unresolvedRefs;
-      state.selectedId = state.nodes[0]?.id || null;
+      state.selectedId = selectFirstNode ? state.nodes[0]?.id || null : null;
+      state.statusClickSuppress = null;
       els.sourceName.textContent = state.sourceName;
-      saveLocalStatuses();
+      if (saveStatuses) saveLocalStatuses();
       renderGraph();
       fitGraph(false);
       if (showMessage) showToast("Updated " + state.nodes.length + " nodes and " + state.edges.length + " dependencies");
@@ -2670,7 +2959,7 @@ Lemma~\ref{lem:routeC-separated-height}
           status: statusById[node.id] || node.status || "pending",
           dependents: Array.isArray(node.dependents) ? node.dependents : []
         }));
-        state.edges = data.edges;
+        state.edges = uniqueEdges(data.edges);
         rebuildDependents();
         state.duplicateLabels = data.duplicateLabels || [];
         state.unresolvedRefs = data.unresolvedRefs || [];
@@ -2743,6 +3032,11 @@ Lemma~\ref{lem:routeC-separated-height}
       }
 
       panBy(-event.deltaX, -event.deltaY);
+    }
+
+    function suppressMenuZoom(event) {
+      event.preventDefault();
+      event.stopPropagation();
     }
 
     function syncSpacePanCursor() {
@@ -2853,6 +3147,13 @@ Lemma~\ref{lem:routeC-separated-height}
     els.graphScroll.addEventListener("wheel", handleViewportWheel, { passive: false });
     els.graphScroll.addEventListener("mousedown", beginMousePan);
     els.graphScroll.addEventListener("click", (event) => {
+      const suppressed = state.statusClickSuppress;
+      if (suppressed && Date.now() <= suppressed.until) {
+        event.preventDefault();
+        event.stopPropagation();
+        state.statusClickSuppress = null;
+        return;
+      }
       if (event.target === els.graphScroll || event.target === els.graphSvg) clearSelection();
     });
     els.graphScroll.addEventListener("contextmenu", (event) => openContextMenu(event));
@@ -2865,7 +3166,10 @@ Lemma~\ref{lem:routeC-separated-height}
       state.sourceHash = "";
       els.texInput.value = text;
       els.sourceName.textContent = file.name;
-      runParse();
+      runParse(true, {
+        usePriorStatuses: false,
+        selectFirstNode: false
+      });
       els.texFile.value = "";
     });
 
@@ -2895,6 +3199,10 @@ Lemma~\ref{lem:routeC-separated-height}
       event.preventDefault();
       event.stopPropagation();
     });
+    els.contextMenu.addEventListener("wheel", suppressMenuZoom, { passive: false });
+    els.contextMenu.addEventListener("gesturestart", suppressMenuZoom, { passive: false });
+    els.contextMenu.addEventListener("gesturechange", suppressMenuZoom, { passive: false });
+    els.contextMenu.addEventListener("gestureend", suppressMenuZoom, { passive: false });
 
     document.addEventListener("click", (event) => {
       if (!els.contextMenu.hidden && !els.contextMenu.contains(event.target)) closeContextMenu();
@@ -2916,10 +3224,13 @@ Lemma~\ref{lem:routeC-separated-height}
     window.addEventListener("resize", () => {
       if (state.nodes.length) renderGraph();
       else applyViewportTransform();
+      if (!els.contextMenu.hidden && els.contextMenu.dataset.pinnedPosition === "bottom-center") {
+        positionMenuBottomCenter(els.contextMenu);
+      }
     });
 
-    closeContextMenu();
     bootEmbeddedMap();
+    pinContextMenu();
   </script>
 </body>
 </html>
