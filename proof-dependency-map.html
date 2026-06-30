@@ -1,0 +1,2925 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Proogh</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --canvas-bg: #1c1b22;
+      --canvas-bg-dark: #1c1b22;
+      --canvas-text: #fbfbfe;
+      --bg: var(--canvas-bg);
+      --panel: #42414d;
+      --ink: #fbfbfe;
+      --muted: rgba(251, 251, 254, 0.68);
+      --line: #777681;
+      --line-strong: rgba(251, 251, 254, 0.74);
+      --accent: rgba(10, 132, 255, 1);
+      --accent-soft: rgba(10, 132, 255, 0.18);
+      --warn: #ffb020;
+      --warn-soft: rgba(255, 176, 32, 0.18);
+      --true: #30d158;
+      --true-soft: rgba(48, 209, 88, 0.16);
+      --false: #ff453a;
+      --false-soft: rgba(255, 69, 58, 0.18);
+      --blocked: #9ca3af;
+      --blocked-soft: #2f3038;
+      --blocked-hatch: #55545f;
+      --blocked-text: rgba(251, 251, 254, 0.72);
+      --pending: #6b7280;
+      --pending-soft: rgba(251, 251, 254, 0.12);
+      --shadow: 0 12px 30px rgba(17, 24, 39, 0.08);
+      --radius: 25px;
+      --text-font-family: 'Geist Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --text-font-style: normal;
+      --text-font-kerning: none;
+      --text-font-stretch: normal;
+      --text-font-variant-caps: normal;
+      --text-letter-spacing: 0px;
+      --text-direction: ltr;
+      --regular_text: 400;
+      --bold_text: 500;
+      --black_font: #15141A;
+      --white_font: #fbfbfe;
+      --white_font_rgb: 251, 251, 254;
+      --firefox-menu-bg: #42414d;
+      --firefox-menu-border: #777681;
+      --firefox-menu-text: var(--white_font);
+      --menu_hover_bg: #5e5d69;
+      --menu_pressed_bg: #7b7a84;
+      --firefox-menu-hover-bg: var(--menu_hover_bg);
+      --firefox-menu-active-bg: var(--menu_pressed_bg);
+      --firefox-menu-separator: var(--menu_hover_bg);
+      --firefox-menu-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.32),
+        0 0 0 1px rgba(0, 0, 0, 0.10);
+      --ui-radius: 25px;
+      --menu-shell-radius: var(--ui-radius);
+      --menu-shell-padding: 8px;
+      --menu-item-height: 32px;
+      --menu-item-padding: 0 8px;
+      --menu-item-radius: var(--ui-radius);
+      --menu-item-font-size: 13px;
+      --menu-item-letter-spacing: var(--text-letter-spacing);
+      --menu-item-line-height: 32px;
+      --context-menu-width: 224px;
+      --smooth-slide-duration: 220ms;
+      --smooth-slide-ease: cubic-bezier(0.18, 0.9, 0.24, 1.18);
+      --highlight-nudge-x: 2px;
+      --selection-outline: rgba(10, 132, 255, 1);
+      --selection-highlight: rgba(10, 132, 255, 0.3);
+      --danger-text: #ff453a;
+      --danger-bg: rgba(255, 69, 58, 0.18);
+      --danger-hover-bg: rgba(255, 69, 58, 0.26);
+      --danger-active-bg: rgba(255, 69, 58, 0.34);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      margin: 0;
+      width: 100vw;
+      height: 100vh;
+      min-height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--ink);
+      font: var(--text-font-style) var(--regular_text) var(--menu-item-font-size) var(--text-font-family);
+      font-kerning: var(--text-font-kerning);
+      font-stretch: var(--text-font-stretch);
+      font-variant-caps: var(--text-font-variant-caps);
+      letter-spacing: var(--text-letter-spacing);
+      direction: var(--text-direction);
+      overscroll-behavior: none;
+      touch-action: none;
+      user-select: none;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .app,
+    .app * {
+      cursor: default;
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+      letter-spacing: 0;
+    }
+
+    button {
+      border: 0;
+      border-radius: var(--ui-radius);
+      background: transparent;
+      color: inherit;
+      min-height: var(--menu-item-height);
+      padding: var(--menu-item-padding);
+      cursor: default;
+      outline: none;
+    }
+
+    button:hover {
+      background: var(--firefox-menu-hover-bg);
+    }
+
+    button.primary {
+      background: var(--firefox-menu-hover-bg);
+      color: var(--firefox-menu-text);
+    }
+
+    button.primary:hover {
+      background: var(--firefox-menu-active-bg);
+    }
+
+    button.icon {
+      width: 34px;
+      padding: 0;
+      display: inline-grid;
+      place-items: center;
+    }
+
+    .app {
+      height: 100vh;
+      display: grid;
+      grid-template-rows: minmax(0, 1fr);
+    }
+
+    .topbar {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      clip-path: inset(50%);
+      padding: 0;
+      border: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .brand {
+      font-weight: 740;
+      font-size: 17px;
+      white-space: nowrap;
+      color: #111827;
+    }
+
+    .toolbar {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+
+    .toolbar input[type="search"],
+    .toolbar input[type="text"] {
+      min-width: 190px;
+      width: min(260px, 24vw);
+      border: 1px solid var(--line);
+      border-radius: var(--ui-radius);
+      height: 34px;
+      padding: 0 8px;
+      background: rgba(var(--white_font_rgb), 0.08);
+      color: var(--ink);
+      outline: none;
+    }
+
+    .toolbar input[type="search"]:focus,
+    .toolbar input[type="text"]:focus,
+    textarea:focus {
+      border-color: var(--selection-outline);
+      box-shadow: 0 0 0 2px var(--selection-highlight);
+    }
+
+    .workspace {
+      position: relative;
+      display: block;
+      min-height: 0;
+      overflow: hidden;
+      background: var(--canvas-bg);
+    }
+
+    .sidebar {
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      bottom: 12px;
+      z-index: 4;
+      width: min(390px, calc(100vw - 24px));
+      min-height: 0;
+      display: none;
+      grid-template-rows: auto minmax(210px, 0.52fr) auto minmax(180px, 0.48fr);
+      background: var(--firefox-menu-bg);
+      border: 1px solid var(--firefox-menu-border);
+      border-radius: var(--menu-shell-radius);
+      box-shadow: var(--firefox-menu-shadow);
+      color: var(--firefox-menu-text);
+      padding: var(--menu-shell-padding);
+      overflow: hidden;
+      isolation: isolate;
+      -webkit-mask-image: -webkit-radial-gradient(white, black);
+      mask-image: radial-gradient(white, black);
+    }
+
+    .section-head {
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: var(--menu-item-padding);
+      border-bottom: 1px solid var(--firefox-menu-separator);
+      color: var(--muted);
+      font-size: var(--menu-item-font-size);
+      font-weight: var(--bold_text);
+      text-transform: uppercase;
+      line-height: var(--menu-item-line-height);
+    }
+
+    .source-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-transform: none;
+      font-weight: var(--regular_text);
+      color: rgba(var(--white_font_rgb), 0.72);
+    }
+
+    textarea {
+      resize: none;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      border-bottom: 1px solid var(--firefox-menu-separator);
+      padding: 10px 8px;
+      outline: none;
+      color: var(--firefox-menu-text);
+      background: transparent;
+      font: 12.5px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      letter-spacing: 0;
+      user-select: text;
+      -webkit-user-select: text;
+      scrollbar-color: var(--firefox-menu-border) transparent;
+    }
+
+    textarea::placeholder {
+      color: rgba(var(--white_font_rgb), 0.46);
+    }
+
+    .settings {
+      padding: 8px 0;
+      border-bottom: 1px solid var(--firefox-menu-separator);
+      display: grid;
+      gap: 10px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0;
+      padding: 0 8px;
+    }
+
+    .stat {
+      border: 0;
+      border-radius: var(--ui-radius);
+      padding: 7px 8px;
+      background: transparent;
+      min-width: 0;
+      transition:
+        background-color var(--smooth-slide-duration) var(--smooth-slide-ease),
+        transform var(--smooth-slide-duration) var(--smooth-slide-ease);
+    }
+
+    .stat:hover {
+      background: var(--firefox-menu-hover-bg);
+      transform: translateX(var(--highlight-nudge-x));
+    }
+
+    .stat b {
+      display: block;
+      color: var(--firefox-menu-text);
+      font-size: 16px;
+      font-weight: var(--bold_text);
+      line-height: 1.1;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .legend {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      color: rgba(var(--white_font_rgb), 0.76);
+      font-size: 12px;
+      align-items: center;
+      padding: 0 8px;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: var(--ui-radius);
+      border: 1px solid var(--line-strong);
+      background: rgba(var(--white_font_rgb), 0.08);
+      flex: 0 0 auto;
+    }
+
+    .swatch.final {
+      border: 3px double var(--warn);
+      background: var(--warn-soft);
+    }
+
+    .swatch.false {
+      border-color: var(--false);
+      background: var(--false-soft);
+    }
+
+    .swatch.blocked {
+      border-color: var(--blocked);
+      background:
+        repeating-linear-gradient(
+          -45deg,
+          var(--blocked-soft) 0 5px,
+          var(--blocked-hatch) 5px 8px
+        );
+      box-shadow: inset 0 0 0 2px rgba(100, 116, 139, 0.18);
+    }
+
+    .details {
+      min-height: 0;
+      overflow: auto;
+      padding: 10px 8px;
+      background: transparent;
+      scrollbar-color: var(--firefox-menu-border) transparent;
+    }
+
+    .details h2 {
+      margin: 0 0 4px;
+      color: var(--firefox-menu-text);
+      font-size: 15px;
+      font-weight: var(--bold_text);
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    .details .meta {
+      color: var(--muted);
+      font-size: 12px;
+      overflow-wrap: anywhere;
+      margin-bottom: 10px;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 9px 0 12px;
+    }
+
+    .pill {
+      border: 1px solid rgba(var(--white_font_rgb), 0.18);
+      border-radius: var(--ui-radius);
+      padding: 4px 9px;
+      font-size: 12px;
+      color: rgba(var(--white_font_rgb), 0.82);
+      background: transparent;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+    }
+
+    .pill.status-true {
+      border-color: rgba(22, 128, 74, 0.28);
+      background: var(--true-soft);
+      color: var(--true);
+    }
+
+    .pill.status-false {
+      border-color: rgba(255, 69, 58, 0.42);
+      background: var(--danger-bg);
+      color: var(--danger-text);
+    }
+
+    .pill.status-pending {
+      border-color: rgba(var(--white_font_rgb), 0.18);
+      background: var(--pending-soft);
+      color: rgba(var(--white_font_rgb), 0.78);
+    }
+
+    .pill.status-blocked {
+      border-color: rgba(156, 163, 175, 0.55);
+      background:
+        repeating-linear-gradient(
+          -45deg,
+          var(--blocked-soft) 0 6px,
+          var(--blocked-hatch) 6px 9px
+        );
+      color: var(--blocked-text);
+    }
+
+    .link-list {
+      display: grid;
+      gap: 5px;
+      margin: 8px 0 14px;
+    }
+
+    .link-list button {
+      min-height: 30px;
+      height: auto;
+      padding: var(--menu-item-padding);
+      text-align: left;
+      display: block;
+      overflow-wrap: anywhere;
+      color: var(--firefox-menu-text);
+      background: transparent;
+      transition:
+        background-color var(--smooth-slide-duration) var(--smooth-slide-ease),
+        transform var(--smooth-slide-duration) var(--smooth-slide-ease);
+    }
+
+    .link-list button:hover {
+      background: var(--firefox-menu-hover-bg);
+      transform: translateX(var(--highlight-nudge-x));
+    }
+
+    .snippet {
+      border: 1px solid rgba(var(--white_font_rgb), 0.14);
+      border-radius: 16px;
+      background: rgba(var(--white_font_rgb), 0.06);
+      color: rgba(var(--white_font_rgb), 0.78);
+      padding: 9px;
+      max-height: 180px;
+      overflow: auto;
+      white-space: pre-wrap;
+      font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    .graph-pane {
+      position: absolute;
+      inset: 0;
+      min-width: 0;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: minmax(0, 1fr);
+      background: var(--canvas-bg);
+    }
+
+    .graph-statusbar {
+      min-height: 42px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--firefox-menu-separator);
+      background: var(--firefox-menu-bg);
+      z-index: 2;
+    }
+
+    .graph-statusbar .summary {
+      color: var(--muted);
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .zoom-controls {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 12px;
+      flex: 0 0 auto;
+    }
+
+    .zoom-controls input {
+      accent-color: var(--accent);
+      width: 120px;
+    }
+
+    .graph-scroll {
+      min-height: 0;
+      overflow: hidden;
+      position: relative;
+      cursor: default;
+      touch-action: none;
+      user-select: none;
+      background: var(--canvas-bg);
+    }
+
+    .graph-scroll.space-pan,
+    .graph-scroll.panning {
+      cursor: default;
+    }
+
+    #graphSvg {
+      display: block;
+      min-width: 100%;
+      min-height: 100%;
+    }
+
+    .empty-state {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      pointer-events: none;
+      text-align: center;
+      padding: 24px;
+    }
+
+    .empty-state strong {
+      display: block;
+      color: var(--firefox-menu-text);
+      font-size: 18px;
+      margin-bottom: 5px;
+    }
+
+    .edge {
+      fill: none;
+      stroke: rgba(251, 251, 254, 0.28);
+      stroke-width: 1;
+      opacity: 0.82;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .edge.dim {
+      opacity: 0.14;
+    }
+
+    .edge.relation {
+      stroke: var(--selection-outline);
+      stroke-width: 1;
+      opacity: 1;
+    }
+
+    .edge.relation.direct {
+      stroke: var(--selection-outline);
+      stroke-width: 1.65;
+      stroke-dasharray: none;
+      opacity: 0.98;
+    }
+
+    .edge.relation.indirect {
+      stroke: rgba(10, 132, 255, 0.46);
+      stroke-width: 0.9;
+      stroke-dasharray: 4 8;
+      opacity: 0.68;
+    }
+
+    .edge.dependency {
+      stroke-dasharray: none;
+    }
+
+    .edge.dependent {
+      stroke-dasharray: none;
+    }
+
+    .edge.blocked {
+      stroke: var(--blocked);
+      stroke-width: 1;
+      stroke-dasharray: none;
+      opacity: 0.78;
+    }
+
+    .edge.blocked.relation {
+      stroke: var(--blocked);
+      opacity: 1;
+    }
+
+    .node {
+      cursor: default;
+    }
+
+    .node:focus {
+      outline: none;
+    }
+
+    .node.unrelated {
+      opacity: 0.16;
+    }
+
+    .node.search-dim {
+      opacity: 0.18;
+    }
+
+    .node.relation.direct {
+      opacity: 1;
+    }
+
+    .node.relation.indirect {
+      opacity: 1;
+    }
+
+    .node.relation .body {
+      stroke-width: 1;
+    }
+
+    .node.relation.direct .body {
+      stroke-width: 1;
+      stroke-dasharray: none;
+    }
+
+    .node.relation.indirect .body {
+      stroke-width: 1;
+      stroke-dasharray: none;
+    }
+
+    .node.relation.direct .selection-frame {
+      opacity: 1;
+      stroke: var(--selection-outline);
+      stroke-width: 1;
+      stroke-dasharray: 7 5;
+    }
+
+    .node.relation.indirect .selection-frame {
+      opacity: 0;
+      stroke-dasharray: none;
+    }
+
+    .node.dependency .body {
+      stroke-dasharray: none;
+    }
+
+    .node.dependent .body {
+      stroke-dasharray: none;
+    }
+
+    .node .body {
+      fill: var(--firefox-menu-bg);
+      stroke: var(--firefox-menu-border);
+      stroke-width: 1;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .node .selection-frame {
+      fill: none;
+      stroke: var(--selection-outline);
+      stroke-width: 1;
+      opacity: 0;
+      pointer-events: none;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .node:hover .selection-frame,
+    .node:focus-visible .selection-frame,
+    .node.selected .selection-frame {
+      opacity: 1;
+    }
+
+    .node.status-true .body {
+      fill: rgba(48, 209, 88, 0.10);
+      stroke: rgba(48, 209, 88, 0.72);
+    }
+
+    .node.status-false .body {
+      fill: var(--false-soft);
+      stroke: var(--false);
+      stroke-width: 1;
+    }
+
+    .node.status-pending .body {
+      fill: var(--firefox-menu-bg);
+      stroke: var(--firefox-menu-border);
+    }
+
+    .node.blocked:not(.status-false) .body {
+      fill: url(#blockedHatch);
+      stroke: var(--blocked);
+      stroke-width: 1;
+      stroke-dasharray: none;
+    }
+
+    .node.final .body {
+      stroke-width: 1;
+    }
+
+    .node.selected {
+      opacity: 1;
+      filter: none;
+    }
+
+    .node.selected.relation.direct .body,
+    .node.selected.relation.indirect .body,
+    .node.selected.blocked:not(.status-false) .body,
+    .node.selected .body {
+      stroke-width: 1;
+      stroke-dasharray: none;
+    }
+
+    .node.selected.relation.direct .selection-frame,
+    .node.selected.relation.indirect .selection-frame,
+    .node.selected .selection-frame {
+      opacity: 1;
+      stroke: var(--selection-outline);
+      stroke-width: 1;
+      stroke-dasharray: none;
+    }
+
+    .node .title {
+      font-weight: var(--bold_text);
+      fill: var(--firefox-menu-text);
+      font-size: 13px;
+    }
+
+    .node .id {
+      fill: rgba(var(--white_font_rgb), 0.68);
+      font-size: 10.5px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    }
+
+    .node .type {
+      fill: rgba(var(--white_font_rgb), 0.78);
+      font-size: 10.5px;
+      font-weight: var(--bold_text);
+      text-transform: uppercase;
+    }
+
+    .node .final-mark {
+      fill: var(--warn);
+    }
+
+    .node .count {
+      fill: rgba(var(--white_font_rgb), 0.68);
+      font-size: 10.5px;
+    }
+
+    .status-slider {
+      cursor: default;
+      pointer-events: all;
+      transform-box: fill-box;
+      transform-origin: center;
+      transition: transform 170ms cubic-bezier(0.2, 1.35, 0.3, 1);
+    }
+
+    .status-slider.pressed {
+      transform: scale(0.98);
+    }
+
+    .status-slider * {
+      pointer-events: none;
+    }
+
+    .status-slider .slider-track {
+      fill: rgba(var(--white_font_rgb), 0.10);
+      stroke: rgba(var(--white_font_rgb), 0.26);
+      stroke-width: 1;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .status-slider .slider-knob {
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.24));
+    }
+
+    .status-slider .slider-label {
+      fill: rgba(var(--white_font_rgb), 0.62);
+      font-size: 12px;
+      font-weight: var(--bold_text);
+      text-anchor: middle;
+      dominant-baseline: central;
+    }
+
+    .status-slider .slider-dot {
+      fill: rgba(var(--white_font_rgb), 0.62);
+    }
+
+    .status-slider.status-false .slider-track {
+      fill: rgba(255, 69, 58, 0.12);
+      stroke: rgba(255, 69, 58, 0.42);
+    }
+
+    .status-slider.status-false .slider-knob {
+      fill: var(--false);
+    }
+
+    .status-slider.status-false .slider-label.false-label,
+    .status-slider.status-true .slider-label.true-label {
+      fill: var(--white_font);
+    }
+
+    .status-slider.status-true .slider-track {
+      fill: rgba(48, 209, 88, 0.12);
+      stroke: rgba(48, 209, 88, 0.42);
+    }
+
+    .status-slider.status-true .slider-knob {
+      fill: var(--true);
+    }
+
+    .status-slider.status-pending .slider-knob {
+      fill: rgba(var(--white_font_rgb), 0.24);
+    }
+
+    .node.blocked:not(.status-false) .title,
+    .node.blocked:not(.status-false) .id,
+    .node.blocked:not(.status-false) .type,
+    .node.blocked:not(.status-false) .count {
+      fill: var(--blocked-text);
+    }
+
+    .node.blocked:not(.status-false) .final-mark {
+      fill: var(--blocked);
+    }
+
+    .menu {
+      position: fixed;
+      z-index: 99999;
+      display: none;
+      width: auto;
+      max-width: calc(100vw - 24px);
+      background: var(--firefox-menu-bg);
+      border: 1px solid var(--firefox-menu-border);
+      border-radius: var(--menu-shell-radius);
+      box-shadow: var(--firefox-menu-shadow);
+      color: var(--firefox-menu-text);
+      padding: var(--menu-shell-padding);
+      overflow-x: auto;
+      overflow-y: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+      isolation: isolate;
+      transform: translateZ(0);
+      -webkit-mask-image: -webkit-radial-gradient(white, black);
+      mask-image: radial-gradient(white, black);
+    }
+
+    .menu.visible {
+      display: inline-flex;
+    }
+
+    #appActionGroup {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      white-space: nowrap;
+    }
+
+    .menu *,
+    .menu *::before,
+    .menu *::after {
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .ctx-item {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: auto;
+      height: var(--menu-item-height);
+      min-height: var(--menu-item-height);
+      padding: 0 8px;
+      font: var(--text-font-style) var(--bold_text) var(--menu-item-font-size) var(--text-font-family);
+      line-height: var(--menu-item-line-height);
+      color: var(--firefox-menu-text);
+      background: transparent;
+      border: 0;
+      border-radius: var(--menu-item-radius);
+      text-align: left;
+      cursor: default;
+      letter-spacing: var(--menu-item-letter-spacing);
+      box-shadow: none;
+      transition:
+        background-color var(--smooth-slide-duration) var(--smooth-slide-ease),
+        color var(--smooth-slide-duration) var(--smooth-slide-ease),
+        opacity var(--smooth-slide-duration) var(--smooth-slide-ease);
+    }
+
+    .ctx-item:hover,
+    .ctx-item:focus-visible {
+      background: var(--firefox-menu-hover-bg);
+      color: var(--firefox-menu-text);
+      box-shadow: none;
+      outline: none;
+    }
+
+    .ctx-item:active {
+      background: var(--firefox-menu-active-bg);
+      transition-duration: 0ms;
+    }
+
+    .ctx-label {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .ctx-shortcut {
+      color: rgba(var(--white_font_rgb), 0.7);
+      font: var(--text-font-style) var(--regular_text) var(--menu-item-font-size) var(--text-font-family);
+      line-height: inherit;
+      justify-self: end;
+      white-space: nowrap;
+    }
+
+    .ctx-sep {
+      width: 1px;
+      height: 22px;
+      flex: 0 0 auto;
+      background: var(--firefox-menu-separator);
+      margin: 0 6px;
+      pointer-events: none;
+    }
+
+    .ctx-search {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      padding: 0 8px;
+      color: var(--firefox-menu-text);
+      font: var(--text-font-style) var(--bold_text) var(--menu-item-font-size) var(--text-font-family);
+      line-height: var(--menu-item-line-height);
+      letter-spacing: var(--menu-item-letter-spacing);
+    }
+
+    .ctx-search input {
+      width: clamp(96px, 16vw, 160px);
+      height: 30px;
+      border: 1px solid rgba(var(--white_font_rgb), 0.22);
+      border-radius: var(--menu-item-radius);
+      background: rgba(var(--white_font_rgb), 0.10);
+      color: var(--firefox-menu-text);
+      padding: 0 10px;
+      outline: none;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    .ctx-search input::placeholder {
+      color: rgba(var(--white_font_rgb), 0.58);
+    }
+
+    .ctx-search input:focus {
+      border-color: rgba(var(--white_font_rgb), 0.45);
+      box-shadow: 0 0 0 2px rgba(var(--white_font_rgb), 0.12);
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 5%;
+      transform: translateX(-50%);
+      background: var(--firefox-menu-bg);
+      color: var(--firefox-menu-text);
+      padding: var(--menu-shell-padding);
+      border: 1px solid var(--firefox-menu-border);
+      border-radius: var(--menu-shell-radius);
+      box-shadow: var(--firefox-menu-shadow);
+      z-index: 9000;
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        opacity var(--smooth-slide-duration) var(--smooth-slide-ease),
+        transform var(--smooth-slide-duration) var(--smooth-slide-ease);
+      max-width: min(680px, calc(100vw - 56px));
+      text-align: center;
+      font: var(--text-font-style) var(--bold_text) var(--menu-item-font-size) var(--text-font-family);
+      line-height: 18px;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-2px);
+    }
+
+    @media (max-width: 860px) {
+      .sidebar {
+        left: 8px;
+        right: 8px;
+        top: 8px;
+        bottom: auto;
+        width: auto;
+        height: min(52vh, 560px);
+        grid-template-rows: auto minmax(140px, 1fr) auto minmax(120px, 0.7fr);
+      }
+
+      .app {
+        grid-template-rows: minmax(0, 1fr);
+      }
+    }
+  </style>
+</head>
+<body data-theme="dark">
+  <div class="app">
+    <header class="topbar" aria-hidden="true">
+      <div class="brand">Proogh</div>
+      <div class="toolbar" role="toolbar" aria-label="Proof map actions">
+        <button id="openTexBtn" type="button" tabindex="-1">Open TeX</button>
+        <input id="texFile" type="file" accept=".tex,.txt,text/plain" hidden>
+        <button id="openMapBtn" type="button" tabindex="-1">Open Map</button>
+        <input id="mapFile" type="file" accept=".html,.json,.proofmap,text/html,application/json" hidden>
+        <button id="exportHtmlBtn" type="button" tabindex="-1">Export HTML</button>
+        <button id="exportJsonBtn" type="button" tabindex="-1">Export JSON</button>
+        <button id="fitBtn" type="button" tabindex="-1">Fit</button>
+        <input id="searchInput" type="search" placeholder="Search nodes" tabindex="-1">
+      </div>
+    </header>
+
+    <main class="workspace">
+      <aside class="sidebar">
+        <div class="section-head">
+          <span>Source</span>
+          <span id="sourceName" class="source-name">unsaved</span>
+        </div>
+        <textarea id="texInput" spellcheck="false" placeholder="\begin{lemma}[Exact paired explicit formula]
+\label{lem:routeC-paired-explicit-formula}
+...
+Lemma~\ref{lem:routeC-separated-height}
+...
+\end{lemma}"></textarea>
+
+        <div class="settings">
+          <div id="stats" class="stats" aria-live="polite"></div>
+          <div class="legend" aria-label="Graph legend">
+            <span class="legend-item"><span class="swatch final"></span>Final</span>
+            <span class="legend-item"><span class="swatch false"></span>False</span>
+            <span class="legend-item"><span class="swatch blocked"></span>Blocked</span>
+          </div>
+        </div>
+
+        <div id="details" class="details"></div>
+      </aside>
+
+      <section class="graph-pane" aria-label="Dependency graph">
+        <div class="graph-statusbar">
+          <div id="graphSummary" class="summary">No graph loaded</div>
+          <div class="zoom-controls">
+            <button id="zoomOutBtn" class="icon" type="button" title="Zoom out">-</button>
+            <input id="zoomRange" type="range" min="1" max="10000" value="100">
+            <button id="zoomInBtn" class="icon" type="button" title="Zoom in">+</button>
+          </div>
+        </div>
+        <div id="graphScroll" class="graph-scroll">
+          <svg id="graphSvg" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Proof dependency graph">
+            <defs>
+              <pattern id="blockedHatch" patternUnits="userSpaceOnUse" width="10" height="10">
+                <rect width="10" height="10" fill="#2f3038"></rect>
+                <path d="M -2 10 L 10 -2 M 2 12 L 12 2" stroke="#55545f" stroke-width="2"></path>
+              </pattern>
+              <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#777681"></path>
+              </marker>
+              <marker id="arrowRelation" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#0a84ff"></path>
+              </marker>
+              <marker id="arrowRelationIndirect" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#0a84ff" fill-opacity="0.46"></path>
+              </marker>
+              <marker id="arrowBlocked" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#9ca3af"></path>
+              </marker>
+            </defs>
+            <g id="graphZoom">
+              <g id="edgesLayer"></g>
+              <g id="nodesLayer"></g>
+            </g>
+          </svg>
+          <div id="emptyState" class="empty-state">
+            <div><strong>Paste or open a TeX file</strong>The graph updates automatically.</div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="contextMenu" class="menu" hidden>
+    <div id="appActionGroup">
+      <button class="ctx-item" type="button" data-action="open-tex"><span class="ctx-label">Open TeX</span><span class="ctx-shortcut"></span></button>
+      <div class="ctx-sep"></div>
+      <button class="ctx-item" type="button" data-action="open-map"><span class="ctx-label">Open Map</span><span class="ctx-shortcut"></span></button>
+      <div class="ctx-sep"></div>
+      <label class="ctx-search">
+        <input id="contextSearchInput" type="search" placeholder="Search Nodes" aria-label="Search Nodes">
+      </label>
+      <div class="ctx-sep"></div>
+      <button class="ctx-item" type="button" data-action="export-html"><span class="ctx-label">Export HTML</span><span class="ctx-shortcut"></span></button>
+    </div>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script id="embedded-map-data" type="application/json">null</script>
+  <script id="app-script">
+    "use strict";
+
+    const BUILTIN_PROOF_ENVS = [
+      "theorem",
+      "lemma",
+      "proposition",
+      "corollary",
+      "claim",
+      "definition",
+      "conjecture",
+      "remark",
+      "externalinput",
+      "certificate",
+      "assumption",
+      "fact",
+      "axiom"
+    ];
+    const SKIPPED_PROOF_ENVS = new Set(["document", "proof"]);
+
+    const NODE_W = 270;
+    const NODE_H = 128;
+    const X_GAP = 138;
+    const Y_GAP = 42;
+    const PAD = 70;
+    const ZOOM_MIN = 0.01;
+    const ZOOM_MAX = 100;
+    const MENU_VIEWPORT_EDGE_MARGIN = 8;
+    const STATUS_SLIDER = {
+      x: NODE_W - 84,
+      y: 14,
+      width: 68,
+      height: 26,
+      rx: 13,
+      cy: 13,
+      leftX: 14,
+      centerX: 34,
+      rightX: 54,
+      knobR: 11
+    };
+
+    const state = {
+      sourceName: "unsaved",
+      sourceHash: "",
+      tex: "",
+      nodes: [],
+      edges: [],
+      selectedId: null,
+      zoom: 1,
+      panX: 0,
+      panY: 0,
+      graphWidth: 0,
+      graphHeight: 0,
+      transformRaf: 0,
+      spaceDown: false,
+      panning: false,
+      duplicateLabels: [],
+      unresolvedRefs: []
+    };
+
+    const els = {
+      texInput: document.getElementById("texInput"),
+      sidebar: document.querySelector(".sidebar"),
+      texFile: document.getElementById("texFile"),
+      mapFile: document.getElementById("mapFile"),
+      openTexBtn: document.getElementById("openTexBtn"),
+      openMapBtn: document.getElementById("openMapBtn"),
+      exportHtmlBtn: document.getElementById("exportHtmlBtn"),
+      exportJsonBtn: document.getElementById("exportJsonBtn"),
+      fitBtn: document.getElementById("fitBtn"),
+      searchInput: document.getElementById("searchInput"),
+      sourceName: document.getElementById("sourceName"),
+      stats: document.getElementById("stats"),
+      details: document.getElementById("details"),
+      graphSummary: document.getElementById("graphSummary"),
+      graphScroll: document.getElementById("graphScroll"),
+      graphSvg: document.getElementById("graphSvg"),
+      graphZoom: document.getElementById("graphZoom"),
+      edgesLayer: document.getElementById("edgesLayer"),
+      nodesLayer: document.getElementById("nodesLayer"),
+      emptyState: document.getElementById("emptyState"),
+      contextMenu: document.getElementById("contextMenu"),
+      contextSearchInput: document.getElementById("contextSearchInput"),
+      appActionGroup: document.getElementById("appActionGroup"),
+      toast: document.getElementById("toast"),
+      zoomRange: document.getElementById("zoomRange"),
+      zoomOutBtn: document.getElementById("zoomOutBtn"),
+      zoomInBtn: document.getElementById("zoomInBtn"),
+      embeddedData: document.getElementById("embedded-map-data")
+    };
+
+    function lineStartsFor(text) {
+      const starts = [0];
+      for (let i = 0; i < text.length; i += 1) {
+        if (text[i] === "\n") starts.push(i + 1);
+      }
+      return starts;
+    }
+
+    function lineFromIndex(starts, index) {
+      let lo = 0;
+      let hi = starts.length - 1;
+      while (lo <= hi) {
+        const mid = (lo + hi) >> 1;
+        if (starts[mid] <= index) lo = mid + 1;
+        else hi = mid - 1;
+      }
+      return hi + 1;
+    }
+
+    function escapedAt(text, index) {
+      let count = 0;
+      for (let i = index - 1; i >= 0 && text[i] === "\\"; i -= 1) count += 1;
+      return count % 2 === 1;
+    }
+
+    function stripComments(text) {
+      let out = "";
+      let inComment = false;
+      for (let i = 0; i < text.length; i += 1) {
+        const ch = text[i];
+        if (ch === "\n") {
+          inComment = false;
+          out += ch;
+        } else if (inComment) {
+          out += " ";
+        } else if (ch === "%" && !escapedAt(text, i)) {
+          inComment = true;
+          out += " ";
+        } else {
+          out += ch;
+        }
+      }
+      return out;
+    }
+
+    function readOptionalBracket(text, index) {
+      let i = index;
+      while (i < text.length && /\s/.test(text[i])) i += 1;
+      if (text[i] !== "[") return { value: "", end: index };
+      let depth = 0;
+      let value = "";
+      for (; i < text.length; i += 1) {
+        const ch = text[i];
+        if (ch === "[" && !escapedAt(text, i)) {
+          if (depth > 0) value += ch;
+          depth += 1;
+        } else if (ch === "]" && !escapedAt(text, i)) {
+          depth -= 1;
+          if (depth === 0) return { value, end: i + 1 };
+          value += ch;
+        } else {
+          value += ch;
+        }
+      }
+      return { value: "", end: index };
+    }
+
+    function escapeRegExp(text) {
+      return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+
+    function normalizeEnv(env) {
+      return env.toLowerCase().replace(/\*$/, "");
+    }
+
+    function discoverProofEnvironments(tex) {
+      const envs = new Set(BUILTIN_PROOF_ENVS);
+      const newTheorem = /\\newtheorem\*?\s*(?:\[[^\]]*\]\s*)?\{([^}]+)\}/g;
+      const declareTheorem = /\\declaretheorem\s*(?:\[[^\]]*\]\s*)?\{([^}]+)\}/g;
+      let match;
+      while ((match = newTheorem.exec(tex))) envs.add(normalizeEnv(match[1].trim()));
+      while ((match = declareTheorem.exec(tex))) envs.add(normalizeEnv(match[1].trim()));
+      return Array.from(envs).filter((env) => env && !SKIPPED_PROOF_ENVS.has(env));
+    }
+
+    function findEnvironmentEnd(text, env, start) {
+      const envPattern = escapeRegExp(env);
+      const tag = new RegExp("\\\\(begin|end)\\s*\\{\\s*" + envPattern + "\\s*\\}", "g");
+      tag.lastIndex = start;
+      let depth = 1;
+      let match;
+      while ((match = tag.exec(text))) {
+        if (match[1] === "begin") depth += 1;
+        else depth -= 1;
+        if (depth === 0) {
+          return { start: match.index, end: tag.lastIndex };
+        }
+      }
+      return null;
+    }
+
+    function findAttachedProof(text, start) {
+      let i = start;
+      while (i < text.length && /\s/.test(text[i])) i += 1;
+      const beginProof = /\\begin\s*\{\s*proof\s*\}/y;
+      beginProof.lastIndex = i;
+      const match = beginProof.exec(text);
+      if (!match) return null;
+      const optional = readOptionalBracket(text, beginProof.lastIndex);
+      const contentStart = optional.end === beginProof.lastIndex ? beginProof.lastIndex : optional.end;
+      const end = findEnvironmentEnd(text, "proof", contentStart);
+      if (!end) return null;
+      return {
+        block: text.slice(i, end.end),
+        body: text.slice(contentStart, end.start),
+        endIndex: end.end
+      };
+    }
+
+    function cleanTitle(value) {
+      return value
+        .replace(/\\label\s*\{[^}]+\}/g, "")
+        .replace(/\\texorpdfstring\s*\{([^}]*)\}\s*\{([^}]*)\}/g, "$1")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function humanType(env) {
+      const base = normalizeEnv(env);
+      if (base === "externalinput") return "External input";
+      return base.replace(/(^|[-_\s])([a-z])/g, (_, sep, ch) => (sep ? " " : "") + ch.toUpperCase()).trim();
+    }
+
+    function isStructuralLabel(label) {
+      return /(^|:)(eq|equation|sec|subsec|subsection|fig|figure|tab|table|app|appendix|alg|algorithm|lst|listing):/i.test(label);
+    }
+
+    function isEquationLabel(label) {
+      return /(^|:)(eq|equation):/i.test(label);
+    }
+
+    function envLabelPattern(env) {
+      const base = normalizeEnv(env);
+      const map = {
+        theorem: /(^|:)(thm|theorem):/i,
+        lemma: /(^|:)(lem|lemma):/i,
+        proposition: /(^|:)(prop|proposition):/i,
+        corollary: /(^|:)(cor|corr|corollary):/i,
+        claim: /(^|:)claim:/i,
+        definition: /(^|:)(def|definition):/i,
+        conjecture: /(^|:)(conj|conjecture):/i,
+        remark: /(^|:)(rem|remark):/i,
+        externalinput: /(^|:)(ext|external|input):/i,
+        certificate: /(^|:)(cert|certificate):/i,
+        assumption: /(^|:)(ass|assump|assumption):/i,
+        fact: /(^|:)fact:/i,
+        axiom: /(^|:)axiom:/i
+      };
+      return map[base] || null;
+    }
+
+    function theoremLikeLabel(label, env) {
+      const pattern = envLabelPattern(env);
+      if (pattern && pattern.test(label)) return true;
+      return !isStructuralLabel(label) && /(^|:)(thm|theorem|lem|lemma|prop|proposition|cor|corollary|claim|def|definition|conj|remark|rem|ext|cert|assumption|fact|axiom):/i.test(label);
+    }
+
+    function unique(values) {
+      return Array.from(new Set(values.filter(Boolean)));
+    }
+
+    function labelsIn(text) {
+      const labels = [];
+      const re = /\\label\s*\{([^}]+)\}/g;
+      let match;
+      while ((match = re.exec(text))) labels.push(match[1].trim());
+      return labels;
+    }
+
+    function choosePrimaryLabel(labels, env) {
+      const pattern = envLabelPattern(env);
+      if (pattern) {
+        const exact = labels.find((label) => pattern.test(label));
+        if (exact) return exact;
+      }
+      const theoremLike = labels.find((label) => theoremLikeLabel(label, env));
+      if (theoremLike) return theoremLike;
+      const nonStructural = labels.find((label) => !isStructuralLabel(label));
+      return nonStructural || "";
+    }
+
+    function refsIn(text) {
+      const refs = [];
+      const command = /\\(?:[cC]ref|eqref|ref|autoref|nameref|vref|Vref|pageref)\s*\{([^}]+)\}/g;
+      let match;
+      while ((match = command.exec(text))) {
+        match[1].split(",")
+          .map((value) => value.trim())
+          .filter(Boolean)
+          .forEach((label) => refs.push(label));
+      }
+      const hyper = /\\hyperref\s*\[([^\]]+)\]/g;
+      while ((match = hyper.exec(text))) refs.push(match[1].trim());
+      return unique(refs);
+    }
+
+    function snippetFor(block) {
+      return block
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 650);
+    }
+
+    function parseTex(tex, priorStatuses = {}) {
+      const stripped = stripComments(tex);
+      const starts = lineStartsFor(stripped);
+      const envSet = new Set(discoverProofEnvironments(stripped));
+      const begin = /\\begin\s*\{\s*([A-Za-z*]+)\s*\}/g;
+      const counters = new Map();
+      const blocks = [];
+      let match;
+
+      while ((match = begin.exec(stripped))) {
+        const rawEnv = match[1];
+        const env = normalizeEnv(rawEnv);
+        if (!envSet.has(env)) continue;
+        const optional = readOptionalBracket(stripped, begin.lastIndex);
+        const contentStart = optional.end === begin.lastIndex ? begin.lastIndex : optional.end;
+        const end = findEnvironmentEnd(stripped, rawEnv, contentStart);
+        if (!end) continue;
+        const proof = findAttachedProof(stripped, end.end);
+        const fullBlock = stripped.slice(match.index, end.end);
+        const attachedBlock = proof ? fullBlock + "\n" + proof.block : fullBlock;
+        const body = stripped.slice(contentStart, end.start);
+        const labels = unique(labelsIn(fullBlock));
+        const allLabels = unique(labelsIn(attachedBlock));
+        const equationLabels = allLabels.filter(isEquationLabel);
+        const title = cleanTitle(optional.value) || humanType(env) + " " + ((counters.get(env) || 0) + 1);
+        counters.set(env, (counters.get(env) || 0) + 1);
+        blocks.push({
+          env,
+          rawEnv,
+          title,
+          labels,
+          allLabels,
+          equationLabels,
+          body: proof ? body + "\n" + proof.body : body,
+          block: attachedBlock,
+          startIndex: match.index,
+          line: lineFromIndex(starts, match.index)
+        });
+        begin.lastIndex = end.end;
+      }
+
+      const usedIds = new Map();
+      const nodes = blocks.map((block, index) => {
+        let id = choosePrimaryLabel(block.labels, block.env);
+        if (!id) id = "unlabeled:" + block.env + ":" + (index + 1);
+        const seen = usedIds.get(id) || 0;
+        usedIds.set(id, seen + 1);
+        const uniqueId = seen ? id + "::" + (seen + 1) : id;
+        const aliases = unique(block.labels.filter((label) => theoremLikeLabel(label, block.env)));
+        if (!aliases.includes(uniqueId) && !uniqueId.startsWith("unlabeled:")) aliases.unshift(uniqueId);
+        const ownedLabels = unique([...aliases, ...block.equationLabels]);
+        return {
+          id: uniqueId,
+          originalId: id,
+          title: block.title,
+          type: block.env,
+          line: block.line,
+          labels: block.labels,
+          allLabels: block.allLabels,
+          equationLabels: block.equationLabels,
+          aliases,
+          ownedLabels,
+          refs: refsIn(block.body),
+          dependsOn: [],
+          dependents: [],
+          status: priorStatuses[uniqueId] || priorStatuses[id] || "pending",
+          snippet: snippetFor(block.block),
+          x: 0,
+          y: 0,
+          isLeaf: false,
+          isFinal: false,
+          blocked: false
+        };
+      });
+
+      const labelToId = new Map();
+      const duplicateLabels = [];
+      for (const node of nodes) {
+        for (const label of node.ownedLabels) {
+          if (labelToId.has(label) && labelToId.get(label) !== node.id) {
+            duplicateLabels.push({ label, first: labelToId.get(label), second: node.id });
+          } else {
+            labelToId.set(label, node.id);
+          }
+        }
+      }
+
+      const unresolvedRefs = [];
+      for (const node of nodes) {
+        const deps = [];
+        for (const ref of node.refs) {
+          const target = labelToId.get(ref);
+          if (target && target !== node.id) deps.push(target);
+          else if (!target && !isStructuralLabel(ref)) unresolvedRefs.push({ from: node.id, ref });
+        }
+        node.dependsOn = unique(deps);
+      }
+
+      const edges = [];
+      const byId = new Map(nodes.map((node) => [node.id, node]));
+      for (const node of nodes) {
+        for (const depId of node.dependsOn) {
+          const dep = byId.get(depId);
+          if (!dep) continue;
+          dep.dependents.push(node.id);
+          edges.push({ from: depId, to: node.id });
+        }
+      }
+
+      for (const node of nodes) {
+        node.isLeaf = node.dependsOn.length === 0;
+        node.isFinal = node.dependents.length === 0;
+      }
+
+      return { nodes, edges, duplicateLabels, unresolvedRefs };
+    }
+
+    function stronglyConnectedComponents(nodes, edges) {
+      const nodeIds = new Set(nodes.map((node) => node.id));
+      const adjacency = new Map(nodes.map((node) => [node.id, []]));
+      for (const edge of edges) {
+        if (nodeIds.has(edge.from) && nodeIds.has(edge.to)) adjacency.get(edge.from).push(edge.to);
+      }
+
+      const components = [];
+      const indices = new Map();
+      const lowlinks = new Map();
+      const stack = [];
+      const onStack = new Set();
+      let nextIndex = 0;
+
+      function visit(id) {
+        indices.set(id, nextIndex);
+        lowlinks.set(id, nextIndex);
+        nextIndex += 1;
+        stack.push(id);
+        onStack.add(id);
+
+        for (const next of adjacency.get(id) || []) {
+          if (!indices.has(next)) {
+            visit(next);
+            lowlinks.set(id, Math.min(lowlinks.get(id), lowlinks.get(next)));
+          } else if (onStack.has(next)) {
+            lowlinks.set(id, Math.min(lowlinks.get(id), indices.get(next)));
+          }
+        }
+
+        if (lowlinks.get(id) !== indices.get(id)) return;
+        const component = [];
+        while (stack.length) {
+          const member = stack.pop();
+          onStack.delete(member);
+          component.push(member);
+          if (member === id) break;
+        }
+        components.push(component);
+      }
+
+      for (const node of nodes) {
+        if (!indices.has(node.id)) visit(node.id);
+      }
+      return components;
+    }
+
+    function compareNodeIdsByLine(a, b, byId) {
+      const nodeA = byId.get(a);
+      const nodeB = byId.get(b);
+      return (nodeA?.line ?? 0) - (nodeB?.line ?? 0) || String(a).localeCompare(String(b));
+    }
+
+    function orderCyclicComponent(component, edges, byId) {
+      const remaining = new Set(component);
+      const internalEdges = edges.filter((edge) => remaining.has(edge.from) && remaining.has(edge.to));
+      const front = [];
+      const back = [];
+
+      function degree(id) {
+        let incoming = 0;
+        let outgoing = 0;
+        for (const edge of internalEdges) {
+          if (!remaining.has(edge.from) || !remaining.has(edge.to)) continue;
+          if (edge.from === id) outgoing += 1;
+          if (edge.to === id) incoming += 1;
+        }
+        return { incoming, outgoing };
+      }
+
+      while (remaining.size) {
+        let changed = true;
+        while (changed) {
+          changed = false;
+          const sinks = Array.from(remaining)
+            .filter((id) => degree(id).outgoing === 0)
+            .sort((a, b) => compareNodeIdsByLine(b, a, byId));
+          for (const id of sinks) {
+            if (!remaining.has(id)) continue;
+            remaining.delete(id);
+            back.unshift(id);
+            changed = true;
+          }
+
+          const sources = Array.from(remaining)
+            .filter((id) => degree(id).incoming === 0)
+            .sort((a, b) => compareNodeIdsByLine(a, b, byId));
+          for (const id of sources) {
+            if (!remaining.has(id)) continue;
+            remaining.delete(id);
+            front.push(id);
+            changed = true;
+          }
+        }
+
+        if (!remaining.size) break;
+        const best = Array.from(remaining)
+          .sort((a, b) => {
+            const degreeA = degree(a);
+            const degreeB = degree(b);
+            return (degreeB.outgoing - degreeB.incoming) - (degreeA.outgoing - degreeA.incoming)
+              || compareNodeIdsByLine(a, b, byId);
+          })[0];
+        remaining.delete(best);
+        front.push(best);
+      }
+
+      return front.concat(back);
+    }
+
+    function topoLayout(nodes, edges) {
+      const byId = new Map(nodes.map((node) => [node.id, node]));
+      const components = stronglyConnectedComponents(nodes, edges);
+      const componentById = new Map();
+      components.forEach((component, index) => {
+        component.forEach((id) => componentById.set(id, index));
+      });
+
+      const memberLevels = new Map();
+      const componentSpan = components.map((component) => {
+        if (component.length === 1) {
+          memberLevels.set(component[0], 0);
+          return 1;
+        }
+
+        const ordered = orderCyclicComponent(component, edges, byId);
+        ordered.forEach((id, index) => memberLevels.set(id, index));
+        return ordered.length || 1;
+      });
+
+      const outgoing = new Map(components.map((_, index) => [index, new Set()]));
+      const indegree = new Map(components.map((_, index) => [index, 0]));
+      const componentGaps = new Map();
+      for (const edge of edges) {
+        const fromComponent = componentById.get(edge.from);
+        const toComponent = componentById.get(edge.to);
+        if (fromComponent === undefined || toComponent === undefined || fromComponent === toComponent) continue;
+        const exits = outgoing.get(fromComponent);
+        if (!exits.has(toComponent)) {
+          exits.add(toComponent);
+          indegree.set(toComponent, (indegree.get(toComponent) || 0) + 1);
+        }
+        const key = fromComponent + "->" + toComponent;
+        const requiredGap = Math.max(1, (memberLevels.get(edge.from) || 0) - (memberLevels.get(edge.to) || 0) + 1);
+        componentGaps.set(key, Math.max(componentGaps.get(key) || 1, requiredGap));
+      }
+
+      const componentStart = new Map(components.map((_, index) => [index, 0]));
+      const componentLine = components.map((component) => Math.min(...component.map((id) => byId.get(id)?.line ?? 0)));
+      const queue = components
+        .map((_, index) => index)
+        .filter((index) => (indegree.get(index) || 0) === 0)
+        .sort((a, b) => componentLine[a] - componentLine[b]);
+
+      for (let cursor = 0; cursor < queue.length; cursor += 1) {
+        const component = queue[cursor];
+        for (const next of outgoing.get(component) || []) {
+          const requiredStart = (componentStart.get(component) || 0) + (componentGaps.get(component + "->" + next) || componentSpan[component] || 1);
+          if ((componentStart.get(next) || 0) < requiredStart) componentStart.set(next, requiredStart);
+          indegree.set(next, (indegree.get(next) || 0) - 1);
+          if ((indegree.get(next) || 0) === 0) {
+            queue.push(next);
+            const pending = queue.splice(cursor + 1);
+            pending.sort((a, b) => (componentStart.get(a) || 0) - (componentStart.get(b) || 0) || componentLine[a] - componentLine[b]);
+            queue.push(...pending);
+          }
+        }
+      }
+
+      const columns = new Map();
+      const rawLevels = nodes.map((node) => (componentStart.get(componentById.get(node.id)) || 0) + (memberLevels.get(node.id) || 0));
+      const compactLevel = new Map(Array.from(new Set(rawLevels)).sort((a, b) => a - b).map((level, index) => [level, index]));
+      for (const node of nodes) {
+        const rawLevel = (componentStart.get(componentById.get(node.id)) || 0) + (memberLevels.get(node.id) || 0);
+        const nodeLevel = compactLevel.get(rawLevel) || 0;
+        if (!columns.has(nodeLevel)) columns.set(nodeLevel, []);
+        columns.get(nodeLevel).push(node);
+      }
+
+      const orderedLevels = Array.from(columns.keys()).sort((a, b) => a - b);
+      let maxRows = 0;
+      for (const lev of orderedLevels) {
+        const column = columns.get(lev);
+        column.sort((a, b) => a.line - b.line || a.title.localeCompare(b.title));
+        maxRows = Math.max(maxRows, column.length);
+        column.forEach((node, row) => {
+          node.x = PAD + lev * (NODE_W + X_GAP);
+          node.y = PAD + row * (NODE_H + Y_GAP);
+        });
+      }
+
+      const width = PAD * 2 + Math.max(1, orderedLevels.length) * NODE_W + Math.max(0, orderedLevels.length - 1) * X_GAP;
+      const height = PAD * 2 + Math.max(1, maxRows) * NODE_H + Math.max(0, maxRows - 1) * Y_GAP;
+      return { width, height };
+    }
+
+    function computeBlocked(nodes) {
+      const byId = new Map(nodes.map((node) => [node.id, node]));
+      nodes.forEach((node) => {
+        node.blocked = false;
+      });
+      for (const node of nodes) {
+        if (node.status !== "false") continue;
+        const queue = node.dependents.slice();
+        const seen = new Set();
+        while (queue.length) {
+          const id = queue.shift();
+          if (seen.has(id)) continue;
+          seen.add(id);
+          const dependent = byId.get(id);
+          if (!dependent) continue;
+          dependent.blocked = true;
+          queue.push(...dependent.dependents);
+        }
+      }
+    }
+
+    function statusCounts(nodes) {
+      return nodes.reduce((acc, node) => {
+        acc[node.status] = (acc[node.status] || 0) + 1;
+        if (node.blocked && node.status !== "false") acc.blocked += 1;
+        if (node.isLeaf) acc.leaf += 1;
+        if (node.isFinal) acc.final += 1;
+        return acc;
+      }, { true: 0, false: 0, pending: 0, blocked: 0, leaf: 0, final: 0 });
+    }
+
+    function makeSvg(tag, attrs = {}) {
+      const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+      for (const [key, value] of Object.entries(attrs)) {
+        el.setAttribute(key, String(value));
+      }
+      return el;
+    }
+
+    function clear(el) {
+      while (el.firstChild) el.removeChild(el.firstChild);
+    }
+
+    function wrapText(text, maxChars, maxLines) {
+      const words = String(text || "").split(/\s+/).filter(Boolean);
+      const lines = [];
+      let line = "";
+      for (const word of words) {
+        const next = line ? line + " " + word : word;
+        if (next.length <= maxChars) {
+          line = next;
+        } else {
+          if (line) lines.push(line);
+          line = word.length > maxChars ? word.slice(0, maxChars - 1) + "…" : word;
+        }
+        if (lines.length === maxLines) break;
+      }
+      if (line && lines.length < maxLines) lines.push(line);
+      if (words.length && lines.length === maxLines) {
+        const combined = words.join(" ");
+        if (lines.join(" ").length < combined.length) {
+          lines[maxLines - 1] = lines[maxLines - 1].replace(/…?$/, "…");
+        }
+      }
+      return lines.length ? lines : [""];
+    }
+
+    function edgePath(from, to) {
+      const x1 = from.x + NODE_W;
+      const y1 = from.y + NODE_H / 2;
+      const x2 = to.x;
+      const y2 = to.y + NODE_H / 2;
+      const dx = Math.max(54, (x2 - x1) * 0.48);
+      return "M " + x1 + " " + y1 + " C " + (x1 + dx) + " " + y1 + ", " + (x2 - dx) + " " + y2 + ", " + x2 + " " + y2;
+    }
+
+    function edgeKey(from, to) {
+      return from + "\u0000" + to;
+    }
+
+    function collectSelectionFocus(startId) {
+      const byId = new Map(state.nodes.map((node) => [node.id, node]));
+      const selected = byId.get(startId);
+      const dependencies = new Set();
+      const dependents = new Set();
+      const dependencyEdges = new Set();
+      const dependentEdges = new Set();
+      const directDependencies = new Set((selected?.dependsOn || []).filter((id) => byId.has(id)));
+      const directDependents = new Set((selected?.dependents || []).filter((id) => byId.has(id)));
+      const directDependencyEdges = new Set(Array.from(directDependencies).map((id) => edgeKey(id, startId)));
+      const directDependentEdges = new Set(Array.from(directDependents).map((id) => edgeKey(startId, id)));
+
+      const dependencyQueue = [startId];
+      const dependencyVisited = new Set([startId]);
+      while (dependencyQueue.length) {
+        const id = dependencyQueue.shift();
+        const node = byId.get(id);
+        if (!node) continue;
+        for (const depId of node.dependsOn) {
+          if (!byId.has(depId)) continue;
+          dependencyEdges.add(edgeKey(depId, id));
+          if (dependencyVisited.has(depId)) continue;
+          dependencyVisited.add(depId);
+          if (depId !== startId) dependencies.add(depId);
+          dependencyQueue.push(depId);
+        }
+      }
+
+      const dependentQueue = [startId];
+      const dependentVisited = new Set([startId]);
+      while (dependentQueue.length) {
+        const id = dependentQueue.shift();
+        const node = byId.get(id);
+        if (!node) continue;
+        for (const dependentId of node.dependents) {
+          if (!byId.has(dependentId)) continue;
+          dependentEdges.add(edgeKey(id, dependentId));
+          if (dependentVisited.has(dependentId)) continue;
+          dependentVisited.add(dependentId);
+          if (dependentId !== startId) dependents.add(dependentId);
+          dependentQueue.push(dependentId);
+        }
+      }
+
+      const related = new Set([startId, ...dependencies, ...dependents]);
+      return {
+        selectedId: startId,
+        dependencies,
+        dependents,
+        directDependencies,
+        directDependents,
+        dependencyEdges,
+        dependentEdges,
+        directDependencyEdges,
+        directDependentEdges,
+        related
+      };
+    }
+
+    function selectionFocusSets() {
+      if (!state.selectedId) return null;
+      const selected = state.nodes.find((node) => node.id === state.selectedId);
+      if (!selected) return null;
+      return collectSelectionFocus(state.selectedId);
+    }
+
+    function classForNode(node, focus = null) {
+      const classes = ["node", "status-" + node.status];
+      if (node.isLeaf) classes.push("leaf");
+      if (node.isFinal) classes.push("final");
+      if (node.blocked) classes.push("blocked");
+      if (node.id === state.selectedId) classes.push("selected");
+      if (focus) {
+        const directDependency = focus.directDependencies.has(node.id);
+        const directDependent = focus.directDependents.has(node.id);
+        if (focus.dependencies.has(node.id)) classes.push("relation", "dependency", directDependency ? "direct" : "indirect");
+        if (focus.dependents.has(node.id)) classes.push("relation", "dependent", directDependent ? "direct" : "indirect");
+        if (!focus.related.has(node.id)) classes.push("unrelated");
+      }
+      return classes.join(" ");
+    }
+
+    function isBlockingEdge(from) {
+      return from.status === "false" || (from.blocked && from.status !== "false");
+    }
+
+    function classForEdge(edge, from, to, focus = null) {
+      const classes = ["edge"];
+      const blockedEdge = isBlockingEdge(from);
+      if (blockedEdge) classes.push("blocked");
+      if (focus) {
+        const key = edgeKey(edge.from, edge.to);
+        const dependencyEdge = focus.dependencyEdges.has(key);
+        const dependentEdge = focus.dependentEdges.has(key);
+        const directEdge = focus.directDependencyEdges.has(key) || focus.directDependentEdges.has(key);
+        if (dependencyEdge) classes.push("relation", "dependency", directEdge ? "direct" : "indirect");
+        if (dependentEdge) classes.push("relation", "dependent", directEdge ? "direct" : "indirect");
+        if (!dependencyEdge && !dependentEdge) classes.push("dim");
+      }
+      return classes.join(" ");
+    }
+
+    function classTokenSet(className) {
+      return new Set(className.split(/\s+/).filter(Boolean));
+    }
+
+    function focusRenderRank(className) {
+      const tokens = classTokenSet(className);
+      if (tokens.has("selected")) return 3;
+      if (tokens.has("direct")) return 2;
+      if (tokens.has("indirect")) return 1;
+      return 0;
+    }
+
+    function markerForEdgeClass(edgeClass, blockedEdge) {
+      if (blockedEdge) return "url(#arrowBlocked)";
+      const tokens = classTokenSet(edgeClass);
+      if (!tokens.has("relation")) return "url(#arrow)";
+      return tokens.has("direct") ? "url(#arrowRelation)" : "url(#arrowRelationIndirect)";
+    }
+
+    function normalizeStatus(value) {
+      return value === "true" || value === "false" ? value : "pending";
+    }
+
+    function statusSliderValue(status) {
+      if (status === "false") return 0;
+      if (status === "true") return 2;
+      return 1;
+    }
+
+    function setNodeStatus(id, nextStatus, toggle = true) {
+      const node = state.nodes.find((item) => item.id === id);
+      if (!node) return;
+      const normalized = normalizeStatus(nextStatus);
+      const status = toggle && node.status === normalized ? "pending" : normalized;
+      if (node.status === status) return;
+      node.status = status;
+      saveLocalStatuses();
+      renderGraph();
+    }
+
+    function statusFromSliderPointer(event, slider) {
+      const rect = slider.getBoundingClientRect();
+      const x = rect.width ? (event.clientX - rect.left) / rect.width : 0.5;
+      return x < 0.5 ? "false" : "true";
+    }
+
+    function stopStatusSliderEvent(event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    function attachStatusSliderEvents(slider, node) {
+      let activePointer = null;
+
+      function releasePointer(event) {
+        slider.classList.remove("pressed");
+        if (activePointer !== null && slider.releasePointerCapture) {
+          try {
+            slider.releasePointerCapture(activePointer);
+          } catch {
+            // Pointer capture may already be released if the SVG was re-rendered.
+          }
+        }
+        activePointer = null;
+        event.preventDefault();
+        event.stopPropagation();
+      }
+
+      slider.addEventListener("pointerdown", (event) => {
+        if (event.button !== undefined && event.button !== 0) return;
+        event.preventDefault();
+        event.stopPropagation();
+        activePointer = event.pointerId;
+        slider.classList.add("pressed");
+        if (slider.setPointerCapture) {
+          try {
+            slider.setPointerCapture(event.pointerId);
+          } catch {
+            // Some embedded SVG contexts do not support pointer capture.
+          }
+        }
+      });
+
+      slider.addEventListener("pointerup", (event) => {
+        if (activePointer === null) return;
+        const status = statusFromSliderPointer(event, slider);
+        releasePointer(event);
+        setNodeStatus(node.id, status, true);
+      });
+
+      slider.addEventListener("pointercancel", releasePointer);
+      slider.addEventListener("mousedown", stopStatusSliderEvent);
+      slider.addEventListener("mouseup", stopStatusSliderEvent);
+      slider.addEventListener("click", stopStatusSliderEvent);
+      slider.addEventListener("dblclick", stopStatusSliderEvent);
+      slider.addEventListener("contextmenu", stopStatusSliderEvent);
+
+      slider.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowLeft") {
+          stopStatusSliderEvent(event);
+          setNodeStatus(node.id, "false", true);
+        } else if (event.key === "ArrowRight") {
+          stopStatusSliderEvent(event);
+          setNodeStatus(node.id, "true", true);
+        } else if (event.key === "Enter" || event.key === " ") {
+          stopStatusSliderEvent(event);
+          setNodeStatus(node.id, "pending", false);
+        }
+      });
+    }
+
+    function makeStatusSlider(node) {
+      const slider = STATUS_SLIDER;
+      const status = normalizeStatus(node.status);
+      const knobX = status === "false" ? slider.leftX : status === "true" ? slider.rightX : slider.centerX;
+      const knobR = status === "pending" ? 4.5 : slider.knobR;
+      const group = makeSvg("g", {
+        class: "status-slider status-" + status,
+        transform: "translate(" + slider.x + " " + slider.y + ")",
+        tabindex: "0",
+        role: "slider",
+        "aria-label": node.title + " status",
+        "aria-valuemin": "0",
+        "aria-valuemax": "2",
+        "aria-valuenow": String(statusSliderValue(status)),
+        "aria-valuetext": status
+      });
+
+      group.appendChild(makeSvg("rect", {
+        class: "slider-track",
+        x: 0,
+        y: 0,
+        width: slider.width,
+        height: slider.height,
+        rx: slider.rx,
+        ry: slider.rx
+      }));
+      group.appendChild(makeSvg("circle", {
+        class: "slider-dot",
+        cx: slider.centerX,
+        cy: slider.cy,
+        r: 2.2
+      }));
+      group.appendChild(makeSvg("circle", {
+        class: "slider-knob",
+        cx: knobX,
+        cy: slider.cy,
+        r: knobR
+      }));
+
+      const falseLabel = makeSvg("text", { class: "slider-label false-label", x: slider.leftX, y: slider.cy + 0.5 });
+      falseLabel.textContent = "F";
+      group.appendChild(falseLabel);
+
+      const trueLabel = makeSvg("text", { class: "slider-label true-label", x: slider.rightX, y: slider.cy + 0.5 });
+      trueLabel.textContent = "T";
+      group.appendChild(trueLabel);
+
+      attachStatusSliderEvents(group, node);
+      return group;
+    }
+
+    function renderStats() {
+      const counts = statusCounts(state.nodes);
+      const items = [
+        ["Nodes", state.nodes.length],
+        ["Edges", state.edges.length],
+        ["False", counts.false],
+        ["Blocked", counts.blocked]
+      ];
+      clear(els.stats);
+      for (const [label, value] of items) {
+        const div = document.createElement("div");
+        div.className = "stat";
+        const b = document.createElement("b");
+        b.textContent = String(value);
+        const span = document.createElement("span");
+        span.textContent = label;
+        div.append(b, span);
+        els.stats.appendChild(div);
+      }
+    }
+
+    function renderSummary() {
+      if (!state.nodes.length) {
+        els.graphSummary.textContent = "No graph loaded";
+        return;
+      }
+      const counts = statusCounts(state.nodes);
+      const duplicatePart = state.duplicateLabels.length ? " · " + state.duplicateLabels.length + " duplicate labels" : "";
+      const unresolvedPart = state.unresolvedRefs.length ? " · " + state.unresolvedRefs.length + " unresolved theorem refs" : "";
+      els.graphSummary.textContent = state.nodes.length + " nodes · " + state.edges.length + " dependencies · " + counts.final + " final nodes" + duplicatePart + unresolvedPart;
+    }
+
+    function renderDetails() {
+      clear(els.details);
+      const node = state.nodes.find((item) => item.id === state.selectedId);
+      if (!node) {
+        const h = document.createElement("h2");
+        h.textContent = "No node selected";
+        const p = document.createElement("div");
+        p.className = "meta";
+        p.textContent = state.nodes.length ? "Select a node in the graph." : "Paste or open a TeX file to build the graph.";
+        els.details.append(h, p);
+        if (state.duplicateLabels.length || state.unresolvedRefs.length) {
+          const issue = document.createElement("div");
+          issue.className = "snippet";
+          issue.textContent = [
+            state.duplicateLabels.length ? "Duplicate labels:\n" + state.duplicateLabels.slice(0, 8).map((item) => item.label + " -> " + item.first + " / " + item.second).join("\n") : "",
+            state.unresolvedRefs.length ? "Unresolved theorem-like refs:\n" + state.unresolvedRefs.slice(0, 12).map((item) => item.from + " -> " + item.ref).join("\n") : ""
+          ].filter(Boolean).join("\n\n");
+          els.details.appendChild(issue);
+        }
+        return;
+      }
+
+      const h = document.createElement("h2");
+      h.textContent = node.title;
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.textContent = node.id + " · " + humanType(node.type) + " · line " + node.line;
+      const pills = document.createElement("div");
+      pills.className = "pill-row";
+      const status = document.createElement("span");
+      status.className = "pill status-" + node.status;
+      status.textContent = "status: " + node.status;
+      pills.appendChild(status);
+      if (node.isFinal) {
+        const final = document.createElement("span");
+        final.className = "pill";
+        final.textContent = "final";
+        pills.appendChild(final);
+      }
+      if (node.blocked && node.status !== "false") {
+        const blocked = document.createElement("span");
+        blocked.className = "pill status-blocked";
+        blocked.textContent = "blocked by false dependency";
+        pills.appendChild(blocked);
+      }
+
+      els.details.append(h, meta, pills);
+      appendLinkSection("Depends on", node.dependsOn);
+      appendLinkSection("Used by", node.dependents);
+      if (node.aliases.length > 1) {
+        const aliases = document.createElement("div");
+        aliases.className = "meta";
+        aliases.textContent = "Aliases: " + node.aliases.join(", ");
+        els.details.appendChild(aliases);
+      }
+      if (node.equationLabels?.length) {
+        const equationLabels = document.createElement("div");
+        equationLabels.className = "meta";
+        equationLabels.textContent = "Owned equation labels: " + node.equationLabels.join(", ");
+        els.details.appendChild(equationLabels);
+      }
+      const snippet = document.createElement("div");
+      snippet.className = "snippet";
+      snippet.textContent = node.snippet;
+      els.details.appendChild(snippet);
+    }
+
+    function appendLinkSection(title, ids) {
+      const heading = document.createElement("div");
+      heading.className = "meta";
+      heading.textContent = title + " (" + ids.length + ")";
+      els.details.appendChild(heading);
+      if (!ids.length) return;
+      const list = document.createElement("div");
+      list.className = "link-list";
+      for (const id of ids) {
+        const target = state.nodes.find((node) => node.id === id);
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = target ? target.title + " · " + target.id : id;
+        btn.addEventListener("click", () => selectNode(id, true));
+        list.appendChild(btn);
+      }
+      els.details.appendChild(list);
+    }
+
+    function clampZoom(value) {
+      return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Number(value) || 1));
+    }
+
+    function viewportSize() {
+      return {
+        width: Math.max(1, els.graphScroll.clientWidth || 800),
+        height: Math.max(1, els.graphScroll.clientHeight || 600)
+      };
+    }
+
+    function graphContentInsetLeft() {
+      if (!els.sidebar) return 0;
+      const graphRect = els.graphScroll.getBoundingClientRect();
+      const sidebarRect = els.sidebar.getBoundingClientRect();
+      const verticalOverlap = sidebarRect.bottom > graphRect.top && sidebarRect.top < graphRect.bottom;
+      if (!verticalOverlap || sidebarRect.width > graphRect.width * 0.8) return 0;
+      const overlap = Math.max(0, Math.min(sidebarRect.right, graphRect.right) - graphRect.left);
+      return Math.min(Math.round(overlap + 28), Math.max(0, graphRect.width - 160));
+    }
+
+    function updateGraphViewportBox() {
+      const size = viewportSize();
+      els.graphSvg.setAttribute("width", size.width);
+      els.graphSvg.setAttribute("height", size.height);
+      els.graphSvg.setAttribute("viewBox", "0 0 " + size.width + " " + size.height);
+    }
+
+    function formatZoomPercent(value = state.zoom) {
+      const pct = Math.max(0, clampZoom(value) * 100);
+      if (pct >= 10) return Math.round(pct) + "%";
+      if (pct >= 1) return (Math.round(pct * 10) / 10).toFixed(1) + "%";
+      return Math.max(0.1, Math.round(pct * 10) / 10) + "%";
+    }
+
+    function applyViewportTransform() {
+      state.transformRaf = 0;
+      updateGraphViewportBox();
+      els.graphZoom.setAttribute("transform", "translate(" + state.panX + " " + state.panY + ") scale(" + state.zoom + ")");
+      const sliderValue = Math.min(10000, Math.max(1, Math.round(state.zoom * 100)));
+      els.zoomRange.value = String(sliderValue);
+      els.zoomRange.title = formatZoomPercent();
+    }
+
+    function scheduleViewportTransform() {
+      if (state.transformRaf) return;
+      state.transformRaf = requestAnimationFrame(applyViewportTransform);
+    }
+
+    function setViewport(nextZoom, nextPanX, nextPanY) {
+      state.zoom = clampZoom(nextZoom);
+      state.panX = Number.isFinite(nextPanX) ? nextPanX : state.panX;
+      state.panY = Number.isFinite(nextPanY) ? nextPanY : state.panY;
+      scheduleViewportTransform();
+    }
+
+    function panBy(dx = 0, dy = 0) {
+      state.panX += Number(dx) || 0;
+      state.panY += Number(dy) || 0;
+      scheduleViewportTransform();
+    }
+
+    function viewportPointFromClient(clientX, clientY) {
+      const rect = els.graphScroll.getBoundingClientRect();
+      return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+      };
+    }
+
+    function zoomAroundViewportPoint(viewportX, viewportY, nextZoom) {
+      const currentZoom = Math.max(state.zoom || 1, 0.0001);
+      const normalizedZoom = clampZoom(nextZoom);
+      state.panX = viewportX - (viewportX - state.panX) * (normalizedZoom / currentZoom);
+      state.panY = viewportY - (viewportY - state.panY) * (normalizedZoom / currentZoom);
+      state.zoom = normalizedZoom;
+      scheduleViewportTransform();
+    }
+
+    function centerNodeInViewport(node) {
+      const size = viewportSize();
+      const insetLeft = graphContentInsetLeft();
+      const usableWidth = Math.max(160, size.width - insetLeft);
+      setViewport(
+        state.zoom,
+        insetLeft + usableWidth / 2 - (node.x + NODE_W / 2) * state.zoom,
+        size.height / 2 - (node.y + NODE_H / 2) * state.zoom
+      );
+    }
+
+    function renderGraph() {
+      clear(els.edgesLayer);
+      clear(els.nodesLayer);
+      computeBlocked(state.nodes);
+      const size = topoLayout(state.nodes, state.edges);
+      state.graphWidth = size.width;
+      state.graphHeight = size.height;
+      updateGraphViewportBox();
+      applyViewportTransform();
+      els.emptyState.style.display = state.nodes.length ? "none" : "grid";
+
+      const byId = new Map(state.nodes.map((node) => [node.id, node]));
+      const focus = selectionFocusSets();
+      const renderedEdges = state.edges
+        .map((edge) => {
+          const from = byId.get(edge.from);
+          const to = byId.get(edge.to);
+          if (!from || !to) return null;
+          const edgeClass = classForEdge(edge, from, to, focus);
+          return {
+            from,
+            to,
+            edgeClass,
+            blockedEdge: isBlockingEdge(from)
+          };
+        })
+        .filter(Boolean)
+        .sort((a, b) => focusRenderRank(a.edgeClass) - focusRenderRank(b.edgeClass));
+
+      for (const item of renderedEdges) {
+        const { from, to, edgeClass, blockedEdge } = item;
+        const path = makeSvg("path", {
+          class: edgeClass,
+          d: edgePath(from, to),
+          "marker-end": markerForEdgeClass(edgeClass, blockedEdge)
+        });
+        els.edgesLayer.appendChild(path);
+      }
+
+      const renderedNodes = state.nodes
+        .map((node, index) => ({
+          node,
+          index,
+          nodeClass: classForNode(node, focus)
+        }))
+        .sort((a, b) => {
+          const rankDelta = focusRenderRank(a.nodeClass) - focusRenderRank(b.nodeClass);
+          return rankDelta || a.index - b.index;
+        });
+
+      for (const item of renderedNodes) {
+        const { node, nodeClass } = item;
+        const g = makeSvg("g", {
+          class: nodeClass,
+          transform: "translate(" + node.x + " " + node.y + ")",
+          "data-node-id": node.id,
+          tabindex: "0",
+          role: "button",
+          "aria-label": node.title + ", " + node.status
+        });
+
+        const rect = makeSvg("rect", {
+          class: "body",
+          x: 0,
+          y: 0,
+          width: NODE_W,
+          height: NODE_H,
+          rx: 25,
+          ry: 25
+        });
+        g.appendChild(rect);
+
+        g.appendChild(makeSvg("rect", {
+          class: "selection-frame",
+          x: 0,
+          y: 0,
+          width: NODE_W,
+          height: NODE_H,
+          rx: 25,
+          ry: 25
+        }));
+
+        const typeText = makeSvg("text", { class: "type", x: 16, y: 23 });
+        typeText.textContent = humanType(node.type);
+        g.appendChild(typeText);
+
+        if (node.isFinal) {
+          g.appendChild(makeSvg("path", { class: "final-mark", d: "M " + (NODE_W - 43) + " 46 L " + (NODE_W - 18) + " 46 L " + (NODE_W - 18) + " 70 L " + (NODE_W - 30) + " 63 L " + (NODE_W - 43) + " 70 Z" }));
+        }
+
+        g.appendChild(makeStatusSlider(node));
+
+        const titleLines = wrapText(node.title, 32, 3);
+        titleLines.forEach((line, i) => {
+          const text = makeSvg("text", { class: "title", x: 16, y: 50 + i * 16 });
+          text.textContent = line;
+          g.appendChild(text);
+        });
+
+        const idLines = wrapText(node.id, 40, 2);
+        idLines.forEach((line, i) => {
+          const text = makeSvg("text", { class: "id", x: 16, y: 101 + i * 13 });
+          text.textContent = line;
+          g.appendChild(text);
+        });
+
+        const counts = makeSvg("text", { class: "count", x: NODE_W - 16, y: NODE_H - 15, "text-anchor": "end" });
+        counts.textContent = node.dependsOn.length + " in · " + node.dependents.length + " out";
+        g.appendChild(counts);
+
+        g.addEventListener("click", (event) => {
+          event.stopPropagation();
+          toggleNodeSelection(node.id);
+        });
+        g.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            selectNode(node.id, false);
+          }
+        });
+        g.addEventListener("contextmenu", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+        });
+        els.nodesLayer.appendChild(g);
+      }
+
+      applySearch();
+      renderStats();
+      renderSummary();
+      renderDetails();
+    }
+
+    function selectNode(id, scrollIntoView) {
+      state.selectedId = id;
+      const node = state.nodes.find((item) => item.id === id);
+      renderGraph();
+      if (scrollIntoView && node) {
+        centerNodeInViewport(node);
+      }
+    }
+
+    function toggleNodeSelection(id) {
+      if (state.selectedId === id) {
+        clearSelection();
+        return;
+      }
+      selectNode(id, false);
+    }
+
+    function clearSelection() {
+      if (!state.selectedId) return;
+      state.selectedId = null;
+      renderGraph();
+    }
+
+    function clampMenuCoord(value, size, margin = MENU_VIEWPORT_EDGE_MARGIN) {
+      const max = Math.max(margin, window.innerWidth - size - margin);
+      return Math.max(margin, Math.min(max, value));
+    }
+
+    function clampMenuTop(value, size, margin = MENU_VIEWPORT_EDGE_MARGIN) {
+      const max = Math.max(margin, window.innerHeight - size - margin);
+      return Math.max(margin, Math.min(max, value));
+    }
+
+    function openMenuAt(menu, x, y) {
+      menu.style.left = x + "px";
+      menu.style.top = y + "px";
+      menu.hidden = false;
+      menu.classList.add("visible");
+      const rect = menu.getBoundingClientRect();
+      menu.style.left = Math.round(clampMenuCoord(x, rect.width)) + "px";
+      menu.style.top = Math.round(clampMenuTop(y, rect.height)) + "px";
+    }
+
+    function openContextMenu(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      els.appActionGroup.hidden = false;
+      if (els.contextSearchInput) els.contextSearchInput.value = els.searchInput.value;
+      delete els.contextMenu.dataset.nodeId;
+      openMenuAt(els.contextMenu, event.clientX, event.clientY);
+    }
+
+    function closeContextMenu() {
+      els.contextMenu.classList.remove("visible");
+      els.contextMenu.hidden = true;
+      delete els.contextMenu.dataset.nodeId;
+    }
+
+    function getPriorStatuses() {
+      const prior = {};
+      for (const node of state.nodes) prior[node.id] = node.status;
+      const stored = loadLocalStatuses();
+      return { ...stored, ...prior };
+    }
+
+    function runParse(showMessage = true) {
+      const tex = els.texInput.value;
+      const priorStatuses = getPriorStatuses();
+      const parsed = parseTex(tex, priorStatuses);
+      state.tex = tex;
+      state.sourceHash = hashString(tex);
+      state.nodes = parsed.nodes;
+      state.edges = parsed.edges;
+      state.duplicateLabels = parsed.duplicateLabels;
+      state.unresolvedRefs = parsed.unresolvedRefs;
+      state.selectedId = state.nodes[0]?.id || null;
+      els.sourceName.textContent = state.sourceName;
+      saveLocalStatuses();
+      renderGraph();
+      fitGraph(false);
+      if (showMessage) showToast("Updated " + state.nodes.length + " nodes and " + state.edges.length + " dependencies");
+    }
+
+    function scheduleAutoParse() {
+      clearTimeout(scheduleAutoParse.timer);
+      scheduleAutoParse.timer = setTimeout(() => runParse(false), 650);
+    }
+
+    function applySearch() {
+      const query = els.searchInput.value.trim().toLowerCase();
+      const nodeEls = els.nodesLayer.querySelectorAll(".node");
+      if (!query) {
+        nodeEls.forEach((nodeEl) => nodeEl.classList.remove("search-dim"));
+        return;
+      }
+      for (const nodeEl of nodeEls) {
+        const node = state.nodes.find((item) => item.id === nodeEl.dataset.nodeId);
+        const haystack = node ? [node.title, node.id, node.type, (node.aliases || []).join(" "), (node.equationLabels || []).join(" ")].join(" ").toLowerCase() : "";
+        nodeEl.classList.toggle("search-dim", !haystack.includes(query));
+      }
+    }
+
+    function fitGraph(showMessage = true) {
+      if (!state.nodes.length) return;
+      const maxX = Math.max(...state.nodes.map((node) => node.x + NODE_W)) + PAD;
+      const maxY = Math.max(...state.nodes.map((node) => node.y + NODE_H)) + PAD;
+      const size = viewportSize();
+      const insetLeft = graphContentInsetLeft();
+      const usableWidth = Math.max(160, size.width - insetLeft - 24);
+      const zX = usableWidth / maxX;
+      const zY = (size.height - 24) / maxY;
+      const zoom = clampZoom(Math.min(zX, zY, 1));
+      setViewport(
+        zoom,
+        insetLeft + (usableWidth - maxX * zoom) / 2,
+        (size.height - maxY * zoom) / 2
+      );
+      if (showMessage) showToast("Graph fitted");
+    }
+
+    function setZoom(value) {
+      const size = viewportSize();
+      zoomAroundViewportPoint(size.width / 2, size.height / 2, value);
+    }
+
+    function hashString(text) {
+      let hash = 2166136261;
+      for (let i = 0; i < text.length; i += 1) {
+        hash ^= text.charCodeAt(i);
+        hash = Math.imul(hash, 16777619);
+      }
+      return (hash >>> 0).toString(16);
+    }
+
+    function localStatusKey() {
+      return "tex-proof-map:statuses:" + (state.sourceHash || "unsaved");
+    }
+
+    function saveLocalStatuses() {
+      if (!state.sourceHash && state.tex) state.sourceHash = hashString(state.tex);
+      if (!state.sourceHash) return;
+      const statuses = {};
+      for (const node of state.nodes) statuses[node.id] = node.status;
+      try {
+        localStorage.setItem(localStatusKey(), JSON.stringify(statuses));
+      } catch {
+        // localStorage can be unavailable for some file:// privacy settings.
+      }
+    }
+
+    function loadLocalStatuses() {
+      if (!state.sourceHash && els.texInput.value) {
+        state.sourceHash = hashString(els.texInput.value);
+      }
+      if (!state.sourceHash) return {};
+      try {
+        return JSON.parse(localStorage.getItem(localStatusKey()) || "{}") || {};
+      } catch {
+        return {};
+      }
+    }
+
+    function exportData() {
+      const statusById = {};
+      for (const node of state.nodes) statusById[node.id] = node.status;
+      return {
+        version: 1,
+        kind: "tex-proof-map",
+        exportedAt: new Date().toISOString(),
+        sourceName: state.sourceName,
+        sourceHash: state.sourceHash,
+        tex: els.texInput.value,
+        viewport: {
+          panX: state.panX,
+          panY: state.panY,
+          zoom: state.zoom
+        },
+        statusById,
+        nodes: state.nodes,
+        edges: state.edges,
+        duplicateLabels: state.duplicateLabels,
+        unresolvedRefs: state.unresolvedRefs
+      };
+    }
+
+    function safeJson(data) {
+      return JSON.stringify(data, null, 2).replace(/</g, "\\u003c");
+    }
+
+    function download(filename, mime, text) {
+      const blob = new Blob([text], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function baseName(name) {
+      return (name || "proof-map").replace(/\.[^.]+$/, "").replace(/[^\w.-]+/g, "_") || "proof-map";
+    }
+
+    function exportHtml() {
+      if (!state.nodes.length) runParse();
+      const data = exportData();
+      els.embeddedData.textContent = safeJson(data);
+      const html = "<!doctype html>\n" + document.documentElement.outerHTML;
+      download(baseName(state.sourceName) + ".proofmap.html", "text/html;charset=utf-8", html);
+      els.embeddedData.textContent = "null";
+      showToast("Exported editable HTML map");
+    }
+
+    function exportJson() {
+      if (!state.nodes.length) runParse();
+      download(baseName(state.sourceName) + ".proofmap.json", "application/json;charset=utf-8", safeJson(exportData()));
+      showToast("Exported JSON map");
+    }
+
+    function loadMapData(data) {
+      if (!data || data.kind !== "tex-proof-map") {
+        showToast("Map data not recognized");
+        return;
+      }
+      state.sourceName = data.sourceName || "imported.proofmap";
+      state.sourceHash = data.sourceHash || hashString(data.tex || "");
+      state.tex = data.tex || "";
+      els.texInput.value = state.tex;
+      els.sourceName.textContent = state.sourceName;
+      if (Array.isArray(data.nodes) && Array.isArray(data.edges)) {
+        const statusById = data.statusById || {};
+        state.nodes = data.nodes.map((node) => ({
+          ...node,
+          aliases: node.aliases || [],
+          equationLabels: node.equationLabels || [],
+          ownedLabels: node.ownedLabels || node.aliases || [],
+          status: statusById[node.id] || node.status || "pending",
+          dependents: Array.isArray(node.dependents) ? node.dependents : []
+        }));
+        state.edges = data.edges;
+        rebuildDependents();
+        state.duplicateLabels = data.duplicateLabels || [];
+        state.unresolvedRefs = data.unresolvedRefs || [];
+        state.selectedId = state.nodes[0]?.id || null;
+        if (data.viewport) {
+          state.zoom = clampZoom(data.viewport.zoom);
+          state.panX = Number.isFinite(data.viewport.panX) ? data.viewport.panX : 0;
+          state.panY = Number.isFinite(data.viewport.panY) ? data.viewport.panY : 0;
+        }
+        saveLocalStatuses();
+        renderGraph();
+        if (!data.viewport) fitGraph(false);
+      } else {
+        runParse();
+      }
+      showToast("Loaded map");
+    }
+
+    function rebuildDependents() {
+      const byId = new Map(state.nodes.map((node) => [node.id, node]));
+      state.nodes.forEach((node) => {
+        node.dependents = [];
+      });
+      for (const edge of state.edges) {
+        const from = byId.get(edge.from);
+        if (from && !from.dependents.includes(edge.to)) from.dependents.push(edge.to);
+      }
+      for (const node of state.nodes) {
+        node.dependsOn = state.edges.filter((edge) => edge.to === node.id).map((edge) => edge.from);
+        node.isLeaf = node.dependsOn.length === 0;
+        node.isFinal = node.dependents.length === 0;
+      }
+    }
+
+    function readFile(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = () => reject(reader.error);
+        reader.readAsText(file);
+      });
+    }
+
+    function extractMapJsonFromHtml(text) {
+      const doc = new DOMParser().parseFromString(text, "text/html");
+      const script = doc.getElementById("embedded-map-data");
+      if (!script) return null;
+      const raw = script.textContent.trim();
+      return raw && raw !== "null" ? JSON.parse(raw) : null;
+    }
+
+    function isEditableTarget(target) {
+      if (!target || target === document.body) return false;
+      const tag = target.tagName ? target.tagName.toLowerCase() : "";
+      return tag === "input" || tag === "textarea" || tag === "select" || tag === "button" || tag === "a" || target.isContentEditable;
+    }
+
+    function handleViewportWheel(event) {
+      if (!els.graphScroll.contains(event.target)) return;
+      event.preventDefault();
+      closeContextMenu();
+
+      if (event.ctrlKey || event.metaKey) {
+        const factor = Math.abs(event.deltaY) < 30
+          ? Math.pow(0.995, event.deltaY)
+          : event.deltaY < 0 ? 1.1 : 1 / 1.1;
+        const point = viewportPointFromClient(event.clientX, event.clientY);
+        zoomAroundViewportPoint(point.x, point.y, state.zoom * factor);
+        return;
+      }
+
+      panBy(-event.deltaX, -event.deltaY);
+    }
+
+    function syncSpacePanCursor() {
+      els.graphScroll.classList.toggle("space-pan", state.spaceDown && !state.panning);
+      els.graphScroll.classList.toggle("panning", state.panning);
+    }
+
+    function handleSpaceKeyDown(event) {
+      if (event.code !== "Space" || event.repeat || isEditableTarget(event.target)) return;
+      state.spaceDown = true;
+      event.preventDefault();
+      syncSpacePanCursor();
+    }
+
+    function handleSpaceKeyUp(event) {
+      if (event.code !== "Space") return;
+      state.spaceDown = false;
+      syncSpacePanCursor();
+    }
+
+    function handleEscapeKeyDown(event) {
+      if (event.key !== "Escape") return;
+      const hadSelection = Boolean(state.selectedId);
+      closeContextMenu();
+      clearSelection();
+      if (hadSelection) event.preventDefault();
+    }
+
+    function beginMousePan(event) {
+      if (event.button !== 0 || !state.spaceDown) return;
+      event.preventDefault();
+      closeContextMenu();
+      const startX = event.clientX;
+      const startY = event.clientY;
+      const startPanX = state.panX;
+      const startPanY = state.panY;
+      state.panning = true;
+      syncSpacePanCursor();
+
+      function move(moveEvent) {
+        moveEvent.preventDefault();
+        setViewport(
+          state.zoom,
+          startPanX + moveEvent.clientX - startX,
+          startPanY + moveEvent.clientY - startY
+        );
+      }
+
+      function end() {
+        state.panning = false;
+        syncSpacePanCursor();
+        document.removeEventListener("mousemove", move, true);
+        document.removeEventListener("mouseup", end, true);
+      }
+
+      document.addEventListener("mousemove", move, true);
+      document.addEventListener("mouseup", end, true);
+    }
+
+    function showToast(message) {
+      els.toast.textContent = message;
+      els.toast.classList.add("show");
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => els.toast.classList.remove("show"), 1900);
+    }
+
+    function bootEmbeddedMap() {
+      const raw = els.embeddedData.textContent.trim();
+      if (!raw || raw === "null") {
+        renderGraph();
+        return;
+      }
+      try {
+        loadMapData(JSON.parse(raw));
+      } catch {
+        renderGraph();
+        showToast("Embedded map data could not be loaded");
+      }
+    }
+
+    function runContextMenuAction(action) {
+      if (action === "open-tex") {
+        closeContextMenu();
+        els.texFile.click();
+        return;
+      }
+      if (action === "open-map") {
+        closeContextMenu();
+        els.mapFile.click();
+        return;
+      }
+      if (action === "export-html") {
+        closeContextMenu();
+        exportHtml();
+      }
+    }
+
+    els.openTexBtn.addEventListener("click", () => els.texFile.click());
+    els.openMapBtn.addEventListener("click", () => els.mapFile.click());
+    els.exportHtmlBtn.addEventListener("click", exportHtml);
+    els.exportJsonBtn.addEventListener("click", exportJson);
+    els.fitBtn.addEventListener("click", () => fitGraph(true));
+    els.searchInput.addEventListener("input", applySearch);
+    els.texInput.addEventListener("input", scheduleAutoParse);
+    els.zoomRange.addEventListener("input", () => setZoom(Number(els.zoomRange.value) / 100));
+    els.zoomOutBtn.addEventListener("click", () => setZoom(state.zoom / 1.1));
+    els.zoomInBtn.addEventListener("click", () => setZoom(state.zoom * 1.1));
+    els.graphScroll.addEventListener("wheel", handleViewportWheel, { passive: false });
+    els.graphScroll.addEventListener("mousedown", beginMousePan);
+    els.graphScroll.addEventListener("click", (event) => {
+      if (event.target === els.graphScroll || event.target === els.graphSvg) clearSelection();
+    });
+    els.graphScroll.addEventListener("contextmenu", (event) => openContextMenu(event));
+
+    els.texFile.addEventListener("change", async () => {
+      const file = els.texFile.files?.[0];
+      if (!file) return;
+      const text = await readFile(file);
+      state.sourceName = file.name;
+      state.sourceHash = "";
+      els.texInput.value = text;
+      els.sourceName.textContent = file.name;
+      runParse();
+      els.texFile.value = "";
+    });
+
+    els.mapFile.addEventListener("change", async () => {
+      const file = els.mapFile.files?.[0];
+      if (!file) return;
+      const text = await readFile(file);
+      try {
+        const data = file.name.endsWith(".html") ? extractMapJsonFromHtml(text) : JSON.parse(text);
+        if (data) loadMapData(data);
+        else showToast("No embedded map data found");
+      } catch {
+        showToast("Could not load map file");
+      }
+      els.mapFile.value = "";
+    });
+
+    els.contextMenu.addEventListener("click", (event) => {
+      const button = event.target.closest("button");
+      if (!button) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if (button.dataset.action) runContextMenuAction(button.dataset.action);
+    });
+
+    els.contextMenu.addEventListener("contextmenu", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+    });
+
+    document.addEventListener("click", (event) => {
+      if (!els.contextMenu.hidden && !els.contextMenu.contains(event.target)) closeContextMenu();
+    });
+
+    els.contextSearchInput.addEventListener("input", () => {
+      els.searchInput.value = els.contextSearchInput.value;
+      applySearch();
+    });
+
+    els.contextSearchInput.addEventListener("click", (event) => event.stopPropagation());
+
+    document.addEventListener("keydown", (event) => {
+      handleEscapeKeyDown(event);
+      handleSpaceKeyDown(event);
+    });
+    document.addEventListener("keyup", handleSpaceKeyUp);
+
+    window.addEventListener("resize", () => {
+      if (state.nodes.length) renderGraph();
+      else applyViewportTransform();
+    });
+
+    closeContextMenu();
+    bootEmbeddedMap();
+  </script>
+</body>
+</html>
