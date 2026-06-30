@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Proogh</title>
   <style>
     :root {
@@ -20,12 +20,12 @@
       --accent-soft: rgba(10, 132, 255, 0.18);
       --warn: #ffb020;
       --warn-soft: rgba(255, 176, 32, 0.18);
-      --true-rgb: 48, 209, 88;
+      --true-rgb: 38, 208, 124;
       --true: rgb(var(--true-rgb));
-      --true-soft: rgba(var(--true-rgb), 0.16);
-      --false-rgb: 255, 69, 58;
+      --true-soft: rgba(var(--true-rgb), 0.17);
+      --false-rgb: 255, 92, 108;
       --false: rgb(var(--false-rgb));
-      --false-soft: rgba(var(--false-rgb), 0.18);
+      --false-soft: rgba(var(--false-rgb), 0.19);
       --blocked: #b8bfcc;
       --blocked-soft: #30313a;
       --blocked-hatch: #4c4d59;
@@ -62,14 +62,14 @@
       --status-pending-stroke: var(--firefox-menu-border);
       --status-pending-active-fill: var(--firefox-menu-hover-bg);
       --status-pending-separator: var(--firefox-menu-separator);
-      --status-true-fill: #1e2d27;
-      --status-true-stroke: rgba(var(--true-rgb), 0.72);
-      --status-true-active-fill: rgba(var(--true-rgb), 0.28);
-      --status-true-separator: rgba(var(--true-rgb), 0.36);
-      --status-false-fill: #452326;
-      --status-false-stroke: var(--false);
-      --status-false-active-fill: rgba(var(--false-rgb), 0.28);
-      --status-false-separator: rgba(var(--false-rgb), 0.38);
+      --status-true-fill: #102d23;
+      --status-true-stroke: rgba(var(--true-rgb), 0.84);
+      --status-true-active-fill: rgba(var(--true-rgb), 0.27);
+      --status-true-separator: rgba(var(--true-rgb), 0.38);
+      --status-false-fill: #3a1f29;
+      --status-false-stroke: rgba(var(--false-rgb), 0.92);
+      --status-false-active-fill: rgba(var(--false-rgb), 0.27);
+      --status-false-separator: rgba(var(--false-rgb), 0.40);
       --ui-radius: 25px;
       --menu-shell-radius: var(--ui-radius);
       --menu-shell-padding: 8px;
@@ -89,6 +89,9 @@
       --danger-bg: var(--false-soft);
       --danger-hover-bg: rgba(var(--false-rgb), 0.26);
       --danger-active-bg: rgba(var(--false-rgb), 0.34);
+      --safe-area-left: env(safe-area-inset-left, 0px);
+      --safe-area-right: env(safe-area-inset-right, 0px);
+      --safe-area-bottom: env(safe-area-inset-bottom, 0px);
     }
 
     * {
@@ -102,6 +105,7 @@
       margin: 0;
       width: 100vw;
       height: 100vh;
+      height: 100dvh;
       min-height: 100%;
       overflow: hidden;
       background: var(--bg);
@@ -164,6 +168,7 @@
 
     .app {
       height: 100vh;
+      height: 100dvh;
       display: grid;
       grid-template-rows: minmax(0, 1fr);
     }
@@ -414,7 +419,7 @@
     }
 
     .pill.status-true {
-      border-color: rgba(22, 128, 74, 0.28);
+      border-color: rgba(var(--true-rgb), 0.36);
       background: var(--true-soft);
       color: var(--true);
     }
@@ -564,6 +569,34 @@
       color: var(--firefox-menu-text);
       font-size: 18px;
       margin-bottom: 5px;
+    }
+
+    .notice {
+      position: fixed;
+      left: 50%;
+      bottom: calc(96px + var(--safe-area-bottom));
+      z-index: 99998;
+      width: min(420px, calc(100vw - var(--safe-area-left) - var(--safe-area-right) - 24px));
+      padding: 10px 14px;
+      border: 1px solid var(--firefox-menu-border);
+      border-radius: var(--menu-shell-radius);
+      background: var(--firefox-menu-bg);
+      box-shadow: var(--firefox-menu-shadow);
+      color: var(--firefox-menu-text);
+      font-weight: var(--bold_text);
+      line-height: 1.35;
+      text-align: center;
+      opacity: 0;
+      transform: translate(-50%, 8px);
+      transition:
+        opacity 160ms ease,
+        transform 160ms ease;
+      pointer-events: none;
+    }
+
+    .notice.visible {
+      opacity: 1;
+      transform: translate(-50%, 0);
     }
 
     .edge {
@@ -995,6 +1028,42 @@
         grid-template-rows: minmax(0, 1fr);
       }
     }
+
+    @media (max-width: 520px) {
+      .menu {
+        max-width: calc(100vw - var(--safe-area-left) - var(--safe-area-right) - 12px);
+        padding: 6px;
+      }
+
+      .menu.visible {
+        display: flex;
+        width: calc(100vw - var(--safe-area-left) - var(--safe-area-right) - 12px);
+      }
+
+      #appActionGroup {
+        width: 100%;
+      }
+
+      .ctx-item {
+        flex: 1 1 0;
+        min-width: 0;
+        padding: 0 6px;
+      }
+
+      .ctx-sep {
+        margin: 0 3px;
+      }
+    }
+
+    @media (hover: none) {
+      button:hover,
+      button.primary:hover,
+      .stat:hover,
+      .link-list button:hover,
+      .ctx-item:hover {
+        transform: none;
+      }
+    }
   </style>
 </head>
 <body data-theme="dark">
@@ -1078,6 +1147,7 @@ Lemma~\ref{lem:routeC-separated-height}
     </main>
   </div>
 
+  <div id="notice" class="notice" hidden role="status" aria-live="polite"></div>
   <div id="contextMenu" class="menu" hidden>
     <div id="appActionGroup">
       <button class="ctx-item" type="button" data-action="open-tex"><span class="ctx-label">Upload TeX</span><span class="ctx-shortcut"></span></button>
@@ -1113,8 +1183,9 @@ Lemma~\ref{lem:routeC-separated-height}
     const UI_RADIUS = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--ui-radius")) || 25;
     const BOARD_ITEM_SIZE = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--menu-item-height")) || 32;
     const BOARD_SHELL_PADDING = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--menu-shell-padding")) || 8;
-    const NODE_W = BOARD_ITEM_SIZE * 12;
+    const GOLDEN_RATIO = (1 + Math.sqrt(5)) / 2;
     const NODE_H = BOARD_ITEM_SIZE * 5;
+    const NODE_W = NODE_H * GOLDEN_RATIO;
     const X_GAP = BOARD_ITEM_SIZE * 5;
     const Y_GAP = BOARD_ITEM_SIZE * 2;
     const PAD = BOARD_ITEM_SIZE * 2;
@@ -1123,12 +1194,17 @@ Lemma~\ref{lem:routeC-separated-height}
     const ZOOM_MIN = 0.01;
     const ZOOM_MAX = 100;
     const MENU_VIEWPORT_EDGE_MARGIN = 8;
-    const PINNED_CONTEXT_MENU_BOTTOM_RATIO = 0.05;
+    const PINNED_CONTEXT_MENU_EDGE_OFFSET = 25;
+    const TOUCH_GESTURE_MOVE_THRESHOLD = 5;
+    const TOUCH_CLICK_SUPPRESS_MS = 320;
     const GRAPH_DATA_KIND = "tex-proof-graph";
     const LEGACY_MAP_DATA_KIND = "tex-proof-map";
     const SMOOTH_SLIDE_DURATION_MS =
       Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--smooth-slide-duration")) || 220;
     const MENU_ITEM_FONT_SIZE = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--menu-item-font-size")) || 13;
+    const NODE_TEXT_WIDTH = NODE_W - BOARD_SHELL_PADDING * 4;
+    const NODE_TITLE_MAX_CHARS = Math.max(18, Math.floor(NODE_TEXT_WIDTH / (MENU_ITEM_FONT_SIZE * 0.58)));
+    const NODE_ID_MAX_CHARS = Math.max(18, Math.floor(NODE_TEXT_WIDTH / (MENU_ITEM_FONT_SIZE * 0.62)));
     const BOARDFISH_ACTION_ICON_SIZE = 20;
     const STATUS_ACTION_SCALE = MENU_ITEM_FONT_SIZE / BOARDFISH_ACTION_ICON_SIZE;
     const STATUS_ACTION_SIZE = Math.round(BOARD_ITEM_SIZE * STATUS_ACTION_SCALE);
@@ -1193,6 +1269,9 @@ Lemma~\ref{lem:routeC-separated-height}
       edges: [],
       selectedId: null,
       saveTargetName: "",
+      saveFileHandle: null,
+      saveFileHandleRestore: null,
+      saveHandleGeneration: 0,
       zoom: 1,
       panX: 0,
       panY: 0,
@@ -1203,6 +1282,10 @@ Lemma~\ref{lem:routeC-separated-height}
       copyJiggleMotions: new Map(),
       statusRenderTimer: 0,
       statusClickSuppress: null,
+      noticeTimer: 0,
+      viewportPointers: new Map(),
+      touchGesture: null,
+      viewportClickSuppressUntil: 0,
       spaceDown: false,
       panning: false,
       duplicateLabels: [],
@@ -1229,6 +1312,7 @@ Lemma~\ref{lem:routeC-separated-height}
       edgesLayer: document.getElementById("edgesLayer"),
       nodesLayer: document.getElementById("nodesLayer"),
       emptyState: document.getElementById("emptyState"),
+      notice: document.getElementById("notice"),
       contextMenu: document.getElementById("contextMenu"),
       appActionGroup: document.getElementById("appActionGroup"),
       zoomRange: document.getElementById("zoomRange"),
@@ -1747,30 +1831,41 @@ Lemma~\ref{lem:routeC-separated-height}
         }
       }
 
-      const columns = new Map();
+      const rows = new Map();
       const rawLevels = nodes.map((node) => (componentStart.get(componentById.get(node.id)) || 0) + (memberLevels.get(node.id) || 0));
       const compactLevel = new Map(Array.from(new Set(rawLevels)).sort((a, b) => a - b).map((level, index) => [level, index]));
       for (const node of nodes) {
         const rawLevel = (componentStart.get(componentById.get(node.id)) || 0) + (memberLevels.get(node.id) || 0);
         const nodeLevel = compactLevel.get(rawLevel) || 0;
-        if (!columns.has(nodeLevel)) columns.set(nodeLevel, []);
-        columns.get(nodeLevel).push(node);
+        if (!rows.has(nodeLevel)) rows.set(nodeLevel, []);
+        rows.get(nodeLevel).push(node);
       }
 
-      const orderedLevels = Array.from(columns.keys()).sort((a, b) => a - b);
-      let maxRows = 0;
+      const orderedLevels = Array.from(rows.keys()).sort((a, b) => a - b);
+      let maxColumns = 0;
       for (const lev of orderedLevels) {
-        const column = columns.get(lev);
-        column.sort((a, b) => a.line - b.line || a.title.localeCompare(b.title));
-        maxRows = Math.max(maxRows, column.length);
-        column.forEach((node, row) => {
-          node.x = PAD + lev * (NODE_W + X_GAP);
-          node.y = PAD + row * (NODE_H + Y_GAP);
+        const rowNodes = rows.get(lev);
+        rowNodes.sort((a, b) => a.line - b.line || a.title.localeCompare(b.title));
+        maxColumns = Math.max(maxColumns, rowNodes.length);
+      }
+
+      const siblingGap = 40;
+      const levelGap = X_GAP;
+      const columnStep = NODE_W + siblingGap;
+      const graphStackWidth = Math.max(1, maxColumns) * NODE_W + Math.max(0, maxColumns - 1) * siblingGap;
+      const lastLevelIndex = Math.max(0, orderedLevels.length - 1);
+      for (const lev of orderedLevels) {
+        const rowNodes = rows.get(lev);
+        const rowStackWidth = rowNodes.length * NODE_W + Math.max(0, rowNodes.length - 1) * siblingGap;
+        const rowOffsetX = Math.max(0, (graphStackWidth - rowStackWidth) / 2);
+        rowNodes.forEach((node, column) => {
+          node.x = PAD + rowOffsetX + column * columnStep;
+          node.y = PAD + (lastLevelIndex - lev) * (NODE_H + levelGap);
         });
       }
 
-      const width = PAD * 2 + Math.max(1, orderedLevels.length) * NODE_W + Math.max(0, orderedLevels.length - 1) * X_GAP;
-      const height = PAD * 2 + Math.max(1, maxRows) * NODE_H + Math.max(0, maxRows - 1) * Y_GAP;
+      const width = PAD * 2 + Math.max(1, maxColumns) * NODE_W + Math.max(0, maxColumns - 1) * siblingGap;
+      const height = PAD * 2 + Math.max(1, orderedLevels.length) * NODE_H + Math.max(0, orderedLevels.length - 1) * levelGap;
       return { width, height };
     }
 
@@ -1846,12 +1941,12 @@ Lemma~\ref{lem:routeC-separated-height}
     }
 
     function edgePath(from, to, fromPortOffset = 0, toPortOffset = 0) {
-      const x1 = from.x + NODE_W;
-      const y1 = from.y + NODE_H / 2 + fromPortOffset;
-      const x2 = to.x;
-      const y2 = to.y + NODE_H / 2 + toPortOffset;
-      const dx = Math.max(54, (x2 - x1) * 0.48);
-      return "M " + x1 + " " + y1 + " C " + (x1 + dx) + " " + y1 + ", " + (x2 - dx) + " " + y2 + ", " + x2 + " " + y2;
+      const x1 = from.x + NODE_W / 2 + fromPortOffset;
+      const y1 = from.y;
+      const x2 = to.x + NODE_W / 2 + toPortOffset;
+      const y2 = to.y + NODE_H;
+      const dy = Math.max(54, (y1 - y2) * 0.48);
+      return "M " + x1 + " " + y1 + " C " + x1 + " " + (y1 - dy) + ", " + x2 + " " + (y2 + dy) + ", " + x2 + " " + y2;
     }
 
     function uniqueEdges(edges) {
@@ -1872,8 +1967,8 @@ Lemma~\ref{lem:routeC-separated-height}
 
     function edgePortOffsets(count) {
       if (count <= 1) return [0];
-      const usableHeight = Math.max(0, NODE_H - EDGE_PORT_MARGIN * 2);
-      const step = Math.min(EDGE_PORT_STEP, usableHeight / (count - 1));
+      const usableWidth = Math.max(0, NODE_W - EDGE_PORT_MARGIN * 2);
+      const step = Math.min(EDGE_PORT_STEP, usableWidth / (count - 1));
       const center = (count - 1) / 2;
       return Array.from({ length: count }, (_, index) => Math.round((index - center) * step));
     }
@@ -1882,8 +1977,8 @@ Lemma~\ref{lem:routeC-separated-height}
       const aNode = direction === "outgoing" ? a.to : a.from;
       const bNode = direction === "outgoing" ? b.to : b.from;
       return (
-        (aNode.y + NODE_H / 2) - (bNode.y + NODE_H / 2) ||
-        aNode.x - bNode.x ||
+        (aNode.x + NODE_W / 2) - (bNode.x + NODE_W / 2) ||
+        aNode.y - bNode.y ||
         a.key.localeCompare(b.key)
       );
     }
@@ -2957,14 +3052,14 @@ Lemma~\ref{lem:routeC-separated-height}
 
         g.appendChild(makeStatusSlider(node));
 
-        const titleLines = wrapText(node.title, 36, 3);
+        const titleLines = wrapText(node.title, NODE_TITLE_MAX_CHARS, 3);
         titleLines.forEach((line, i) => {
           const text = makeSvg("text", { class: "title", x: BOARD_SHELL_PADDING * 2, y: 58 + i * 18 });
           text.textContent = line;
           g.appendChild(text);
         });
 
-        const idLines = wrapText(node.id, 56, 2);
+        const idLines = wrapText(node.id, NODE_ID_MAX_CHARS, 2);
         idLines.forEach((line, i) => {
           const text = makeSvg("text", { class: "id", x: BOARD_SHELL_PADDING * 2, y: 116 + i * 16 });
           text.textContent = line;
@@ -2976,6 +3071,11 @@ Lemma~\ref{lem:routeC-separated-height}
         g.appendChild(counts);
 
         g.addEventListener("click", (event) => {
+          if (isViewportClickSuppressed()) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+          }
           event.stopPropagation();
           toggleNodeSelection(node.id);
         });
@@ -3041,27 +3141,26 @@ Lemma~\ref{lem:routeC-separated-height}
       menu.style.top = Math.round(clampMenuTop(y, rect.height)) + "px";
     }
 
-    function positionMenuBottomCenter(menu) {
+    function positionMenuTopLeft(menu) {
       const rect = menu.getBoundingClientRect();
-      const x = (window.innerWidth - rect.width) / 2;
-      const y = window.innerHeight - rect.height - window.innerHeight * PINNED_CONTEXT_MENU_BOTTOM_RATIO;
-      menu.style.left = Math.round(clampMenuCoord(x, rect.width)) + "px";
-      menu.style.top = Math.round(clampMenuTop(y, rect.height)) + "px";
+      const offset = PINNED_CONTEXT_MENU_EDGE_OFFSET;
+      menu.style.left = Math.round(clampMenuCoord(offset, rect.width)) + "px";
+      menu.style.top = Math.round(clampMenuTop(offset, rect.height)) + "px";
     }
 
-    function openMenuBottomCenter(menu) {
+    function openMenuTopLeft(menu) {
       menu.style.left = "0px";
       menu.style.top = "0px";
       menu.hidden = false;
       menu.classList.add("visible");
-      menu.dataset.pinnedPosition = "bottom-center";
-      positionMenuBottomCenter(menu);
+      menu.dataset.pinnedPosition = "top-left";
+      positionMenuTopLeft(menu);
     }
 
     function pinContextMenu() {
       els.appActionGroup.hidden = false;
       delete els.contextMenu.dataset.nodeId;
-      openMenuBottomCenter(els.contextMenu);
+      openMenuTopLeft(els.contextMenu);
     }
 
     function openContextMenu(event) {
@@ -3072,9 +3171,9 @@ Lemma~\ref{lem:routeC-separated-height}
 
     function closeContextMenu() {
       delete els.contextMenu.dataset.nodeId;
-      if (els.contextMenu.dataset.pinnedPosition === "bottom-center") {
+      if (els.contextMenu.dataset.pinnedPosition === "top-left") {
         els.appActionGroup.hidden = false;
-        positionMenuBottomCenter(els.contextMenu);
+        positionMenuTopLeft(els.contextMenu);
         return;
       }
       els.contextMenu.classList.remove("visible");
@@ -3225,6 +3324,38 @@ Lemma~\ref{lem:routeC-separated-height}
       URL.revokeObjectURL(url);
     }
 
+    function supportsFileSystemAccess() {
+      return Boolean(window.showOpenFilePicker && window.showSaveFilePicker);
+    }
+
+    function isAbortError(error) {
+      return error?.name === "AbortError";
+    }
+
+    async function readFileHandle(handle) {
+      const file = await handle.getFile();
+      return {
+        file,
+        text: await readFile(file)
+      };
+    }
+
+    async function canWriteFileHandle(handle) {
+      if (!handle) return false;
+      const options = { mode: "readwrite" };
+      if (await handle.queryPermission?.(options) === "granted") return true;
+      return await handle.requestPermission?.(options) === "granted";
+    }
+
+    async function writeFileHandle(handle, mime, text) {
+      const writable = await handle.createWritable();
+      try {
+        await writable.write(new Blob([text], { type: mime }));
+      } finally {
+        await writable.close();
+      }
+    }
+
     function baseName(name) {
       return (name || "proof-graph").replace(/\.[^.]+$/, "").replace(/[^\w.-]+/g, "_") || "proof-graph";
     }
@@ -3252,6 +3383,84 @@ Lemma~\ref{lem:routeC-separated-height}
       }
     }
 
+    function openHandleDatabase() {
+      return new Promise((resolve, reject) => {
+        if (!window.indexedDB) {
+          resolve(null);
+          return;
+        }
+        const request = indexedDB.open("proogh-file-handles", 1);
+        request.onupgradeneeded = () => {
+          request.result.createObjectStore("handles");
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    function closeHandleDatabase(db) {
+      if (db) db.close();
+    }
+
+    async function readStoredSaveFileHandle() {
+      const db = await openHandleDatabase();
+      if (!db) return null;
+      try {
+        return await new Promise((resolve, reject) => {
+          const request = db.transaction("handles", "readonly").objectStore("handles").get("graph-html");
+          request.onsuccess = () => resolve(request.result || null);
+          request.onerror = () => reject(request.error);
+        });
+      } finally {
+        closeHandleDatabase(db);
+      }
+    }
+
+    async function storeSaveFileHandle(handle) {
+      if (!handle) return;
+      const db = await openHandleDatabase();
+      if (!db) return;
+      try {
+        await new Promise((resolve, reject) => {
+          const transaction = db.transaction("handles", "readwrite");
+          transaction.objectStore("handles").put(handle, "graph-html");
+          transaction.oncomplete = resolve;
+          transaction.onerror = () => reject(transaction.error);
+        });
+      } finally {
+        closeHandleDatabase(db);
+      }
+    }
+
+    async function clearStoredSaveFileHandle() {
+      const db = await openHandleDatabase();
+      if (!db) return;
+      try {
+        await new Promise((resolve, reject) => {
+          const transaction = db.transaction("handles", "readwrite");
+          transaction.objectStore("handles").delete("graph-html");
+          transaction.oncomplete = resolve;
+          transaction.onerror = () => reject(transaction.error);
+        });
+      } finally {
+        closeHandleDatabase(db);
+      }
+    }
+
+    async function restoreSaveFileHandle() {
+      if (!supportsFileSystemAccess()) return;
+      const generation = state.saveHandleGeneration;
+      try {
+        const handle = await readStoredSaveFileHandle();
+        if (!handle) return;
+        if (state.saveHandleGeneration !== generation) return;
+        state.saveFileHandle = handle;
+        state.saveTargetName = handle.name || state.saveTargetName;
+      } catch (error) {
+        console.warn("Could not restore saved file handle", error);
+      }
+    }
+
     function htmlWithEmbeddedGraphData(data) {
       const selectedId = state.selectedId;
       if (selectedId) {
@@ -3270,25 +3479,66 @@ Lemma~\ref{lem:routeC-separated-height}
       }
     }
 
-    function saveGraphHtml(filename) {
+    function graphHtmlText() {
       if (!state.nodes.length) runParse({ selectFirstNode: false });
       const data = exportData();
-      const html = htmlWithEmbeddedGraphData(data);
-      download(filename, "text/html;charset=utf-8", html);
+      return htmlWithEmbeddedGraphData(data);
     }
 
-    function exportHtml() {
-      if (!state.saveTargetName) {
-        saveAsHtml();
-        return;
+    async function saveGraphHtmlToHandle(handle) {
+      if (!await canWriteFileHandle(handle)) return false;
+      await writeFileHandle(handle, "text/html;charset=utf-8", graphHtmlText());
+      state.saveFileHandle = handle;
+      state.saveTargetName = handle.name || state.saveTargetName;
+      try {
+        await storeSaveFileHandle(handle);
+      } catch (error) {
+        console.warn("Could not remember save file", error);
       }
-      saveGraphHtml(state.saveTargetName);
+      return true;
     }
 
-    function saveAsHtml() {
-      const filename = normalizeGraphHtmlFilename(window.prompt("Save graph as", defaultGraphHtmlFilename()));
-      if (!filename) return;
-      saveGraphHtml(filename);
+    function saveGraphHtmlDownload(filename) {
+      download(filename, "text/html;charset=utf-8", graphHtmlText());
+    }
+
+    async function exportHtml() {
+      try {
+        if (state.saveFileHandleRestore) {
+          await state.saveFileHandleRestore;
+          state.saveFileHandleRestore = null;
+        }
+        if (state.saveFileHandle && await saveGraphHtmlToHandle(state.saveFileHandle)) return;
+        const filename = normalizeGraphHtmlFilename(state.saveTargetName || graphHtmlFilename());
+        if (!filename) return;
+        state.saveTargetName = filename;
+        saveGraphHtmlDownload(filename);
+      } catch (error) {
+        if (isAbortError(error)) return;
+        console.warn("Could not save graph", error);
+      }
+    }
+
+    async function saveAsHtml() {
+      try {
+        if (supportsFileSystemAccess()) {
+          const handle = await window.showSaveFilePicker({
+            suggestedName: defaultGraphHtmlFilename(),
+            types: [{
+              description: "HTML graph",
+              accept: { "text/html": [".html", ".htm"] }
+            }]
+          });
+          await saveGraphHtmlToHandle(handle);
+          return;
+        }
+        const filename = normalizeGraphHtmlFilename(window.prompt("Save graph as", defaultGraphHtmlFilename()));
+        if (!filename) return;
+        saveGraphHtmlDownload(filename);
+      } catch (error) {
+        if (isAbortError(error)) return;
+        console.warn("Could not save graph as", error);
+      }
     }
 
     function exportJson() {
@@ -3296,11 +3546,34 @@ Lemma~\ref{lem:routeC-separated-height}
       download(baseName(state.sourceName) + ".proofgraph.json", "application/json;charset=utf-8", safeJson(exportData()));
     }
 
+    function setSaveFileHandle(handle, name = "", options = {}) {
+      if (options.cancelRestore !== false) {
+        state.saveHandleGeneration += 1;
+        state.saveFileHandleRestore = null;
+      }
+      state.saveFileHandle = handle || null;
+      state.saveTargetName = handle?.name || name || "";
+      if (handle) {
+        storeSaveFileHandle(handle).catch((error) => {
+          console.warn("Could not remember save file", error);
+        });
+        return;
+      }
+      if (options.clearStoredHandle !== false) {
+        clearStoredSaveFileHandle().catch((error) => {
+          console.warn("Could not clear saved file", error);
+        });
+      }
+    }
+
     function loadGraphData(data, options = {}) {
       if (!isGraphData(data)) {
         return;
       }
-      state.saveTargetName = options.saveTargetName || "";
+      setSaveFileHandle(options.saveFileHandle || null, options.saveTargetName || "", {
+        clearStoredHandle: options.clearStoredHandle,
+        cancelRestore: options.cancelRestore
+      });
       state.sourceName = data.sourceName || "imported.proofgraph";
       state.sourceHash = data.sourceHash || hashString(data.tex || "");
       state.tex = data.tex || "";
@@ -3359,12 +3632,49 @@ Lemma~\ref{lem:routeC-separated-height}
       });
     }
 
+    function decodeHtmlEntities(text) {
+      const textarea = document.createElement("textarea");
+      textarea.innerHTML = text;
+      return textarea.value;
+    }
+
+    function graphDataFromRawJson(raw) {
+      const trimmed = String(raw || "").trim();
+      if (!trimmed || trimmed === "null") return null;
+      const candidates = [trimmed];
+      const decoded = decodeHtmlEntities(trimmed);
+      if (decoded !== trimmed) candidates.push(decoded);
+      for (const candidate of candidates) {
+        try {
+          const data = JSON.parse(candidate);
+          if (isGraphData(data)) return data;
+        } catch {
+        }
+      }
+      return null;
+    }
+
+    function extractEmbeddedGraphScriptTexts(text) {
+      const values = [];
+      const scriptPattern = /<script\b[^>]*\bid\s*=\s*(["'])(embedded-(?:graph|map)-data)\1[^>]*>([\s\S]*?)<\/script>/gi;
+      let match;
+      while ((match = scriptPattern.exec(text))) {
+        values.push(match[3]);
+      }
+      return values;
+    }
+
     function extractGraphJsonFromHtml(text) {
       const doc = new DOMParser().parseFromString(text, "text/html");
       const script = doc.getElementById("embedded-graph-data") || doc.getElementById("embedded-map-data");
-      if (!script) return null;
-      const raw = script.textContent.trim();
-      return raw && raw !== "null" ? JSON.parse(raw) : null;
+      const candidates = [];
+      if (script) candidates.push(script.textContent);
+      candidates.push(...extractEmbeddedGraphScriptTexts(text));
+      for (const raw of candidates) {
+        const data = graphDataFromRawJson(raw);
+        if (data) return data;
+      }
+      return null;
     }
 
     function looksLikeHtmlFile(file, text) {
@@ -3381,8 +3691,7 @@ Lemma~\ref{lem:routeC-separated-height}
     }
 
     function parseGraphJson(text) {
-      const data = JSON.parse(text);
-      return isGraphData(data) ? data : null;
+      return graphDataFromRawJson(text);
     }
 
     function parseGraphFileData(file, text) {
@@ -3397,6 +3706,29 @@ Lemma~\ref{lem:routeC-separated-height}
         }
       }
       return null;
+    }
+
+    function showNotice(message) {
+      if (!els.notice) return;
+      clearTimeout(state.noticeTimer);
+      els.notice.textContent = message;
+      els.notice.hidden = false;
+      requestAnimationFrame(() => els.notice.classList.add("visible"));
+      state.noticeTimer = setTimeout(() => {
+        els.notice.classList.remove("visible");
+        state.noticeTimer = setTimeout(() => {
+          els.notice.hidden = true;
+          state.noticeTimer = 0;
+        }, 180);
+      }, 3600);
+    }
+
+    function openGraphFailureMessage(file, text) {
+      const name = file?.name || "that file";
+      if (looksLikeHtmlFile(file, text)) {
+        return name + " is HTML, but it does not contain a saved Proogh graph.";
+      }
+      return name + " is not a saved Proogh graph.";
     }
 
     function isEditableTarget(target) {
@@ -3484,44 +3816,285 @@ Lemma~\ref{lem:routeC-separated-height}
       document.addEventListener("mouseup", end, true);
     }
 
+    function isTouchViewportPointer(event) {
+      return event.pointerType === "touch" || event.pointerType === "pen";
+    }
+
+    function activeViewportPointerPoints() {
+      return Array.from(state.viewportPointers.values());
+    }
+
+    function pointerDistance(a, b) {
+      return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+    }
+
+    function pointerCenter(a, b) {
+      return {
+        x: (a.clientX + b.clientX) / 2,
+        y: (a.clientY + b.clientY) / 2
+      };
+    }
+
+    function suppressViewportClick() {
+      state.viewportClickSuppressUntil = Math.max(
+        state.viewportClickSuppressUntil,
+        Date.now() + TOUCH_CLICK_SUPPRESS_MS
+      );
+    }
+
+    function isViewportClickSuppressed() {
+      return Date.now() <= state.viewportClickSuppressUntil;
+    }
+
+    function startTouchPanGesture(point) {
+      state.touchGesture = {
+        mode: "pan",
+        lastX: point.clientX,
+        lastY: point.clientY,
+        totalX: 0,
+        totalY: 0,
+        moved: false
+      };
+    }
+
+    function startTouchPinchGesture(points) {
+      if (points.length < 2) return;
+      const center = pointerCenter(points[0], points[1]);
+      const zoom = Math.max(state.zoom || 1, 0.0001);
+      state.touchGesture = {
+        mode: "pinch",
+        centerX: center.x,
+        centerY: center.y,
+        startDistance: Math.max(1, pointerDistance(points[0], points[1])),
+        startZoom: zoom,
+        worldX: (center.x - state.panX) / zoom,
+        worldY: (center.y - state.panY) / zoom,
+        moved: false
+      };
+    }
+
+    function beginTouchViewportGesture(event) {
+      if (!isTouchViewportPointer(event)) return;
+      if (event.button !== undefined && event.button !== 0) return;
+      state.viewportPointers.set(event.pointerId, {
+        clientX: event.clientX,
+        clientY: event.clientY
+      });
+      if (els.graphScroll.setPointerCapture) {
+        try {
+          els.graphScroll.setPointerCapture(event.pointerId);
+        } catch {
+          // Some browsers reject capture when a child SVG target owns the pointer.
+        }
+      }
+      const points = activeViewportPointerPoints();
+      if (points.length === 1) {
+        startTouchPanGesture(points[0]);
+      } else if (points.length >= 2) {
+        event.preventDefault();
+        startTouchPinchGesture(points);
+        suppressViewportClick();
+      }
+    }
+
+    function updateTouchViewportGesture(event) {
+      if (!isTouchViewportPointer(event) || !state.viewportPointers.has(event.pointerId)) return;
+      const previous = state.viewportPointers.get(event.pointerId);
+      state.viewportPointers.set(event.pointerId, {
+        clientX: event.clientX,
+        clientY: event.clientY
+      });
+
+      const points = activeViewportPointerPoints();
+      if (points.length === 1) {
+        if (!state.touchGesture || state.touchGesture.mode !== "pan") {
+          startTouchPanGesture(points[0]);
+          return;
+        }
+        const dx = event.clientX - previous.clientX;
+        const dy = event.clientY - previous.clientY;
+        state.touchGesture.totalX += dx;
+        state.touchGesture.totalY += dy;
+        if (
+          !state.touchGesture.moved &&
+          Math.hypot(state.touchGesture.totalX, state.touchGesture.totalY) >= TOUCH_GESTURE_MOVE_THRESHOLD
+        ) {
+          state.touchGesture.moved = true;
+        }
+        if (state.touchGesture.moved) {
+          event.preventDefault();
+          suppressViewportClick();
+          panBy(dx, dy);
+        }
+        return;
+      }
+
+      if (points.length >= 2) {
+        if (!state.touchGesture || state.touchGesture.mode !== "pinch") {
+          startTouchPinchGesture(points);
+        }
+        const gesture = state.touchGesture;
+        const center = pointerCenter(points[0], points[1]);
+        const distance = Math.max(1, pointerDistance(points[0], points[1]));
+        const zoom = clampZoom(gesture.startZoom * (distance / gesture.startDistance));
+        const moved =
+          Math.abs(distance - gesture.startDistance) >= TOUCH_GESTURE_MOVE_THRESHOLD ||
+          Math.hypot(center.x - gesture.centerX, center.y - gesture.centerY) >= TOUCH_GESTURE_MOVE_THRESHOLD;
+        if (moved) {
+          event.preventDefault();
+          gesture.moved = true;
+          suppressViewportClick();
+          setViewport(
+            zoom,
+            center.x - gesture.worldX * zoom,
+            center.y - gesture.worldY * zoom
+          );
+        }
+      }
+    }
+
+    function endTouchViewportGesture(event) {
+      if (!isTouchViewportPointer(event) || !state.viewportPointers.has(event.pointerId)) return;
+      if (state.touchGesture?.moved) {
+        event.preventDefault();
+        suppressViewportClick();
+      }
+      if (els.graphScroll.releasePointerCapture) {
+        try {
+          els.graphScroll.releasePointerCapture(event.pointerId);
+        } catch {
+        }
+      }
+      state.viewportPointers.delete(event.pointerId);
+      const points = activeViewportPointerPoints();
+      if (points.length === 1) {
+        startTouchPanGesture(points[0]);
+      } else if (points.length >= 2) {
+        startTouchPinchGesture(points);
+      } else {
+        state.touchGesture = null;
+      }
+    }
+
     function bootEmbeddedGraph() {
+      const documentFilename = currentDocumentFilename();
+      if (documentFilename) state.saveTargetName = documentFilename;
+      state.saveFileHandleRestore = restoreSaveFileHandle();
       const raw = els.embeddedData.textContent.trim();
       if (!raw || raw === "null") {
         renderGraph();
         return;
       }
       try {
-        loadGraphData(JSON.parse(raw), { saveTargetName: currentDocumentFilename() });
+        loadGraphData(JSON.parse(raw), {
+          saveTargetName: state.saveTargetName,
+          clearStoredHandle: false,
+          cancelRestore: false
+        });
       } catch {
         renderGraph();
       }
     }
 
-    function runContextMenuAction(action) {
+    function loadTexText(name, text) {
+      state.sourceName = name;
+      state.sourceHash = "";
+      setSaveFileHandle(null, graphHtmlFilename(name));
+      els.texInput.value = text;
+      els.sourceName.textContent = name;
+      runParse({
+        usePriorStatuses: false,
+        selectFirstNode: false
+      });
+    }
+
+    function loadGraphFile(file, text, handle = null) {
+      const data = parseGraphFileData(file, text);
+      if (!data) {
+        showNotice(openGraphFailureMessage(file, text));
+        return false;
+      }
+      const htmlFile = looksLikeHtmlFile(file, text);
+      loadGraphData(data, {
+        saveTargetName: htmlFile ? file.name : "",
+        saveFileHandle: htmlFile ? handle : null,
+        clearStoredHandle: Boolean(!handle)
+      });
+      return true;
+    }
+
+    async function openTexFile() {
+      if (!supportsFileSystemAccess()) {
+        els.texFile.click();
+        return;
+      }
+      try {
+        const [handle] = await window.showOpenFilePicker({
+          multiple: false,
+          types: [{
+            description: "TeX source",
+            accept: { "text/plain": [".tex", ".txt"] }
+          }]
+        });
+        const { file, text } = await readFileHandle(handle);
+        loadTexText(file.name, text);
+      } catch (error) {
+        if (!isAbortError(error)) console.warn("Could not open TeX file", error);
+      }
+    }
+
+    async function openGraphFile() {
+      if (!supportsFileSystemAccess()) {
+        els.graphFile.click();
+        return;
+      }
+      try {
+        const [handle] = await window.showOpenFilePicker({
+          multiple: false,
+          types: [{
+            description: "Graph files",
+            accept: {
+              "text/html": [".html", ".htm"],
+              "application/json": [".json"],
+              "application/octet-stream": [".proofgraph", ".proofmap"]
+            }
+          }]
+        });
+        const { file, text } = await readFileHandle(handle);
+        loadGraphFile(file, text, handle);
+      } catch (error) {
+        if (!isAbortError(error)) {
+          console.warn("Could not open graph file", error);
+          showNotice("Could not open that graph file.");
+        }
+      }
+    }
+
+    async function runContextMenuAction(action) {
       if (action === "open-tex") {
         closeContextMenu();
-        els.texFile.click();
+        await openTexFile();
         return;
       }
       if (action === "open-graph") {
         closeContextMenu();
-        els.graphFile.click();
+        await openGraphFile();
         return;
       }
       if (action === "export-html") {
         closeContextMenu();
-        exportHtml();
+        await exportHtml();
         return;
       }
       if (action === "save-as") {
         closeContextMenu();
-        saveAsHtml();
+        await saveAsHtml();
       }
     }
 
-    els.openTexBtn.addEventListener("click", () => els.texFile.click());
-    els.openGraphBtn.addEventListener("click", () => els.graphFile.click());
-    els.exportHtmlBtn.addEventListener("click", exportHtml);
+    els.openTexBtn.addEventListener("click", () => openTexFile());
+    els.openGraphBtn.addEventListener("click", () => openGraphFile());
+    els.exportHtmlBtn.addEventListener("click", () => exportHtml());
     els.exportJsonBtn.addEventListener("click", exportJson);
     els.fitBtn.addEventListener("click", fitGraph);
     els.texInput.addEventListener("input", scheduleAutoParse);
@@ -3530,7 +4103,16 @@ Lemma~\ref{lem:routeC-separated-height}
     els.zoomInBtn.addEventListener("click", () => setZoom(state.zoom * 1.1));
     els.graphScroll.addEventListener("wheel", handleViewportWheel, { passive: false });
     els.graphScroll.addEventListener("mousedown", beginMousePan);
+    els.graphScroll.addEventListener("pointerdown", beginTouchViewportGesture);
+    els.graphScroll.addEventListener("pointermove", updateTouchViewportGesture);
+    els.graphScroll.addEventListener("pointerup", endTouchViewportGesture);
+    els.graphScroll.addEventListener("pointercancel", endTouchViewportGesture);
     els.graphScroll.addEventListener("click", (event) => {
+      if (isViewportClickSuppressed()) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
       const suppressed = state.statusClickSuppress;
       if (suppressed && Date.now() <= suppressed.until) {
         event.preventDefault();
@@ -3541,20 +4123,15 @@ Lemma~\ref{lem:routeC-separated-height}
       if (event.target === els.graphScroll || event.target === els.graphSvg) clearSelection();
     });
     els.graphScroll.addEventListener("contextmenu", (event) => openContextMenu(event));
+    els.graphScroll.addEventListener("gesturestart", suppressMenuZoom, { passive: false });
+    els.graphScroll.addEventListener("gesturechange", suppressMenuZoom, { passive: false });
+    els.graphScroll.addEventListener("gestureend", suppressMenuZoom, { passive: false });
 
     els.texFile.addEventListener("change", async () => {
       const file = els.texFile.files?.[0];
       if (!file) return;
       const text = await readFile(file);
-      state.sourceName = file.name;
-      state.sourceHash = "";
-      state.saveTargetName = "";
-      els.texInput.value = text;
-      els.sourceName.textContent = file.name;
-      runParse({
-        usePriorStatuses: false,
-        selectFirstNode: false
-      });
+      loadTexText(file.name, text);
       els.texFile.value = "";
     });
 
@@ -3563,14 +4140,10 @@ Lemma~\ref{lem:routeC-separated-height}
       if (!file) return;
       try {
         const text = await readFile(file);
-        const data = parseGraphFileData(file, text);
-        if (data) {
-          loadGraphData(data, {
-            saveTargetName: looksLikeHtmlFile(file, text) ? file.name : ""
-          });
-        }
+        loadGraphFile(file, text);
       } catch (error) {
         console.warn("Could not load graph file", error);
+        showNotice("Could not open that graph file.");
       } finally {
         els.graphFile.value = "";
       }
@@ -3607,8 +4180,8 @@ Lemma~\ref{lem:routeC-separated-height}
     window.addEventListener("resize", () => {
       if (state.nodes.length) renderGraph();
       else applyViewportTransform();
-      if (!els.contextMenu.hidden && els.contextMenu.dataset.pinnedPosition === "bottom-center") {
-        positionMenuBottomCenter(els.contextMenu);
+      if (!els.contextMenu.hidden && els.contextMenu.dataset.pinnedPosition === "top-left") {
+        positionMenuTopLeft(els.contextMenu);
       }
     });
 
