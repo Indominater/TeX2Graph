@@ -4,7 +4,16 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Proogh</title>
+  <link rel="preload" href="fonts/Geist.woff2" as="font" type="font/woff2" crossorigin>
   <style>
+    @font-face {
+      font-family: 'Geist Sans';
+      font-style: normal;
+      font-weight: 300 700;
+      font-display: swap;
+      src: url('fonts/Geist.woff2') format('woff2');
+    }
+
     :root {
       color-scheme: dark;
       --canvas-bg: #1c1b22;
@@ -35,7 +44,7 @@
       --pending: #6b7280;
       --pending-soft: rgba(251, 251, 254, 0.12);
       --shadow: 0 12px 30px rgba(17, 24, 39, 0.08);
-      --text-font-family: 'Geist Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --text-font-family: 'Geist Sans';
       --text-font-style: normal;
       --text-font-kerning: none;
       --text-font-stretch: normal;
@@ -58,6 +67,7 @@
       --firefox-menu-shadow:
         0 8px 24px rgba(0, 0, 0, 0.32),
         0 0 0 1px rgba(0, 0, 0, 0.10);
+      --dialog-overlay-bg: rgba(0, 0, 0, 0.18);
       --status-pending-fill: var(--firefox-menu-bg);
       --status-pending-stroke: var(--firefox-menu-border);
       --status-pending-active-fill: var(--firefox-menu-hover-bg);
@@ -79,6 +89,7 @@
       --menu-item-font-size: 13px;
       --menu-item-letter-spacing: var(--text-letter-spacing);
       --menu-item-line-height: 32px;
+      --menu-separator-gap: 8px;
       --context-menu-width: 224px;
       --smooth-slide-duration: 220ms;
       --smooth-slide-ease: cubic-bezier(0.18, 0.9, 0.24, 1.18);
@@ -272,7 +283,7 @@
       outline: none;
       color: var(--firefox-menu-text);
       background: transparent;
-      font: 12.5px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font: 12.5px/1.45 var(--text-font-family);
       letter-spacing: 0;
       user-select: text;
       -webkit-user-select: text;
@@ -483,7 +494,7 @@
       max-height: 180px;
       overflow: auto;
       white-space: pre-wrap;
-      font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font: 12px/1.45 var(--text-font-family);
       user-select: text;
       -webkit-user-select: text;
     }
@@ -621,10 +632,10 @@
     }
 
     .edge.relation.indirect:not(.direct) {
-      stroke: rgba(156, 163, 175, 0.72);
+      stroke: rgba(251, 251, 254, 0.28);
       stroke-width: 1;
       stroke-dasharray: none;
-      opacity: 0.74;
+      opacity: 0.82;
     }
 
     .edge.dependency {
@@ -647,6 +658,10 @@
       opacity: 1;
     }
 
+    .edge.blocked.relation.indirect:not(.direct) {
+      opacity: 0.78;
+    }
+
     .edge.false-source,
     .edge.false-source.blocked,
     .edge.false-source.relation {
@@ -661,7 +676,12 @@
       opacity: 0.16;
     }
 
-    .node,
+    .node {
+      --status-fill: var(--status-pending-fill);
+      --status-stroke: var(--status-pending-stroke);
+      cursor: default;
+    }
+
     .status-slider {
       --status-fill: var(--status-pending-fill);
       --status-stroke: var(--status-pending-stroke);
@@ -669,11 +689,6 @@
       --status-separator-color: var(--status-pending-separator);
     }
 
-    .node {
-      cursor: default;
-    }
-
-    .node.status-true,
     .status-slider.status-true {
       --status-fill: var(--status-true-fill);
       --status-stroke: var(--status-true-stroke);
@@ -681,7 +696,6 @@
       --status-separator-color: var(--status-true-separator);
     }
 
-    .node.status-false,
     .status-slider.status-false {
       --status-fill: var(--status-false-fill);
       --status-stroke: var(--status-false-stroke);
@@ -760,7 +774,7 @@
       opacity: 1;
     }
 
-    .node.blocked:not(.status-false) .body {
+    .node.blocked .body {
       fill: var(--canvas-bg);
       stroke: var(--status-stroke);
       stroke-width: 1;
@@ -778,7 +792,7 @@
 
     .node.selected.relation.direct .body,
     .node.selected.relation.indirect .body,
-    .node.selected.blocked:not(.status-false) .body,
+    .node.selected.blocked .body,
     .node.selected .body {
       stroke-width: 1;
       stroke-dasharray: none;
@@ -802,7 +816,6 @@
     .node .id {
       fill: rgba(var(--white_font_rgb), 0.68);
       font-size: var(--menu-item-font-size);
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
     }
 
     .node .type {
@@ -814,11 +827,6 @@
 
     .node .final-mark {
       fill: var(--warn);
-    }
-
-    .node .count {
-      fill: rgba(var(--white_font_rgb), 0.68);
-      font-size: var(--menu-item-font-size);
     }
 
     .status-slider {
@@ -893,14 +901,13 @@
       vector-effect: non-scaling-stroke;
     }
 
-    .node.blocked:not(.status-false) .title,
-    .node.blocked:not(.status-false) .id,
-    .node.blocked:not(.status-false) .type,
-    .node.blocked:not(.status-false) .count {
+    .node.blocked .title,
+    .node.blocked .id,
+    .node.blocked .type {
       fill: var(--blocked-text);
     }
 
-    .node.blocked:not(.status-false) .final-mark {
+    .node.blocked .final-mark {
       fill: var(--blocked-accent);
     }
 
@@ -931,7 +938,7 @@
     }
 
     .menu.visible {
-      display: inline-flex;
+      display: block;
     }
 
     #appActionGroup {
@@ -955,7 +962,7 @@
       width: auto;
       height: var(--menu-item-height);
       min-height: var(--menu-item-height);
-      padding: 0 8px;
+      padding: var(--menu-item-padding);
       font: var(--text-font-style) var(--bold_text) var(--menu-item-font-size) var(--text-font-family);
       line-height: var(--menu-item-line-height);
       color: var(--firefox-menu-text);
@@ -1009,8 +1016,109 @@
       height: 22px;
       flex: 0 0 auto;
       background: var(--firefox-menu-separator);
-      margin: 0 6px;
+      margin: 0 var(--menu-separator-gap);
       pointer-events: none;
+    }
+
+    #dialog-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--dialog-overlay-bg);
+      backdrop-filter: blur(12px) saturate(150%);
+      -webkit-backdrop-filter: blur(12px) saturate(150%);
+      z-index: 9999999;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    #dialog-overlay.show {
+      display: flex;
+    }
+
+    #dialog-overlay * {
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    #dialog {
+      position: relative;
+      width: 250px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      background: var(--firefox-menu-bg);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      border: 1px solid var(--firefox-menu-border);
+      border-radius: var(--menu-shell-radius);
+      box-shadow: var(--firefox-menu-shadow);
+      color: var(--firefox-menu-text);
+      font-family: inherit;
+      padding: var(--menu-shell-padding);
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    #dialog-body {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      padding: 0;
+    }
+
+    #dialog .ctx-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      column-gap: 18px;
+      width: 100%;
+      justify-content: initial;
+    }
+
+    #dialog-title {
+      pointer-events: none;
+    }
+
+    #dialog .ctx-sep {
+      width: auto;
+      height: 1px;
+      margin: 8px 0;
+    }
+
+    #dialog-btns {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0;
+    }
+
+    #dlg-right {
+      display: flex;
+      gap: 4px;
+    }
+
+    #dialog-btns .dialog-action {
+      width: auto;
+      display: inline-flex;
+      justify-content: center;
+      text-align: center;
+    }
+
+    #dlg-discard {
+      background: var(--danger-bg);
+      color: var(--danger-text);
+    }
+
+    #dlg-discard:hover,
+    #dlg-discard:focus-visible {
+      background: var(--danger-hover-bg);
+    }
+
+    #dlg-discard:active {
+      background: var(--danger-active-bg);
     }
 
     @media (max-width: 860px) {
@@ -1031,13 +1139,12 @@
 
     @media (max-width: 520px) {
       .menu {
-        max-width: calc(100vw - var(--safe-area-left) - var(--safe-area-right) - 12px);
-        padding: 6px;
+        max-width: calc(100vw - var(--safe-area-left) - var(--safe-area-right) - 24px);
       }
 
       .menu.visible {
-        display: flex;
-        width: calc(100vw - var(--safe-area-left) - var(--safe-area-right) - 12px);
+        display: block;
+        width: calc(100vw - var(--safe-area-left) - var(--safe-area-right) - 24px);
       }
 
       #appActionGroup {
@@ -1047,11 +1154,11 @@
       .ctx-item {
         flex: 1 1 0;
         min-width: 0;
-        padding: 0 6px;
+        padding: var(--menu-item-padding);
       }
 
       .ctx-sep {
-        margin: 0 3px;
+        margin: 0 var(--menu-separator-gap);
       }
     }
 
@@ -1148,6 +1255,23 @@ Lemma~\ref{lem:routeC-separated-height}
   </div>
 
   <div id="notice" class="notice" hidden role="status" aria-live="polite"></div>
+
+  <div id="dialog-overlay">
+    <div id="dialog">
+      <div id="dialog-body">
+        <div class="ctx-item" id="dialog-title">Save Changes?</div>
+      </div>
+      <div class="ctx-sep"></div>
+      <div id="dialog-btns">
+        <button class="ctx-item dialog-action" id="dlg-discard" type="button">Delete</button>
+        <div id="dlg-right">
+          <button class="ctx-item dialog-action" id="dlg-cancel" type="button">Cancel</button>
+          <button class="ctx-item dialog-action" id="dlg-save" type="button">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="contextMenu" class="menu" hidden>
     <div id="appActionGroup">
       <button class="ctx-item" type="button" data-action="open-tex"><span class="ctx-label">Upload TeX</span><span class="ctx-shortcut"></span></button>
@@ -1163,21 +1287,6 @@ Lemma~\ref{lem:routeC-separated-height}
   <script id="app-script">
     "use strict";
 
-    const BUILTIN_PROOF_ENVS = [
-      "theorem",
-      "lemma",
-      "proposition",
-      "corollary",
-      "claim",
-      "definition",
-      "conjecture",
-      "remark",
-      "externalinput",
-      "certificate",
-      "assumption",
-      "fact",
-      "axiom"
-    ];
     const SKIPPED_PROOF_ENVS = new Set(["document", "proof"]);
 
     const UI_RADIUS = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--ui-radius")) || 25;
@@ -1193,8 +1302,8 @@ Lemma~\ref{lem:routeC-separated-height}
     const EDGE_PORT_STEP = BOARD_ITEM_SIZE * 0.56;
     const ZOOM_MIN = 0.01;
     const ZOOM_MAX = 100;
-    const MENU_VIEWPORT_EDGE_MARGIN = 8;
-    const PINNED_CONTEXT_MENU_EDGE_OFFSET = 25;
+    const MENU_VIEWPORT_EDGE_MARGIN = 12;
+    const PINNED_CONTEXT_MENU_EDGE_OFFSET = MENU_VIEWPORT_EDGE_MARGIN;
     const TOUCH_GESTURE_MOVE_THRESHOLD = 5;
     const TOUCH_CLICK_SUPPRESS_MS = 320;
     const GRAPH_DATA_KIND = "tex-proof-graph";
@@ -1203,7 +1312,7 @@ Lemma~\ref{lem:routeC-separated-height}
       Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--smooth-slide-duration")) || 220;
     const MENU_ITEM_FONT_SIZE = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--menu-item-font-size")) || 13;
     const NODE_TEXT_WIDTH = NODE_W - BOARD_SHELL_PADDING * 4;
-    const NODE_TITLE_MAX_CHARS = Math.max(18, Math.floor(NODE_TEXT_WIDTH / (MENU_ITEM_FONT_SIZE * 0.58)));
+    const NODE_TITLE_FALLBACK_MAX_CHARS = Math.max(18, Math.floor(NODE_TEXT_WIDTH / (MENU_ITEM_FONT_SIZE * 0.5)));
     const NODE_ID_MAX_CHARS = Math.max(18, Math.floor(NODE_TEXT_WIDTH / (MENU_ITEM_FONT_SIZE * 0.62)));
     const BOARDFISH_ACTION_ICON_SIZE = 20;
     const STATUS_ACTION_SCALE = MENU_ITEM_FONT_SIZE / BOARDFISH_ACTION_ICON_SIZE;
@@ -1272,6 +1381,9 @@ Lemma~\ref{lem:routeC-separated-height}
       saveFileHandle: null,
       saveFileHandleRestore: null,
       saveHandleGeneration: 0,
+      exitWarningArmed: false,
+      unsavedDialogResolve: null,
+      unsavedDialogPromise: null,
       zoom: 1,
       panX: 0,
       panY: 0,
@@ -1313,6 +1425,11 @@ Lemma~\ref{lem:routeC-separated-height}
       nodesLayer: document.getElementById("nodesLayer"),
       emptyState: document.getElementById("emptyState"),
       notice: document.getElementById("notice"),
+      dialogOverlay: document.getElementById("dialog-overlay"),
+      unsavedDialog: document.getElementById("dialog"),
+      dialogSave: document.getElementById("dlg-save"),
+      dialogDiscard: document.getElementById("dlg-discard"),
+      dialogCancel: document.getElementById("dlg-cancel"),
       contextMenu: document.getElementById("contextMenu"),
       appActionGroup: document.getElementById("appActionGroup"),
       zoomRange: document.getElementById("zoomRange"),
@@ -1388,38 +1505,42 @@ Lemma~\ref{lem:routeC-separated-height}
       return { value: "", end: index };
     }
 
-    function escapeRegExp(text) {
-      return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    }
-
     function normalizeEnv(env) {
       return env.toLowerCase().replace(/\*$/, "");
     }
 
     function discoverProofEnvironments(tex) {
-      const envs = new Set(BUILTIN_PROOF_ENVS);
-      const newTheorem = /\\newtheorem\*?\s*(?:\[[^\]]*\]\s*)?\{([^}]+)\}/g;
-      const declareTheorem = /\\declaretheorem\s*(?:\[[^\]]*\]\s*)?\{([^}]+)\}/g;
+      const envs = new Set();
+      const newTheorem = /\\newtheorem\s*\*?\s*\{\s*([^}]+?)\s*\}/g;
       let match;
       while ((match = newTheorem.exec(tex))) envs.add(normalizeEnv(match[1].trim()));
-      while ((match = declareTheorem.exec(tex))) envs.add(normalizeEnv(match[1].trim()));
       return Array.from(envs).filter((env) => env && !SKIPPED_PROOF_ENVS.has(env));
     }
 
     function findEnvironmentEnd(text, env, start) {
-      const envPattern = escapeRegExp(env);
-      const tag = new RegExp("\\\\(begin|end)\\s*\\{\\s*" + envPattern + "\\s*\\}", "g");
+      const targetEnv = normalizeEnv(env);
+      const tag = /\\(begin|end)\s*\{\s*([^}]+?)\s*\}/g;
       tag.lastIndex = start;
       let depth = 1;
       let match;
       while ((match = tag.exec(text))) {
-        if (match[1] === "begin") depth += 1;
-        else depth -= 1;
-        if (depth === 0) {
-          return { start: match.index, end: tag.lastIndex };
-        }
+        if (normalizeEnv(match[2].trim()) !== targetEnv) continue;
+        depth += match[1] === "begin" ? 1 : -1;
+        if (depth === 0) return { start: match.index, end: tag.lastIndex };
       }
       return null;
+    }
+
+    function findProofBlockBefore(text, start, end) {
+      const proofBegin = /\\begin\s*\{\s*proof\s*\}/g;
+      proofBegin.lastIndex = start;
+      const match = proofBegin.exec(text);
+      if (!match || match.index >= end) return null;
+      const proofEnd = findEnvironmentEnd(text, "proof", proofBegin.lastIndex);
+      return {
+        start: match.index,
+        end: proofEnd ? Math.min(proofEnd.end, end) : end
+      };
     }
 
     function cleanTitle(value) {
@@ -1482,6 +1603,45 @@ Lemma~\ref{lem:routeC-separated-height}
       return labels;
     }
 
+    function refLabelsIn(text) {
+      const labels = [];
+      const re = /\\(?:eqref|Cref|cref|autoref|nameref|Vref|vref|subref|ref)\s*\{([^}]+)\}/g;
+      let match;
+      while ((match = re.exec(text))) {
+        match[1].split(",")
+          .map((value) => value.trim())
+          .filter(Boolean)
+          .forEach((label) => labels.push(label));
+      }
+      return unique(labels);
+    }
+
+    function labelsAttachedToBegin(text, index) {
+      let i = index;
+      const optional = readOptionalBracket(text, i);
+      if (optional.end !== i) i = optional.end;
+      const labels = [];
+      while (i < text.length) {
+        while (i < text.length && /\s/.test(text[i])) i += 1;
+        const match = /^\\label\s*\{([^}]+)\}/.exec(text.slice(i));
+        if (!match) break;
+        labels.push(match[1].trim());
+        i += match[0].length;
+      }
+      return labels;
+    }
+
+    function addOwner(map, key, id) {
+      if (!key) return;
+      if (!map.has(key)) map.set(key, []);
+      const owners = map.get(key);
+      if (!owners.includes(id)) owners.push(id);
+    }
+
+    function firstExternalOwner(map, key, fromId) {
+      return (map.get(key) || []).find((id) => id !== fromId) || "";
+    }
+
     function choosePrimaryLabel(labels, env) {
       const pattern = envLabelPattern(env);
       if (pattern) {
@@ -1492,36 +1652,6 @@ Lemma~\ref{lem:routeC-separated-height}
       if (theoremLike) return theoremLike;
       const nonStructural = labels.find((label) => !isStructuralLabel(label));
       return nonStructural || "";
-    }
-
-    function refsIn(text) {
-      const refs = [];
-      const command = /\\(?:[cC]ref|eqref|ref|autoref|nameref|vref|Vref|pageref)\s*\{([^}]+)\}/g;
-      let match;
-      while ((match = command.exec(text))) {
-        match[1].split(",")
-          .map((value) => value.trim())
-          .filter(Boolean)
-          .forEach((label) => refs.push(label));
-      }
-      const hyper = /\\hyperref\s*\[([^\]]+)\]/g;
-      while ((match = hyper.exec(text))) refs.push(match[1].trim());
-      return unique(refs);
-    }
-
-    function sectionBoundaryIndexes(text) {
-      const indexes = [];
-      const section = /\\(?:section|subsection)\*?\s*(?:\[[^\]]*\]\s*)?\{/g;
-      let match;
-      while ((match = section.exec(text))) indexes.push(match.index);
-      return indexes;
-    }
-
-    function nextIndexAfter(indexes, index) {
-      for (const value of indexes) {
-        if (value > index) return value;
-      }
-      return null;
     }
 
     function snippetFor(block) {
@@ -1535,15 +1665,14 @@ Lemma~\ref{lem:routeC-separated-height}
       const stripped = stripComments(tex);
       const starts = lineStartsFor(stripped);
       const envSet = new Set(discoverProofEnvironments(stripped));
-      const begin = /\\begin\s*\{\s*([A-Za-z*]+)\s*\}/g;
+      const begin = /\\begin\s*\{\s*([^}]+?)\s*\}/g;
       const counters = new Map();
       const blockStarts = [];
-      const sectionBoundaries = sectionBoundaryIndexes(stripped);
       const blocks = [];
       let match;
 
       while ((match = begin.exec(stripped))) {
-        const rawEnv = match[1];
+        const rawEnv = match[1].trim();
         const env = normalizeEnv(rawEnv);
         if (!envSet.has(env)) continue;
         blockStarts.push({
@@ -1557,28 +1686,28 @@ Lemma~\ref{lem:routeC-separated-height}
       blockStarts.forEach((blockStart, index) => {
         const { rawEnv, env } = blockStart;
         const nextBlock = blockStarts[index + 1];
-        const nextNodeStart = nextBlock ? nextBlock.index : stripped.length;
-        const nextSection = nextIndexAfter(sectionBoundaries, blockStart.index);
-        const blockEnd = Math.min(nextNodeStart, nextSection ?? stripped.length);
+        const nextBlockStart = nextBlock ? nextBlock.index : stripped.length;
         const optional = readOptionalBracket(stripped, blockStart.beginEnd);
         const contentStart = optional.end === blockStart.beginEnd ? blockStart.beginEnd : optional.end;
-        const end = findEnvironmentEnd(stripped, rawEnv, contentStart);
-        const initialBlockEnd = end ? Math.min(end.end, blockEnd) : blockEnd;
-        const initialBlock = stripped.slice(blockStart.index, initialBlockEnd);
+        const theoremEnd = findEnvironmentEnd(stripped, rawEnv, blockStart.beginEnd);
+        const theoremBlockEnd = theoremEnd ? Math.min(theoremEnd.end, nextBlockStart) : nextBlockStart;
+        const proofBlock = findProofBlockBefore(stripped, theoremBlockEnd, nextBlockStart);
+        const blockEnd = proofBlock ? proofBlock.end : theoremBlockEnd;
         const nodeBlock = stripped.slice(blockStart.index, blockEnd);
         const body = stripped.slice(contentStart, blockEnd);
-        const labels = unique(labelsIn(initialBlock));
+        const labels = unique(labelsAttachedToBegin(stripped, blockStart.beginEnd));
         const allLabels = unique(labelsIn(nodeBlock));
+        const refLabels = refLabelsIn(nodeBlock);
         const equationLabels = allLabels.filter(isEquationLabel);
         const title = cleanTitle(optional.value) || humanType(env) + " " + ((counters.get(env) || 0) + 1);
         counters.set(env, (counters.get(env) || 0) + 1);
         blocks.push({
           env,
-          rawEnv,
           title,
           labels,
           allLabels,
           equationLabels,
+          refLabels,
           body,
           block: nodeBlock,
           startIndex: blockStart.index,
@@ -1607,7 +1736,7 @@ Lemma~\ref{lem:routeC-separated-height}
           equationLabels: block.equationLabels,
           aliases,
           ownedLabels,
-          refs: refsIn(block.body),
+          refLabels: block.refLabels,
           dependsOn: [],
           dependents: [],
           status: priorStatuses[uniqueId] || priorStatuses[id] || "pending",
@@ -1620,25 +1749,25 @@ Lemma~\ref{lem:routeC-separated-height}
         };
       });
 
-      const labelToId = new Map();
+      const labelToIds = new Map();
       const duplicateLabels = [];
       for (const node of nodes) {
-        for (const label of node.ownedLabels) {
-          if (labelToId.has(label) && labelToId.get(label) !== node.id) {
-            duplicateLabels.push({ label, first: labelToId.get(label), second: node.id });
-          } else {
-            labelToId.set(label, node.id);
+        for (const label of node.allLabels) {
+          const existingOwner = firstExternalOwner(labelToIds, label, node.id);
+          if (existingOwner) {
+            duplicateLabels.push({ label, first: existingOwner, second: node.id });
           }
+          addOwner(labelToIds, label, node.id);
         }
       }
 
       const unresolvedRefs = [];
       for (const node of nodes) {
         const deps = [];
-        for (const ref of node.refs) {
-          const target = labelToId.get(ref);
-          if (target && target !== node.id) deps.push(target);
-          else if (!target && !isStructuralLabel(ref)) unresolvedRefs.push({ from: node.id, ref });
+        for (const label of node.refLabels) {
+          const target = firstExternalOwner(labelToIds, label, node.id);
+          if (target) deps.push(target);
+          else if (!isStructuralLabel(label)) unresolvedRefs.push({ from: node.id, ref: label });
         }
         node.dependsOn = unique(deps);
       }
@@ -1912,26 +2041,99 @@ Lemma~\ref{lem:routeC-separated-height}
       while (el.firstChild) el.removeChild(el.firstChild);
     }
 
-    function wrapText(text, maxChars, maxLines) {
+    function measureNodeText(className, text) {
+      if (!els.graphSvg) return NaN;
+      if (!measureNodeText.group) {
+        const group = makeSvg("g", {
+          class: "node",
+          opacity: "0",
+          "aria-hidden": "true",
+          transform: "translate(-10000 -10000)"
+        });
+        group.style.pointerEvents = "none";
+        const measureText = makeSvg("text");
+        group.appendChild(measureText);
+        els.graphSvg.appendChild(group);
+        measureNodeText.group = group;
+        measureNodeText.text = measureText;
+      } else if (!measureNodeText.group.parentNode) {
+        els.graphSvg.appendChild(measureNodeText.group);
+      }
+      const measureText = measureNodeText.text;
+      measureText.setAttribute("class", className);
+      measureText.textContent = text;
+      try {
+        return measureText.getComputedTextLength();
+      } catch {
+        return NaN;
+      }
+    }
+
+    function textFitsWidth(className, text, maxWidth, fallbackMaxChars) {
+      const width = measureNodeText(className, text);
+      if (Number.isFinite(width) && width > 0) return width <= maxWidth;
+      return String(text || "").length <= fallbackMaxChars;
+    }
+
+    function ellipsizeTextToWidth(text, className, maxWidth, fallbackMaxChars) {
+      const value = String(text || "").trim();
+      if (!value || textFitsWidth(className, value, maxWidth, fallbackMaxChars)) return value;
+      let lo = 0;
+      let hi = value.length;
+      while (lo < hi) {
+        const mid = Math.ceil((lo + hi) / 2);
+        if (textFitsWidth(className, value.slice(0, mid).trimEnd() + "…", maxWidth, fallbackMaxChars)) lo = mid;
+        else hi = mid - 1;
+      }
+      return value.slice(0, lo).trimEnd() + "…";
+    }
+
+    function wrapText(text, className, maxWidth, maxLines, fallbackMaxChars) {
       const words = String(text || "").split(/\s+/).filter(Boolean);
       const lines = [];
-      let line = "";
-      for (const word of words) {
-        const next = line ? line + " " + word : word;
-        if (next.length <= maxChars) {
+      const remaining = words.slice();
+      while (remaining.length && lines.length < maxLines) {
+        let line = "";
+        while (remaining.length) {
+          const next = line ? line + " " + remaining[0] : remaining[0];
+          if (!textFitsWidth(className, next, maxWidth, fallbackMaxChars)) break;
           line = next;
-        } else {
-          if (line) lines.push(line);
-          line = word.length > maxChars ? word.slice(0, maxChars - 1) + "…" : word;
+          remaining.shift();
         }
-        if (lines.length === maxLines) break;
+        if (!line) {
+          line = ellipsizeTextToWidth(remaining.shift(), className, maxWidth, fallbackMaxChars);
+        } else if (lines.length === maxLines - 1 && remaining.length) {
+          line = ellipsizeTextToWidth([line, ...remaining].join(" "), className, maxWidth, fallbackMaxChars);
+          remaining.length = 0;
+        }
+        lines.push(line);
       }
-      if (line && lines.length < maxLines) lines.push(line);
-      if (words.length && lines.length === maxLines) {
-        const combined = words.join(" ");
-        if (lines.join(" ").length < combined.length) {
-          lines[maxLines - 1] = lines[maxLines - 1].replace(/…?$/, "…");
+      return lines.length ? lines : [""];
+    }
+
+    function wrapIdText(text, maxChars, maxLines) {
+      let remaining = String(text || "").trim().replace(/\s+/g, " ");
+      if (!remaining) return [""];
+      const lines = [];
+      while (remaining && lines.length < maxLines) {
+        const isLastLine = lines.length === maxLines - 1;
+        if (remaining.length <= maxChars) {
+          lines.push(remaining);
+          break;
         }
+        if (isLastLine) {
+          lines.push(remaining.slice(0, Math.max(1, maxChars - 1)) + "…");
+          break;
+        }
+        const breakAt = Math.max(
+          remaining.lastIndexOf(":", maxChars - 1),
+          remaining.lastIndexOf("-", maxChars - 1),
+          remaining.lastIndexOf("_", maxChars - 1),
+          remaining.lastIndexOf(" ", maxChars)
+        );
+        const lineEnd = breakAt > Math.floor(maxChars * 0.45) ? breakAt + 1 : maxChars;
+        lines.push(remaining.slice(0, lineEnd).trimEnd());
+        remaining = remaining.slice(lineEnd).trimStart();
       }
       return lines.length ? lines : [""];
     }
@@ -2103,10 +2305,6 @@ Lemma~\ref{lem:routeC-separated-height}
       return classes.join(" ");
     }
 
-    function isBlockedSourceNode(from) {
-      return from.status === "false" || (from.blocked && from.status !== "false");
-    }
-
     function isFalseSourceNode(from) {
       return from.status === "false";
     }
@@ -2118,7 +2316,7 @@ Lemma~\ref{lem:routeC-separated-height}
     }
 
     function isBlockingEdge(edge, from, focus = null) {
-      return isBlockedSourceNode(from) && isFocusedEdge(edge, focus);
+      return isFalseSourceNode(from) && isFocusedEdge(edge, focus);
     }
 
     function classForEdge(edge, from, to, focus = null) {
@@ -2155,7 +2353,7 @@ Lemma~\ref{lem:routeC-separated-height}
       if (tokens.has("false-source")) return "url(#arrowFalse)";
       if (blockedEdge) return "url(#arrowBlocked)";
       if (!tokens.has("relation")) return "url(#arrow)";
-      return tokens.has("direct") ? "url(#arrowRelation)" : "url(#arrowRelationIndirect)";
+      return tokens.has("direct") ? "url(#arrowRelation)" : "url(#arrow)";
     }
 
     function normalizeStatus(value) {
@@ -2234,6 +2432,7 @@ Lemma~\ref{lem:routeC-separated-height}
       const status = toggle && priorStatus === normalized ? "pending" : normalized;
       if (priorStatus === status) return;
       node.status = status;
+      armGraphExitWarning();
       saveLocalStatuses();
       if (options.deferRender) {
         computeBlocked(state.nodes);
@@ -2567,6 +2766,16 @@ Lemma~\ref{lem:routeC-separated-height}
       copyNodeTitle(node);
     }
 
+    function handleSaveShortcut(event) {
+      if (!(event.metaKey || event.ctrlKey) || event.altKey) return;
+      if (String(event.key || "").toLowerCase() !== "s") return;
+      event.preventDefault();
+      event.stopPropagation();
+      closeContextMenu();
+      if (event.shiftKey) saveAsHtml();
+      else exportHtml();
+    }
+
     function attachStatusSliderEvents(slider, node) {
       let activePointer = null;
       let suppressClick = false;
@@ -2775,7 +2984,7 @@ Lemma~\ref{lem:routeC-separated-height}
       }
       const counts = statusCounts(state.nodes);
       const duplicatePart = state.duplicateLabels.length ? " · " + state.duplicateLabels.length + " duplicate labels" : "";
-      const unresolvedPart = state.unresolvedRefs.length ? " · " + state.unresolvedRefs.length + " unresolved theorem refs" : "";
+      const unresolvedPart = state.unresolvedRefs.length ? " · " + state.unresolvedRefs.length + " unresolved reference labels" : "";
       els.graphSummary.textContent = state.nodes.length + " nodes · " + state.edges.length + " dependencies · " + counts.final + " final nodes" + duplicatePart + unresolvedPart;
     }
 
@@ -2794,7 +3003,7 @@ Lemma~\ref{lem:routeC-separated-height}
           issue.className = "snippet";
           issue.textContent = [
             state.duplicateLabels.length ? "Duplicate labels:\n" + state.duplicateLabels.slice(0, 8).map((item) => item.label + " -> " + item.first + " / " + item.second).join("\n") : "",
-            state.unresolvedRefs.length ? "Unresolved theorem-like refs:\n" + state.unresolvedRefs.slice(0, 12).map((item) => item.from + " -> " + item.ref).join("\n") : ""
+            state.unresolvedRefs.length ? "Unresolved reference labels:\n" + state.unresolvedRefs.slice(0, 12).map((item) => item.from + " -> " + item.ref).join("\n") : ""
           ].filter(Boolean).join("\n\n");
           els.details.appendChild(issue);
         }
@@ -2837,8 +3046,14 @@ Lemma~\ref{lem:routeC-separated-height}
       if (node.equationLabels?.length) {
         const equationLabels = document.createElement("div");
         equationLabels.className = "meta";
-        equationLabels.textContent = "Owned equation labels: " + node.equationLabels.join(", ");
+        equationLabels.textContent = "Equation labels: " + node.equationLabels.join(", ");
         els.details.appendChild(equationLabels);
+      }
+      if (node.refLabels?.length) {
+        const refLabels = document.createElement("div");
+        refLabels.className = "meta";
+        refLabels.textContent = "Reference labels: " + node.refLabels.join(", ");
+        els.details.appendChild(refLabels);
       }
       const snippet = document.createElement("div");
       snippet.className = "snippet";
@@ -3052,23 +3267,19 @@ Lemma~\ref{lem:routeC-separated-height}
 
         g.appendChild(makeStatusSlider(node));
 
-        const titleLines = wrapText(node.title, NODE_TITLE_MAX_CHARS, 3);
+        const titleLines = wrapText(node.title, "title", NODE_TEXT_WIDTH, 3, NODE_TITLE_FALLBACK_MAX_CHARS);
         titleLines.forEach((line, i) => {
           const text = makeSvg("text", { class: "title", x: BOARD_SHELL_PADDING * 2, y: 58 + i * 18 });
           text.textContent = line;
           g.appendChild(text);
         });
 
-        const idLines = wrapText(node.id, NODE_ID_MAX_CHARS, 2);
+        const idLines = wrapIdText(node.id, NODE_ID_MAX_CHARS, 2);
         idLines.forEach((line, i) => {
-          const text = makeSvg("text", { class: "id", x: BOARD_SHELL_PADDING * 2, y: 116 + i * 16 });
+          const text = makeSvg("text", { class: "id", x: BOARD_SHELL_PADDING * 2, y: NODE_H - 44 + i * 27 });
           text.textContent = line;
           g.appendChild(text);
         });
-
-        const counts = makeSvg("text", { class: "count", x: NODE_W - BOARD_SHELL_PADDING * 2, y: NODE_H - 17, "text-anchor": "end" });
-        counts.textContent = node.dependsOn.length + " in · " + node.dependents.length + " out";
-        g.appendChild(counts);
 
         g.addEventListener("click", (event) => {
           if (isViewportClickSuppressed()) {
@@ -3179,6 +3390,52 @@ Lemma~\ref{lem:routeC-separated-height}
       els.contextMenu.classList.remove("visible");
       els.contextMenu.hidden = true;
       delete els.contextMenu.dataset.pinnedPosition;
+    }
+
+    function isGraphExitWarningArmed() {
+      return state.exitWarningArmed;
+    }
+
+    function armGraphExitWarning() {
+      state.exitWarningArmed = true;
+    }
+
+    function disarmGraphExitWarning() {
+      state.exitWarningArmed = false;
+    }
+
+    function closeUnsavedDialog(result) {
+      const resolve = state.unsavedDialogResolve;
+      if (!resolve) return;
+      els.dialogOverlay.classList.remove("show");
+      state.unsavedDialogResolve = null;
+      state.unsavedDialogPromise = null;
+      resolve(result);
+    }
+
+    function showUnsavedDialog() {
+      if (state.unsavedDialogPromise) return state.unsavedDialogPromise;
+      state.unsavedDialogPromise = new Promise((resolve) => {
+        state.unsavedDialogResolve = resolve;
+        els.dialogOverlay.classList.add("show");
+        requestAnimationFrame(() => {
+          try {
+            els.dialogCancel.focus({ preventScroll: true });
+          } catch {
+            els.dialogCancel.focus();
+          }
+        });
+      });
+      return state.unsavedDialogPromise;
+    }
+
+    async function confirmDirtyBeforeReplacingGraph() {
+      if (!isGraphExitWarningArmed()) return true;
+      closeContextMenu();
+      const choice = await showUnsavedDialog();
+      if (choice === "cancel") return false;
+      if (choice !== "save") return true;
+      return await exportHtml();
     }
 
     function getPriorStatuses({ includeStored = true, includeCurrent = true } = {}) {
@@ -3361,17 +3618,43 @@ Lemma~\ref{lem:routeC-separated-height}
     }
 
     function graphHtmlFilename(name = state.sourceName) {
-      return baseName(name) + ".proofgraph.html";
+      return baseName(name) + ".html";
+    }
+
+    function randomHexCode(length = 6) {
+      const bytes = new Uint8Array(Math.ceil(length / 2));
+      if (window.crypto?.getRandomValues) {
+        window.crypto.getRandomValues(bytes);
+      } else {
+        for (let i = 0; i < bytes.length; i += 1) bytes[i] = Math.floor(Math.random() * 256);
+      }
+      return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("").slice(0, length);
+    }
+
+    function randomGraphHtmlFilename() {
+      return "proogh" + randomHexCode(6) + ".html";
     }
 
     function defaultGraphHtmlFilename() {
-      return state.saveTargetName || graphHtmlFilename();
+      return randomGraphHtmlFilename();
+    }
+
+    function setDocumentTitleForSaveName(filename) {
+      const name = String(filename || "").trim();
+      if (name) document.title = name;
+    }
+
+    function prepareSaveFilename(filename = randomGraphHtmlFilename()) {
+      const normalized = normalizeGraphHtmlFilename(filename);
+      state.saveTargetName = normalized;
+      setDocumentTitleForSaveName(normalized);
+      return normalized;
     }
 
     function normalizeGraphHtmlFilename(name) {
       const trimmed = String(name || "").trim();
       if (!trimmed) return "";
-      return /\.(?:html?|proofgraph)$/i.test(trimmed) ? trimmed : trimmed + ".proofgraph.html";
+      return /\.(?:html?|proofgraph)$/i.test(trimmed) ? trimmed : trimmed + ".html";
     }
 
     function currentDocumentFilename() {
@@ -3480,13 +3763,16 @@ Lemma~\ref{lem:routeC-separated-height}
     }
 
     function graphHtmlText() {
-      if (!state.nodes.length) runParse({ selectFirstNode: false });
+      if (!state.nodes.length || state.tex !== els.texInput.value) {
+        runParse({ selectFirstNode: false });
+      }
       const data = exportData();
       return htmlWithEmbeddedGraphData(data);
     }
 
     async function saveGraphHtmlToHandle(handle) {
       if (!await canWriteFileHandle(handle)) return false;
+      setDocumentTitleForSaveName(handle.name || state.saveTargetName);
       await writeFileHandle(handle, "text/html;charset=utf-8", graphHtmlText());
       state.saveFileHandle = handle;
       state.saveTargetName = handle.name || state.saveTargetName;
@@ -3499,7 +3785,19 @@ Lemma~\ref{lem:routeC-separated-height}
     }
 
     function saveGraphHtmlDownload(filename) {
+      setDocumentTitleForSaveName(filename);
       download(filename, "text/html;charset=utf-8", graphHtmlText());
+      return true;
+    }
+
+    async function pickGraphHtmlSaveHandle(suggestedName) {
+      return await window.showSaveFilePicker({
+        suggestedName,
+        types: [{
+          description: "HTML graph",
+          accept: { "text/html": [".html", ".htm"] }
+        }]
+      });
     }
 
     async function exportHtml() {
@@ -3508,36 +3806,34 @@ Lemma~\ref{lem:routeC-separated-height}
           await state.saveFileHandleRestore;
           state.saveFileHandleRestore = null;
         }
-        if (state.saveFileHandle && await saveGraphHtmlToHandle(state.saveFileHandle)) return;
-        const filename = normalizeGraphHtmlFilename(state.saveTargetName || graphHtmlFilename());
-        if (!filename) return;
-        state.saveTargetName = filename;
-        saveGraphHtmlDownload(filename);
+        if (state.saveFileHandle && await saveGraphHtmlToHandle(state.saveFileHandle)) return true;
+        const filename = prepareSaveFilename();
+        if (supportsFileSystemAccess()) {
+          const handle = await pickGraphHtmlSaveHandle(filename);
+          return await saveGraphHtmlToHandle(handle);
+        }
+        return saveGraphHtmlDownload(filename);
       } catch (error) {
-        if (isAbortError(error)) return;
+        if (isAbortError(error)) return false;
         console.warn("Could not save graph", error);
+        return false;
       }
     }
 
     async function saveAsHtml() {
       try {
+        const suggestedName = prepareSaveFilename(defaultGraphHtmlFilename());
         if (supportsFileSystemAccess()) {
-          const handle = await window.showSaveFilePicker({
-            suggestedName: defaultGraphHtmlFilename(),
-            types: [{
-              description: "HTML graph",
-              accept: { "text/html": [".html", ".htm"] }
-            }]
-          });
-          await saveGraphHtmlToHandle(handle);
-          return;
+          const handle = await pickGraphHtmlSaveHandle(suggestedName);
+          return await saveGraphHtmlToHandle(handle);
         }
-        const filename = normalizeGraphHtmlFilename(window.prompt("Save graph as", defaultGraphHtmlFilename()));
-        if (!filename) return;
-        saveGraphHtmlDownload(filename);
+        const filename = normalizeGraphHtmlFilename(window.prompt("Save graph as", suggestedName));
+        if (!filename) return false;
+        return saveGraphHtmlDownload(filename);
       } catch (error) {
-        if (isAbortError(error)) return;
+        if (isAbortError(error)) return false;
         console.warn("Could not save graph as", error);
+        return false;
       }
     }
 
@@ -3585,6 +3881,7 @@ Lemma~\ref{lem:routeC-separated-height}
           ...node,
           aliases: node.aliases || [],
           equationLabels: node.equationLabels || [],
+          refLabels: node.refLabels || node.dependencyLabels || [],
           ownedLabels: node.ownedLabels || node.aliases || [],
           status: statusById[node.id] || node.status || "pending",
           dependents: Array.isArray(node.dependents) ? node.dependents : []
@@ -3605,6 +3902,7 @@ Lemma~\ref{lem:routeC-separated-height}
       } else {
         runParse({ selectFirstNode: false });
       }
+      armGraphExitWarning();
     }
 
     function rebuildDependents() {
@@ -3983,6 +4281,7 @@ Lemma~\ref{lem:routeC-separated-height}
       const raw = els.embeddedData.textContent.trim();
       if (!raw || raw === "null") {
         renderGraph();
+        disarmGraphExitWarning();
         return;
       }
       try {
@@ -4006,6 +4305,7 @@ Lemma~\ref{lem:routeC-separated-height}
         usePriorStatuses: false,
         selectFirstNode: false
       });
+      armGraphExitWarning();
     }
 
     function loadGraphFile(file, text, handle = null) {
@@ -4024,6 +4324,7 @@ Lemma~\ref{lem:routeC-separated-height}
     }
 
     async function openTexFile() {
+      if (!await confirmDirtyBeforeReplacingGraph()) return;
       if (!supportsFileSystemAccess()) {
         els.texFile.click();
         return;
@@ -4044,6 +4345,7 @@ Lemma~\ref{lem:routeC-separated-height}
     }
 
     async function openGraphFile() {
+      if (!await confirmDirtyBeforeReplacingGraph()) return;
       if (!supportsFileSystemAccess()) {
         els.graphFile.click();
         return;
@@ -4092,12 +4394,29 @@ Lemma~\ref{lem:routeC-separated-height}
       }
     }
 
+    els.unsavedDialog.addEventListener("contextmenu", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+    });
+    els.dialogSave.addEventListener("click", () => closeUnsavedDialog("save"));
+    els.dialogDiscard.addEventListener("click", () => closeUnsavedDialog("discard"));
+    els.dialogCancel.addEventListener("click", () => closeUnsavedDialog("cancel"));
+
+    window.addEventListener("beforeunload", (event) => {
+      if (!isGraphExitWarningArmed()) return;
+      event.preventDefault();
+      event.returnValue = "";
+    });
+
     els.openTexBtn.addEventListener("click", () => openTexFile());
     els.openGraphBtn.addEventListener("click", () => openGraphFile());
     els.exportHtmlBtn.addEventListener("click", () => exportHtml());
     els.exportJsonBtn.addEventListener("click", exportJson);
     els.fitBtn.addEventListener("click", fitGraph);
-    els.texInput.addEventListener("input", scheduleAutoParse);
+    els.texInput.addEventListener("input", () => {
+      armGraphExitWarning();
+      scheduleAutoParse();
+    });
     els.zoomRange.addEventListener("input", () => setZoom(Number(els.zoomRange.value) / 100));
     els.zoomOutBtn.addEventListener("click", () => setZoom(state.zoom / 1.1));
     els.zoomInBtn.addEventListener("click", () => setZoom(state.zoom * 1.1));
@@ -4171,6 +4490,7 @@ Lemma~\ref{lem:routeC-separated-height}
     });
 
     document.addEventListener("keydown", (event) => {
+      handleSaveShortcut(event);
       handleNodeCopyShortcut(event);
       handleEscapeKeyDown(event);
       handleSpaceKeyDown(event);
