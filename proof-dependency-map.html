@@ -3885,14 +3885,6 @@
       }
     }
 
-    function baseName(name) {
-      return (name || "proof-graph").replace(/\.[^.]+$/, "").replace(/[^\w.-]+/g, "_") || "proof-graph";
-    }
-
-    function graphHtmlFilename(name = state.sourceName) {
-      return baseName(name) + ".html";
-    }
-
     function randomHexCode(length = 6) {
       const bytes = new Uint8Array(Math.ceil(length / 2));
       if (window.crypto?.getRandomValues) {
@@ -3904,7 +3896,7 @@
     }
 
     function randomGraphHtmlFilename() {
-      return "tex2graph" + randomHexCode(6) + ".html";
+      return "text2graph_" + randomHexCode(6) + ".html";
     }
 
     function defaultGraphHtmlFilename() {
@@ -4598,7 +4590,7 @@
       state.sourceName = name;
       state.sourceHash = "";
       state.tex = text;
-      setSaveFileHandle(null, graphHtmlFilename(name));
+      setSaveFileHandle(null, randomGraphHtmlFilename());
       runParse({
         usePriorStatuses: false,
         selectFirstNode: false
