@@ -22,15 +22,13 @@
       --pixelied-surface: #f3f4f6;
       --pixelied-border: #e5e7eb;
       --pixelied-purple-rgb: 115, 91, 232;
-      --canvas-bg: var(--pixelied-white);
-      --canvas-bg-dark: var(--pixelied-white);
-      --canvas-text: var(--pixelied-black);
+      --canvas-bg: #fcfcfc;
       --bg: var(--canvas-bg);
       --panel: var(--pixelied-surface);
       --ink: var(--pixelied-black);
       --muted: var(--pixelied-muted);
-      --line: var(--pixelied-border);
       --line-strong: var(--pixelied-muted);
+      --graph-line: #000000;
       --accent-rgb: var(--pixelied-purple-rgb);
       --accent: rgb(var(--accent-rgb));
       --accent-strong: var(--accent);
@@ -38,10 +36,10 @@
       --accent-panel: rgba(var(--accent-rgb), 0.08);
       --warn: var(--accent);
       --warn-soft: var(--accent-soft);
-      --true-rgb: 20, 184, 116;
+      --true-rgb: 183, 215, 214;
       --true: rgb(var(--true-rgb));
       --true-soft: rgba(var(--true-rgb), 0.18);
-      --false-rgb: 244, 63, 94;
+      --false-rgb: 244, 179, 221;
       --false: rgb(var(--false-rgb));
       --false-soft: rgba(var(--false-rgb), 0.16);
       --blocked: var(--pixelied-muted);
@@ -50,9 +48,7 @@
       --blocked-accent: var(--accent);
       --blocked-accent-soft: var(--accent-soft);
       --blocked-text: rgba(var(--white_font_rgb), 0.78);
-      --pending: var(--pixelied-muted);
       --pending-soft: rgba(var(--white_font_rgb), 0.07);
-      --shadow: 0 18px 50px rgba(var(--accent-rgb), 0.10);
       --text-font-family: 'Geist Sans';
       --text-font-style: normal;
       --text-font-kerning: none;
@@ -63,7 +59,6 @@
       --regular_text: 400;
       --bold_text: 500;
       --black_font: var(--pixelied-black);
-      --white_font: var(--pixelied-black);
       --white_font_rgb: 29, 29, 29;
       --firefox-menu-bg: var(--pixelied-white);
       --firefox-menu-border: var(--pixelied-border);
@@ -76,18 +71,15 @@
       --firefox-menu-shadow:
         0 18px 45px rgba(var(--accent-rgb), 0.13),
         0 0 0 1px rgba(var(--accent-rgb), 0.08);
+      --control-hover-bg: rgba(255, 255, 255, 0.14);
+      --control-active-bg: rgba(255, 255, 255, 0.22);
       --status-pending-fill: var(--firefox-menu-bg);
-      --status-pending-stroke: var(--firefox-menu-border);
-      --status-pending-active-fill: var(--firefox-menu-hover-bg);
-      --status-pending-separator: var(--firefox-menu-separator);
-      --status-true-fill: #dff8ea;
-      --status-true-stroke: rgba(var(--true-rgb), 0.74);
-      --status-true-active-fill: rgba(var(--true-rgb), 0.28);
-      --status-true-separator: rgba(var(--true-rgb), 0.34);
-      --status-false-fill: #ffe1e8;
-      --status-false-stroke: rgba(var(--false-rgb), 0.76);
-      --status-false-active-fill: rgba(var(--false-rgb), 0.25);
-      --status-false-separator: rgba(var(--false-rgb), 0.35);
+      --status-pending-active-fill: var(--control-hover-bg);
+      --status-true-fill: #b7d7d6;
+      --status-true-active-fill: var(--control-hover-bg);
+      --status-false-fill: #f4b3dd;
+      --status-false-stroke: #f4b3dd;
+      --status-false-active-fill: var(--control-hover-bg);
       --ui-radius: 25px;
       --menu-shell-radius: var(--ui-radius);
       --menu-shell-padding: 8px;
@@ -97,13 +89,10 @@
       --menu-item-font-size: 13px;
       --menu-item-letter-spacing: var(--text-letter-spacing);
       --menu-item-line-height: 32px;
-      --menu-separator-gap: 8px;
-      --context-menu-width: 224px;
       --smooth-slide-duration: 220ms;
       --smooth-slide-ease: cubic-bezier(0.18, 0.9, 0.24, 1.18);
       --highlight-nudge-x: 2px;
-      --selection-outline: var(--accent);
-      --selection-highlight: rgba(var(--accent-rgb), 0.18);
+      --selection-outline: var(--graph-line);
       --danger-text: var(--false);
       --danger-bg: var(--false-soft);
       --safe-area-left: env(safe-area-inset-left, 0px);
@@ -177,15 +166,6 @@
 
     button:hover {
       background: var(--firefox-menu-hover-bg);
-    }
-
-    button.primary {
-      background: var(--firefox-menu-hover-bg);
-      color: var(--firefox-menu-text);
-    }
-
-    button.primary:hover {
-      background: var(--firefox-menu-active-bg);
     }
 
     button.icon {
@@ -909,30 +889,30 @@
 
     .edge {
       fill: none;
-      stroke: var(--pixelied-surface);
+      stroke: var(--graph-line);
       stroke-width: 1;
-      opacity: 1;
+      opacity: 0.5;
       vector-effect: non-scaling-stroke;
     }
 
     .edge.relation {
       stroke: var(--selection-outline);
       stroke-width: 1;
-      opacity: 1;
+      opacity: 0.5;
     }
 
     .edge.relation.direct {
       stroke: var(--selection-outline);
       stroke-width: 1;
       stroke-dasharray: none;
-      opacity: 0.98;
+      opacity: 0.5;
     }
 
     .edge.relation.indirect:not(.direct) {
-      stroke: var(--pixelied-surface);
+      stroke: var(--graph-line);
       stroke-width: 1;
       stroke-dasharray: none;
-      opacity: 1;
+      opacity: 0.5;
     }
 
     .edge.dependency {
@@ -944,32 +924,33 @@
     }
 
     .edge.blocked {
-      stroke: var(--blocked);
+      stroke: var(--graph-line);
       stroke-width: 1;
       stroke-dasharray: none;
-      opacity: 0.78;
+      opacity: 0.5;
     }
 
     .edge.blocked.relation {
-      stroke: var(--blocked);
-      opacity: 1;
+      stroke: var(--graph-line);
+      opacity: 0.5;
+    }
+
+    .edge.blocked.relation.direct {
+      opacity: 0.5;
     }
 
     .edge.blocked.relation.indirect:not(.direct) {
-      opacity: 0.78;
+      opacity: 0.5;
     }
 
-    .edge.false-source,
-    .edge.false-source.blocked,
-    .edge.false-source.relation {
-      stroke: var(--status-false-stroke);
-      opacity: 1;
+    .edge.suppressed {
+      display: none;
+      marker-end: none;
+      opacity: 0;
     }
 
     .edge.unrelated,
-    .edge.blocked.unrelated,
-    .edge.false-source.unrelated,
-    .edge.false-source.blocked.unrelated {
+    .edge.blocked.unrelated {
       display: none;
       marker-end: none;
       opacity: 0;
@@ -977,30 +958,23 @@
 
     .node {
       --status-fill: var(--status-pending-fill);
-      --status-stroke: var(--status-pending-stroke);
-      --node-fill: var(--pixelied-surface);
+      --node-fill: #000000;
       cursor: default;
     }
 
     .status-slider {
       --status-fill: var(--status-pending-fill);
-      --status-stroke: var(--status-pending-stroke);
       --status-active-fill: var(--status-pending-active-fill);
-      --status-separator-color: var(--status-pending-separator);
     }
 
     .status-slider.status-true {
       --status-fill: var(--status-true-fill);
-      --status-stroke: var(--status-true-stroke);
       --status-active-fill: var(--status-true-active-fill);
-      --status-separator-color: var(--status-true-separator);
     }
 
     .status-slider.status-false {
       --status-fill: var(--status-false-fill);
-      --status-stroke: var(--status-false-stroke);
       --status-active-fill: var(--status-false-active-fill);
-      --status-separator-color: var(--status-false-separator);
     }
 
     .node:focus {
@@ -1036,9 +1010,9 @@
     }
 
     .node.relation.direct .selection-frame {
-      opacity: 1;
+      opacity: 0;
       stroke: var(--selection-outline);
-      stroke-width: 1;
+      stroke-width: 0;
       stroke-dasharray: none;
     }
 
@@ -1073,11 +1047,7 @@
 
     .node:focus-visible .selection-frame,
     .node.selected .selection-frame {
-      opacity: 1;
-    }
-
-    .node.blocked {
-      --node-fill: var(--pixelied-white);
+      opacity: 0;
     }
 
     .node.blocked .body {
@@ -1105,25 +1075,25 @@
     .node.selected.relation.direct .selection-frame,
     .node.selected.relation.indirect .selection-frame,
     .node.selected .selection-frame {
-      opacity: 1;
+      opacity: 0;
       stroke: var(--selection-outline);
-      stroke-width: 2;
+      stroke-width: 0;
       stroke-dasharray: none;
     }
 
     .node .title {
       font-weight: var(--bold_text);
-      fill: var(--firefox-menu-text);
+      fill: #ffffff;
       font-size: var(--menu-item-font-size);
     }
 
     .node .id {
-      fill: var(--pixelied-muted);
+      fill: #ffffff;
       font-size: var(--menu-item-font-size);
     }
 
     .node .type {
-      fill: var(--pixelied-black);
+      fill: #ffffff;
       font-size: var(--menu-item-font-size);
       font-weight: var(--bold_text);
       text-transform: uppercase;
@@ -1131,7 +1101,11 @@
     }
 
     .node .final-mark {
-      fill: var(--warn);
+      fill: #ffffff;
+    }
+
+    .node .blocked-mark {
+      fill: var(--status-false-stroke);
     }
 
     .status-slider {
@@ -1188,12 +1162,12 @@
     }
 
     .status-slider .status-action.hotspot-active .status-action-bg {
-      fill: var(--firefox-menu-active-bg);
+      fill: var(--control-active-bg);
       transition-duration: 0ms;
     }
 
     .status-slider .status-label {
-      fill: var(--pixelied-black);
+      fill: #ffffff;
       font-size: var(--menu-item-font-size);
       font-weight: var(--bold_text);
       text-anchor: middle;
@@ -1203,20 +1177,24 @@
 
     .status-slider .status-action.hotspot-hover .status-label,
     .status-slider .status-action.active .status-label {
-      fill: var(--white_font);
+      fill: #ffffff;
     }
 
     .node.blocked .title,
     .node.blocked .type {
-      fill: var(--pixelied-black);
+      fill: #ffffff;
     }
 
     .node.blocked .id {
-      fill: var(--pixelied-muted);
+      fill: #ffffff;
     }
 
     .node.blocked .final-mark {
-      fill: var(--blocked-accent);
+      fill: #ffffff;
+    }
+
+    .node text {
+      fill: #ffffff;
     }
 
     .menu {
@@ -1250,9 +1228,25 @@
     }
 
     .menu[data-pinned-position="bottom-center"] {
-      background: #f3f4f6;
-      border: 1px solid var(--selection-outline);
+      background: #000000;
+      border: 0;
       box-shadow: none;
+    }
+
+    .menu[data-pinned-position="bottom-center"] .ctx-item {
+      color: #ffffff;
+      background: transparent;
+    }
+
+    .menu[data-pinned-position="bottom-center"] .ctx-item:hover,
+    .menu[data-pinned-position="bottom-center"] .ctx-item:focus-visible {
+      background: var(--control-hover-bg);
+      color: #ffffff;
+      outline: none;
+    }
+
+    .menu[data-pinned-position="bottom-center"] .ctx-item:active {
+      background: var(--control-active-bg);
     }
 
     #appActionGroup {
@@ -1325,15 +1319,6 @@
       white-space: nowrap;
     }
 
-    .ctx-sep {
-      width: 1px;
-      height: 22px;
-      flex: 0 0 auto;
-      background: var(--firefox-menu-separator);
-      margin: 0 var(--menu-separator-gap);
-      pointer-events: none;
-    }
-
     @media (max-width: 860px) {
       .sidebar {
         left: 8px;
@@ -1369,15 +1354,10 @@
         min-width: 0;
         padding: var(--menu-item-padding);
       }
-
-      .ctx-sep {
-        margin: 0 var(--menu-separator-gap);
-      }
     }
 
     @media (hover: none) {
       button:hover,
-      button.primary:hover,
       .stat:hover,
       .link-list button:hover,
       .ctx-item:hover {
@@ -1395,7 +1375,6 @@
         <input id="texFile" type="file" accept=".tex,.txt,text/plain" hidden>
         <button id="openGraphBtn" type="button" tabindex="-1">Open</button>
         <input id="graphFile" type="file" accept=".html,.htm,.json,.proofgraph,.proofmap,text/html,application/json" hidden>
-        <button id="exportHtmlBtn" type="button" tabindex="-1">Save</button>
         <button id="fitBtn" type="button" tabindex="-1">Fit</button>
       </div>
     </header>
@@ -1427,19 +1406,13 @@
           <svg id="graphSvg" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Proof dependency graph">
             <defs>
               <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--pixelied-surface)"></path>
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--graph-line)"></path>
               </marker>
               <marker id="arrowRelation" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)"></path>
-              </marker>
-              <marker id="arrowRelationIndirect" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--line-strong)" fill-opacity="0.42"></path>
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--graph-line)"></path>
               </marker>
               <marker id="arrowBlocked" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--blocked)"></path>
-              </marker>
-              <marker id="arrowFalse" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--status-false-stroke)"></path>
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--graph-line)"></path>
               </marker>
             </defs>
             <g id="graphZoom">
@@ -1503,7 +1476,7 @@
 
   <div id="contextMenu" class="menu" hidden>
     <div id="appActionGroup">
-      <button class="ctx-item" type="button" data-action="save-as"><span class="ctx-label">Save</span><span class="ctx-shortcut"></span></button>
+      <button class="ctx-item" type="button" data-action="save-as"><span class="ctx-label">Export as HTML</span><span class="ctx-shortcut"></span></button>
     </div>
   </div>
   <script id="embedded-graph-data" type="application/json">null</script>
@@ -1519,7 +1492,6 @@
     const NODE_H = BOARD_ITEM_SIZE * 5;
     const NODE_W = NODE_H * GOLDEN_RATIO;
     const X_GAP = BOARD_ITEM_SIZE * 5;
-    const Y_GAP = BOARD_ITEM_SIZE * 2;
     const PAD = BOARD_ITEM_SIZE * 2;
     const EDGE_PORT_MARGIN = BOARD_ITEM_SIZE * 0.75;
     const EDGE_PORT_STEP = BOARD_ITEM_SIZE * 0.56;
@@ -1538,6 +1510,7 @@
     const NODE_TEXT_WIDTH = NODE_W - BOARD_SHELL_PADDING * 4;
     const NODE_TITLE_FALLBACK_MAX_CHARS = Math.max(18, Math.floor(NODE_TEXT_WIDTH / (MENU_ITEM_FONT_SIZE * 0.5)));
     const NODE_ID_MAX_CHARS = Math.max(18, Math.floor(NODE_TEXT_WIDTH / (MENU_ITEM_FONT_SIZE * 0.62)));
+    const NODE_TEXT_LINE_STEP = 18;
     const BOARDFISH_ACTION_ICON_SIZE = 20;
     const STATUS_ACTION_SCALE = MENU_ITEM_FONT_SIZE / BOARDFISH_ACTION_ICON_SIZE;
     const STATUS_ACTION_SIZE = Math.round(BOARD_ITEM_SIZE * STATUS_ACTION_SCALE);
@@ -1561,7 +1534,6 @@
       height: STATUS_SLIDER_H,
       rx: Math.min(UI_RADIUS, STATUS_SLIDER_H / 2),
       itemSize: STATUS_ACTION_SIZE,
-      padding: STATUS_ACTION_PADDING,
       contentX: STATUS_ACTION_BORDER_INSET + STATUS_ACTION_PADDING,
       contentY: STATUS_ACTION_BORDER_INSET + STATUS_ACTION_PADDING,
       separatorWidth: STATUS_ACTION_SEPARATOR,
@@ -1574,12 +1546,6 @@
         STATUS_ACTION_SEPARATOR_GAP * 2 +
         STATUS_ACTION_SEPARATOR +
         STATUS_ACTION_SIZE / 2,
-      separatorX:
-        STATUS_ACTION_BORDER_INSET +
-        STATUS_ACTION_PADDING +
-        STATUS_ACTION_SIZE +
-        STATUS_ACTION_SEPARATOR_GAP +
-        STATUS_ACTION_SEPARATOR / 2,
       cy: STATUS_SLIDER_H / 2
     };
     const NODE_HEADER_CENTER_Y = STATUS_SLIDER.y + STATUS_SLIDER.cy;
@@ -1643,7 +1609,6 @@
       graphFile: document.getElementById("graphFile"),
       openTexBtn: document.getElementById("openTexBtn"),
       openGraphBtn: document.getElementById("openGraphBtn"),
-      exportHtmlBtn: document.getElementById("exportHtmlBtn"),
       fitBtn: document.getElementById("fitBtn"),
       stats: document.getElementById("stats"),
       details: document.getElementById("details"),
@@ -2198,30 +2163,29 @@
       }
 
       const orderedLevels = Array.from(rows.keys()).sort((a, b) => a - b);
-      let maxColumns = 0;
+      let maxRows = 0;
       for (const lev of orderedLevels) {
         const rowNodes = rows.get(lev);
         rowNodes.sort((a, b) => a.line - b.line || a.title.localeCompare(b.title));
-        maxColumns = Math.max(maxColumns, rowNodes.length);
+        maxRows = Math.max(maxRows, rowNodes.length);
       }
 
       const siblingGap = 40;
       const levelGap = X_GAP;
-      const columnStep = NODE_W + siblingGap;
-      const graphStackWidth = Math.max(1, maxColumns) * NODE_W + Math.max(0, maxColumns - 1) * siblingGap;
-      const lastLevelIndex = Math.max(0, orderedLevels.length - 1);
+      const rowStep = NODE_H + siblingGap;
+      const graphStackHeight = Math.max(1, maxRows) * NODE_H + Math.max(0, maxRows - 1) * siblingGap;
       for (const lev of orderedLevels) {
         const rowNodes = rows.get(lev);
-        const rowStackWidth = rowNodes.length * NODE_W + Math.max(0, rowNodes.length - 1) * siblingGap;
-        const rowOffsetX = Math.max(0, (graphStackWidth - rowStackWidth) / 2);
-        rowNodes.forEach((node, column) => {
-          node.x = PAD + rowOffsetX + column * columnStep;
-          node.y = PAD + (lastLevelIndex - lev) * (NODE_H + levelGap);
+        const rowStackHeight = rowNodes.length * NODE_H + Math.max(0, rowNodes.length - 1) * siblingGap;
+        const rowOffsetY = Math.max(0, (graphStackHeight - rowStackHeight) / 2);
+        rowNodes.forEach((node, row) => {
+          node.x = PAD + lev * (NODE_W + levelGap);
+          node.y = PAD + rowOffsetY + row * rowStep;
         });
       }
 
-      const width = PAD * 2 + Math.max(1, maxColumns) * NODE_W + Math.max(0, maxColumns - 1) * siblingGap;
-      const height = PAD * 2 + Math.max(1, orderedLevels.length) * NODE_H + Math.max(0, orderedLevels.length - 1) * levelGap;
+      const width = PAD * 2 + Math.max(1, orderedLevels.length) * NODE_W + Math.max(0, orderedLevels.length - 1) * levelGap;
+      const height = PAD * 2 + Math.max(1, maxRows) * NODE_H + Math.max(0, maxRows - 1) * siblingGap;
       return { width, height };
     }
 
@@ -2370,12 +2334,12 @@
     }
 
     function edgePath(from, to, fromPortOffset = 0, toPortOffset = 0) {
-      const x1 = from.x + NODE_W / 2 + fromPortOffset;
-      const y1 = from.y;
-      const x2 = to.x + NODE_W / 2 + toPortOffset;
-      const y2 = to.y + NODE_H;
-      const dy = Math.max(54, (y1 - y2) * 0.48);
-      return "M " + x1 + " " + y1 + " C " + x1 + " " + (y1 - dy) + ", " + x2 + " " + (y2 + dy) + ", " + x2 + " " + y2;
+      const x1 = from.x + NODE_W;
+      const y1 = from.y + NODE_H / 2 + fromPortOffset;
+      const x2 = to.x;
+      const y2 = to.y + NODE_H / 2 + toPortOffset;
+      const dx = Math.max(54, (x2 - x1) * 0.48);
+      return "M " + x1 + " " + y1 + " C " + (x1 + dx) + " " + y1 + ", " + (x2 - dx) + " " + y2 + ", " + x2 + " " + y2;
     }
 
     function uniqueEdges(edges) {
@@ -2396,8 +2360,8 @@
 
     function edgePortOffsets(count) {
       if (count <= 1) return [0];
-      const usableWidth = Math.max(0, NODE_W - EDGE_PORT_MARGIN * 2);
-      const step = Math.min(EDGE_PORT_STEP, usableWidth / (count - 1));
+      const usableHeight = Math.max(0, NODE_H - EDGE_PORT_MARGIN * 2);
+      const step = Math.min(EDGE_PORT_STEP, usableHeight / (count - 1));
       const center = (count - 1) / 2;
       return Array.from({ length: count }, (_, index) => Math.round((index - center) * step));
     }
@@ -2406,8 +2370,8 @@
       const aNode = direction === "outgoing" ? a.to : a.from;
       const bNode = direction === "outgoing" ? b.to : b.from;
       return (
-        (aNode.x + NODE_W / 2) - (bNode.x + NODE_W / 2) ||
-        aNode.y - bNode.y ||
+        (aNode.y + NODE_H / 2) - (bNode.y + NODE_H / 2) ||
+        aNode.x - bNode.x ||
         a.key.localeCompare(b.key)
       );
     }
@@ -2443,10 +2407,6 @@
 
     function collectSelectionFocus(startId) {
       const byId = new Map(state.nodes.map((node) => [node.id, node]));
-      const dependencies = new Set();
-      const dependents = new Set();
-      const dependencyEdges = new Set();
-      const dependentEdges = new Set();
       const incoming = new Map();
       const outgoing = new Map();
       for (const node of state.nodes) {
@@ -2463,13 +2423,16 @@
       const directDependents = new Set((outgoing.get(startId) || []).filter((id) => byId.has(id)));
       const directDependencyEdges = new Set(Array.from(directDependencies).map((id) => edgeKey(id, startId)));
       const directDependentEdges = new Set(Array.from(directDependents).map((id) => edgeKey(startId, id)));
+      const dependencies = new Set();
+      const dependents = new Set();
+      const dependencyEdges = new Set(directDependencyEdges);
+      const dependentEdges = new Set(directDependentEdges);
 
       const dependencyQueue = [startId];
       const dependencyVisited = new Set([startId]);
       while (dependencyQueue.length) {
         const id = dependencyQueue.shift();
         for (const depId of incoming.get(id) || []) {
-          dependencyEdges.add(edgeKey(depId, id));
           if (dependencyVisited.has(depId)) continue;
           dependencyVisited.add(depId);
           if (depId !== startId) dependencies.add(depId);
@@ -2482,7 +2445,6 @@
       while (dependentQueue.length) {
         const id = dependentQueue.shift();
         for (const dependentId of outgoing.get(id) || []) {
-          dependentEdges.add(edgeKey(id, dependentId));
           if (dependentVisited.has(dependentId)) continue;
           dependentVisited.add(dependentId);
           if (dependentId !== startId) dependents.add(dependentId);
@@ -2536,6 +2498,10 @@
       return from.status === "false";
     }
 
+    function isSuppressedOutputSource(from, focus = null) {
+      return !focus && (from.status === "false" || from.blocked);
+    }
+
     function isFocusedEdge(edge, focus = null) {
       if (!focus) return true;
       const key = edgeKey(edge.from, edge.to);
@@ -2548,7 +2514,7 @@
 
     function classForEdge(edge, from, to, focus = null) {
       const classes = ["edge"];
-      if (isFalseSourceNode(from)) classes.push("false-source");
+      if (isSuppressedOutputSource(from, focus)) classes.push("suppressed");
       const blockedEdge = isBlockingEdge(edge, from, focus);
       if (blockedEdge) classes.push("blocked");
       if (focus) {
@@ -2576,13 +2542,12 @@
     }
 
     function edgePaintLayerRank(className) {
-      const tokens = classTokenSet(className);
-      return tokens.has("false-source") ? 1 : 0;
+      return 0;
     }
 
     function markerForEdgeClass(edgeClass, blockedEdge) {
       const tokens = classTokenSet(edgeClass);
-      if (tokens.has("false-source")) return "url(#arrowFalse)";
+      if (tokens.has("suppressed")) return "none";
       if (blockedEdge) return "url(#arrowBlocked)";
       if (!tokens.has("relation")) return "url(#arrow)";
       return tokens.has("direct") ? "url(#arrowRelation)" : "url(#arrow)";
@@ -2604,12 +2569,40 @@
       element.classList.add("status-" + status);
     }
 
+    function outputMarkClassForNode(node) {
+      return node?.blocked ? "blocked-mark" : (node?.isFinal ? "final-mark" : "");
+    }
+
+    function makeOutputMark(className) {
+      return makeSvg("rect", {
+        class: className,
+        x: FINAL_MARK_X,
+        y: FINAL_MARK_Y,
+        width: FINAL_MARK_SIZE,
+        height: FINAL_MARK_SIZE,
+        rx: FINAL_MARK_RADIUS,
+        ry: FINAL_MARK_RADIUS
+      });
+    }
+
+    function syncRenderedOutputMark(nodeEl, node) {
+      if (!nodeEl) return;
+      nodeEl.querySelectorAll(".final-mark, .blocked-mark").forEach((mark) => mark.remove());
+      const outputMarkClass = outputMarkClassForNode(node);
+      if (!outputMarkClass) return;
+      const slider = nodeEl.querySelector(".status-slider");
+      const mark = makeOutputMark(outputMarkClass);
+      if (slider) nodeEl.insertBefore(mark, slider);
+      else nodeEl.appendChild(mark);
+    }
+
     function applyRenderedNodeStatus(id, status) {
       const nodeEl = findRenderedNodeElement(id);
       if (!nodeEl) return;
       const node = state.nodes.find((item) => item.id === id);
       replaceStatusClass(nodeEl, status);
       nodeEl.classList.toggle("blocked", !!node?.blocked);
+      syncRenderedOutputMark(nodeEl, node);
       const slider = nodeEl.querySelector(".status-slider");
       replaceStatusClass(slider, status);
       if (slider) {
@@ -2627,6 +2620,7 @@
         const node = byId.get(nodeEl.dataset?.nodeId);
         if (!node) continue;
         nodeEl.classList.toggle("blocked", !!node.blocked);
+        syncRenderedOutputMark(nodeEl, node);
       }
     }
 
@@ -3468,8 +3462,8 @@
       applyViewportTransform();
       syncContextMenuForGraphState();
 
-      const byId = new Map(state.nodes.map((node) => [node.id, node]));
       const focus = selectionFocusSets();
+      const byId = new Map(state.nodes.map((node) => [node.id, node]));
       const renderedEdges = state.edges
         .map((edge, index) => {
           const from = byId.get(edge.from);
@@ -3554,30 +3548,23 @@
         typeText.textContent = humanType(node.type);
         g.appendChild(typeText);
 
-        if (node.isFinal) {
-          g.appendChild(makeSvg("rect", {
-            class: "final-mark",
-            x: FINAL_MARK_X,
-            y: FINAL_MARK_Y,
-            width: FINAL_MARK_SIZE,
-            height: FINAL_MARK_SIZE,
-            rx: FINAL_MARK_RADIUS,
-            ry: FINAL_MARK_RADIUS
-          }));
+        const outputMarkClass = outputMarkClassForNode(node);
+        if (outputMarkClass) {
+          g.appendChild(makeOutputMark(outputMarkClass));
         }
 
         g.appendChild(makeStatusSlider(node));
 
         const titleLines = wrapText(node.title, "title", NODE_TEXT_WIDTH, 3, NODE_TITLE_FALLBACK_MAX_CHARS);
         titleLines.forEach((line, i) => {
-          const text = makeSvg("text", { class: "title", x: BOARD_SHELL_PADDING * 2, y: 58 + i * 18 });
+          const text = makeSvg("text", { class: "title", x: BOARD_SHELL_PADDING * 2, y: 58 + i * NODE_TEXT_LINE_STEP });
           text.textContent = line;
           g.appendChild(text);
         });
 
         const idLines = wrapIdText(node.id, NODE_ID_MAX_CHARS, 2);
         idLines.forEach((line, i) => {
-          const text = makeSvg("text", { class: "id", x: BOARD_SHELL_PADDING * 2, y: NODE_H - 44 + i * 27 });
+          const text = makeSvg("text", { class: "id", x: BOARD_SHELL_PADDING * 2, y: NODE_H - 44 + i * NODE_TEXT_LINE_STEP });
           text.textContent = line;
           g.appendChild(text);
         });
@@ -3896,7 +3883,7 @@
     }
 
     function randomGraphHtmlFilename() {
-      return "text2graph_" + randomHexCode(6) + ".html";
+      return "tex2graph_" + randomHexCode(6) + ".html";
     }
 
     function defaultGraphHtmlFilename() {
@@ -4730,25 +4717,9 @@
     }
 
     async function runContextMenuAction(action) {
-      if (action === "open-tex") {
-        closeContextMenu();
-        await openTexFile();
-        return;
-      }
-      if (action === "open-graph") {
-        closeContextMenu();
-        await openGraphFile();
-        return;
-      }
-      if (action === "export-html") {
-        closeContextMenu();
-        await exportHtml();
-        return;
-      }
-      if (action === "save-as") {
-        closeContextMenu();
-        await saveAsHtml();
-      }
+      if (action !== "save-as") return;
+      closeContextMenu();
+      await saveAsHtml();
     }
 
     els.homeOpenGraphBtn?.addEventListener("click", (event) => {
@@ -4775,7 +4746,6 @@
 
     els.openTexBtn.addEventListener("click", () => openTexFile());
     els.openGraphBtn.addEventListener("click", () => openGraphFile());
-    els.exportHtmlBtn.addEventListener("click", () => exportHtml());
     els.fitBtn.addEventListener("click", fitGraph);
     els.zoomRange.addEventListener("input", () => setZoom(Number(els.zoomRange.value) / 100));
     els.zoomOutBtn.addEventListener("click", () => setZoom(state.zoom / 1.1));
