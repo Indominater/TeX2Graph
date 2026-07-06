@@ -27,28 +27,15 @@
       --panel: var(--pixelied-surface);
       --ink: var(--pixelied-black);
       --muted: var(--pixelied-muted);
-      --line-strong: var(--pixelied-muted);
       --graph-line: #000000;
       --accent-rgb: var(--pixelied-purple-rgb);
       --accent: rgb(var(--accent-rgb));
       --accent-strong: var(--accent);
-      --accent-soft: rgba(var(--accent-rgb), 0.12);
       --accent-panel: rgba(var(--accent-rgb), 0.08);
-      --warn: var(--accent);
-      --warn-soft: var(--accent-soft);
       --true-rgb: 183, 215, 214;
       --true: rgb(var(--true-rgb));
-      --true-soft: rgba(var(--true-rgb), 0.18);
       --false-rgb: 244, 179, 221;
       --false: rgb(var(--false-rgb));
-      --false-soft: rgba(var(--false-rgb), 0.16);
-      --blocked: var(--pixelied-muted);
-      --blocked-soft: var(--panel);
-      --blocked-hatch: var(--pixelied-border);
-      --blocked-accent: var(--accent);
-      --blocked-accent-soft: var(--accent-soft);
-      --blocked-text: rgba(var(--white_font_rgb), 0.78);
-      --pending-soft: rgba(var(--white_font_rgb), 0.07);
       --text-font-family: 'Geist Sans';
       --text-font-style: normal;
       --text-font-kerning: none;
@@ -67,7 +54,6 @@
       --menu_pressed_bg: rgba(var(--accent-rgb), 0.14);
       --firefox-menu-hover-bg: var(--menu_hover_bg);
       --firefox-menu-active-bg: var(--menu_pressed_bg);
-      --firefox-menu-separator: var(--pixelied-border);
       --firefox-menu-shadow:
         0 18px 45px rgba(var(--accent-rgb), 0.13),
         0 0 0 1px rgba(var(--accent-rgb), 0.08);
@@ -93,8 +79,6 @@
       --smooth-slide-ease: cubic-bezier(0.18, 0.9, 0.24, 1.18);
       --highlight-nudge-x: 2px;
       --selection-outline: var(--graph-line);
-      --danger-text: var(--false);
-      --danger-bg: var(--false-soft);
       --safe-area-left: env(safe-area-inset-left, 0px);
       --safe-area-right: env(safe-area-inset-right, 0px);
       --safe-area-bottom: env(safe-area-inset-bottom, 0px);
@@ -168,48 +152,11 @@
       background: var(--firefox-menu-hover-bg);
     }
 
-    button.icon {
-      width: 34px;
-      padding: 0;
-      display: inline-grid;
-      place-items: center;
-    }
-
     .app {
       height: 100vh;
       height: 100dvh;
       display: grid;
       grid-template-rows: minmax(0, 1fr);
-    }
-
-    .topbar {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip: rect(0 0 0 0);
-      clip-path: inset(50%);
-      padding: 0;
-      border: 0;
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .brand {
-      font-weight: 740;
-      font-size: 17px;
-      white-space: nowrap;
-      color: var(--black_font);
-    }
-
-    .toolbar {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      min-width: 0;
-      overflow-x: auto;
-      padding-bottom: 2px;
     }
 
     .workspace {
@@ -220,233 +167,6 @@
       background: var(--canvas-bg);
     }
 
-    .sidebar {
-      position: absolute;
-      left: 12px;
-      top: 12px;
-      bottom: 12px;
-      z-index: 4;
-      width: min(390px, calc(100vw - 24px));
-      min-height: 0;
-      display: none;
-      grid-template-rows: auto minmax(0, 1fr);
-      background: var(--firefox-menu-bg);
-      border: 1px solid var(--firefox-menu-border);
-      border-radius: var(--menu-shell-radius);
-      box-shadow: var(--firefox-menu-shadow);
-      color: var(--firefox-menu-text);
-      padding: var(--menu-shell-padding);
-      overflow: hidden;
-      isolation: isolate;
-      -webkit-mask-image: -webkit-radial-gradient(white, black);
-      mask-image: radial-gradient(white, black);
-    }
-
-    .settings {
-      padding: 8px 0;
-      border-bottom: 1px solid var(--firefox-menu-separator);
-      display: grid;
-      gap: 10px;
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 0;
-      padding: 0 8px;
-    }
-
-    .stat {
-      border: 0;
-      border-radius: var(--ui-radius);
-      padding: 7px 8px;
-      background: transparent;
-      min-width: 0;
-      transition:
-        background-color var(--smooth-slide-duration) var(--smooth-slide-ease),
-        transform var(--smooth-slide-duration) var(--smooth-slide-ease);
-    }
-
-    .stat:hover {
-      background: var(--firefox-menu-hover-bg);
-      transform: translateX(var(--highlight-nudge-x));
-    }
-
-    .stat b {
-      display: block;
-      color: var(--firefox-menu-text);
-      font-size: 16px;
-      font-weight: var(--bold_text);
-      line-height: 1.1;
-    }
-
-    .stat span {
-      color: var(--muted);
-      font-size: 11px;
-      white-space: nowrap;
-    }
-
-    .legend {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      color: rgba(var(--white_font_rgb), 0.76);
-      font-size: 12px;
-      align-items: center;
-      padding: 0 8px;
-    }
-
-    .legend-item {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      min-width: 0;
-    }
-
-    .swatch {
-      width: 14px;
-      height: 14px;
-      border-radius: var(--ui-radius);
-      border: 1px solid var(--line-strong);
-      background: rgba(var(--white_font_rgb), 0.08);
-      flex: 0 0 auto;
-    }
-
-    .swatch.final {
-      border: 3px double var(--warn);
-      background: var(--warn-soft);
-    }
-
-    .swatch.false {
-      border-color: var(--false);
-      background: var(--false-soft);
-    }
-
-    .swatch.blocked {
-      border-color: var(--blocked);
-      background:
-        linear-gradient(90deg, var(--blocked-accent-soft), transparent 58%),
-        repeating-linear-gradient(
-          135deg,
-          var(--blocked-soft) 0 8px,
-          var(--blocked-hatch) 8px 11px,
-          var(--blocked-soft) 11px 18px
-        );
-      box-shadow: inset 3px 0 0 var(--blocked-accent);
-    }
-
-    .details {
-      min-height: 0;
-      overflow: auto;
-      padding: 10px 8px;
-      background: transparent;
-      scrollbar-color: var(--firefox-menu-border) transparent;
-    }
-
-    .details h2 {
-      margin: 0 0 4px;
-      color: var(--firefox-menu-text);
-      font-size: 15px;
-      font-weight: var(--bold_text);
-      line-height: 1.25;
-      letter-spacing: 0;
-    }
-
-    .details .meta {
-      color: var(--muted);
-      font-size: 12px;
-      overflow-wrap: anywhere;
-      margin-bottom: 10px;
-    }
-
-    .pill-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin: 9px 0 12px;
-    }
-
-    .pill {
-      border: 1px solid rgba(var(--white_font_rgb), 0.18);
-      border-radius: var(--ui-radius);
-      padding: 4px 9px;
-      font-size: 12px;
-      color: rgba(var(--white_font_rgb), 0.82);
-      background: transparent;
-      max-width: 100%;
-      overflow-wrap: anywhere;
-    }
-
-    .pill.status-true {
-      border-color: rgba(var(--true-rgb), 0.36);
-      background: var(--true-soft);
-      color: var(--true);
-    }
-
-    .pill.status-false {
-      border-color: rgba(var(--false-rgb), 0.42);
-      background: var(--danger-bg);
-      color: var(--danger-text);
-    }
-
-    .pill.status-pending {
-      border-color: rgba(var(--white_font_rgb), 0.18);
-      background: var(--pending-soft);
-      color: rgba(var(--white_font_rgb), 0.78);
-    }
-
-    .pill.status-blocked {
-      border-color: var(--firefox-menu-border);
-      background:
-        linear-gradient(90deg, var(--blocked-accent-soft), transparent 60%),
-        repeating-linear-gradient(
-          135deg,
-          var(--blocked-soft) 0 8px,
-          var(--blocked-hatch) 8px 11px,
-          var(--blocked-soft) 11px 18px
-        );
-      color: var(--blocked-text);
-    }
-
-    .link-list {
-      display: grid;
-      gap: 5px;
-      margin: 8px 0 14px;
-    }
-
-    .link-list button {
-      min-height: 30px;
-      height: auto;
-      padding: var(--menu-item-padding);
-      text-align: center;
-      display: block;
-      overflow-wrap: anywhere;
-      color: var(--firefox-menu-text);
-      background: transparent;
-      transition:
-        background-color var(--smooth-slide-duration) var(--smooth-slide-ease),
-        transform var(--smooth-slide-duration) var(--smooth-slide-ease);
-    }
-
-    .link-list button:hover {
-      background: var(--firefox-menu-hover-bg);
-      transform: translateX(var(--highlight-nudge-x));
-    }
-
-    .snippet {
-      border: 1px solid rgba(var(--white_font_rgb), 0.14);
-      border-radius: var(--ui-radius);
-      background: rgba(var(--white_font_rgb), 0.06);
-      color: rgba(var(--white_font_rgb), 0.78);
-      padding: 9px;
-      max-height: 180px;
-      overflow: auto;
-      white-space: pre-wrap;
-      font: 12px/1.45 var(--text-font-family);
-      user-select: text;
-      -webkit-user-select: text;
-    }
-
     .graph-pane {
       position: absolute;
       inset: 0;
@@ -455,40 +175,6 @@
       display: grid;
       grid-template-rows: minmax(0, 1fr);
       background: var(--canvas-bg);
-    }
-
-    .graph-statusbar {
-      min-height: 42px;
-      display: none;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 8px 12px;
-      border-bottom: 1px solid var(--firefox-menu-separator);
-      background: var(--firefox-menu-bg);
-      z-index: 2;
-    }
-
-    .graph-statusbar .summary {
-      color: var(--muted);
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .zoom-controls {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      color: var(--muted);
-      font-size: 12px;
-      flex: 0 0 auto;
-    }
-
-    .zoom-controls input {
-      accent-color: var(--accent);
-      width: 120px;
     }
 
     .graph-scroll {
@@ -523,6 +209,8 @@
       --home-nav-block-size: 56px;
       position: absolute;
       inset: 0;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
       color: var(--muted);
       overflow: hidden;
     }
@@ -548,10 +236,7 @@
     }
 
     .home-nav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
+      position: relative;
       z-index: 2;
       box-sizing: border-box;
       min-height: var(--home-nav-block-size);
@@ -560,20 +245,12 @@
       justify-items: center;
       padding: 6px clamp(18px, 7vw, 92px);
       border-radius: 0;
-      background: transparent;
+      background: var(--accent);
       box-shadow: none;
     }
 
     .home-nav::before {
-      content: "";
-      position: absolute;
-      top: -180px;
-      left: -180vw;
-      right: -180vw;
-      bottom: 0;
-      z-index: -1;
-      background: var(--accent);
-      pointer-events: none;
+      content: none;
     }
 
     .home-nav-content {
@@ -1319,22 +996,6 @@
       white-space: nowrap;
     }
 
-    @media (max-width: 860px) {
-      .sidebar {
-        left: 8px;
-        right: 8px;
-        top: 8px;
-        bottom: auto;
-        width: auto;
-        height: min(52vh, 560px);
-        grid-template-rows: auto minmax(0, 1fr);
-      }
-
-      .app {
-        grid-template-rows: minmax(0, 1fr);
-      }
-    }
-
     @media (max-width: 520px) {
       .menu {
         max-width: calc(100vw - var(--safe-area-left) - var(--safe-area-right) - 24px);
@@ -1342,15 +1003,18 @@
 
       .menu.visible {
         display: block;
+      }
+
+      .menu.visible:not([data-pinned-position="bottom-center"]) {
         width: calc(100vw - var(--safe-area-left) - var(--safe-area-right) - 24px);
       }
 
       #appActionGroup {
-        width: 100%;
+        width: auto;
       }
 
       .ctx-item {
-        flex: 1 1 0;
+        flex: 0 0 auto;
         min-width: 0;
         padding: var(--menu-item-padding);
       }
@@ -1358,8 +1022,6 @@
 
     @media (hover: none) {
       button:hover,
-      .stat:hover,
-      .link-list button:hover,
       .ctx-item:hover {
         transform: none;
       }
@@ -1368,40 +1030,8 @@
 </head>
 <body data-theme="light">
   <div class="app">
-    <header class="topbar" aria-hidden="true">
-      <div class="brand">TeX2Graph</div>
-      <div class="toolbar" role="toolbar" aria-label="Proof graph actions">
-        <button id="openTexBtn" type="button" tabindex="-1">Upload TeX</button>
-        <input id="texFile" type="file" accept=".tex,.txt,text/plain" hidden>
-        <button id="openGraphBtn" type="button" tabindex="-1">Open</button>
-        <input id="graphFile" type="file" accept=".html,.htm,.json,.proofgraph,.proofmap,text/html,application/json" hidden>
-        <button id="fitBtn" type="button" tabindex="-1">Fit</button>
-      </div>
-    </header>
-
     <main class="workspace">
-      <aside class="sidebar">
-        <div class="settings">
-          <div id="stats" class="stats" aria-live="polite"></div>
-          <div class="legend" aria-label="Graph legend">
-            <span class="legend-item"><span class="swatch final"></span>Final</span>
-            <span class="legend-item"><span class="swatch false"></span>False</span>
-            <span class="legend-item"><span class="swatch blocked"></span>Blocked</span>
-          </div>
-        </div>
-
-        <div id="details" class="details"></div>
-      </aside>
-
       <section class="graph-pane" aria-label="Dependency graph">
-        <div class="graph-statusbar">
-          <div id="graphSummary" class="summary">No graph loaded</div>
-          <div class="zoom-controls">
-            <button id="zoomOutBtn" class="icon" type="button" title="Zoom out">-</button>
-            <input id="zoomRange" type="range" min="1" max="10000" value="100">
-            <button id="zoomInBtn" class="icon" type="button" title="Zoom in">+</button>
-          </div>
-        </div>
         <div id="graphScroll" class="graph-scroll">
           <svg id="graphSvg" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Proof dependency graph">
             <defs>
@@ -1424,7 +1054,7 @@
             <div class="home-nav">
               <div class="home-nav-content">
                 <div class="home-brand">TeX2Graph</div>
-                <button id="homeOpenGraphBtn" class="home-open-button" type="button">Open</button>
+                <button id="homeOpenGraphBtn" class="home-open-button" type="button">Open HTML</button>
               </div>
             </div>
             <div class="home-content-shell">
@@ -1471,6 +1101,9 @@
       </section>
     </main>
   </div>
+
+  <input id="texFile" type="file" accept=".tex,.txt,text/plain" hidden>
+  <input id="graphFile" type="file" accept=".html,.htm,.json,.proofgraph,.proofmap,text/html,application/json" hidden>
 
   <div id="notice" class="notice" hidden role="status" aria-live="polite"></div>
 
@@ -1604,15 +1237,8 @@
     };
 
     const els = {
-      sidebar: document.querySelector(".sidebar"),
       texFile: document.getElementById("texFile"),
       graphFile: document.getElementById("graphFile"),
-      openTexBtn: document.getElementById("openTexBtn"),
-      openGraphBtn: document.getElementById("openGraphBtn"),
-      fitBtn: document.getElementById("fitBtn"),
-      stats: document.getElementById("stats"),
-      details: document.getElementById("details"),
-      graphSummary: document.getElementById("graphSummary"),
       graphScroll: document.getElementById("graphScroll"),
       graphSvg: document.getElementById("graphSvg"),
       graphZoom: document.getElementById("graphZoom"),
@@ -1624,9 +1250,6 @@
       notice: document.getElementById("notice"),
       contextMenu: document.getElementById("contextMenu"),
       appActionGroup: document.getElementById("appActionGroup"),
-      zoomRange: document.getElementById("zoomRange"),
-      zoomOutBtn: document.getElementById("zoomOutBtn"),
-      zoomInBtn: document.getElementById("zoomInBtn"),
       embeddedData: document.getElementById("embedded-graph-data") || document.getElementById("embedded-map-data")
     };
 
@@ -1929,6 +1552,7 @@
           aliases,
           ownedLabels,
           refLabels: block.refLabels,
+          unresolvedRefLabels: [],
           dependsOn: [],
           dependents: [],
           status: priorStatuses[uniqueId] || priorStatuses[id] || "pending",
@@ -1958,10 +1582,15 @@
         const deps = [];
         for (const label of node.refLabels) {
           const target = firstExternalOwner(labelToIds, label, node.id);
+          const owners = labelToIds.get(label) || [];
           if (target) deps.push(target);
-          else if (!isStructuralLabel(label)) unresolvedRefs.push({ from: node.id, ref: label });
+          else if (!owners.length) {
+            unresolvedRefs.push({ from: node.id, ref: label });
+            node.unresolvedRefLabels.push(label);
+          }
         }
         node.dependsOn = unique(deps);
+        node.unresolvedRefLabels = unique(node.unresolvedRefLabels);
       }
 
       const edges = [];
@@ -2195,29 +1824,19 @@
         node.blocked = false;
       });
       for (const node of nodes) {
-        if (node.status !== "false") continue;
-        const queue = node.dependents.slice();
+        if (!isBlockingSourceNode(node)) continue;
+        const queue = [node.id];
         const seen = new Set();
         while (queue.length) {
           const id = queue.shift();
           if (seen.has(id)) continue;
           seen.add(id);
-          const dependent = byId.get(id);
-          if (!dependent) continue;
-          dependent.blocked = true;
-          queue.push(...dependent.dependents);
+          const blockedNode = byId.get(id);
+          if (!blockedNode) continue;
+          blockedNode.blocked = true;
+          queue.push(...blockedNode.dependents);
         }
       }
-    }
-
-    function statusCounts(nodes) {
-      return nodes.reduce((acc, node) => {
-        acc[node.status] = (acc[node.status] || 0) + 1;
-        if (node.blocked && node.status !== "false") acc.blocked += 1;
-        if (node.isLeaf) acc.leaf += 1;
-        if (node.isFinal) acc.final += 1;
-        return acc;
-      }, { true: 0, false: 0, pending: 0, blocked: 0, leaf: 0, final: 0 });
     }
 
     function makeSvg(tag, attrs = {}) {
@@ -2494,12 +2113,12 @@
       return classes.join(" ");
     }
 
-    function isFalseSourceNode(from) {
-      return from.status === "false";
+    function isBlockingSourceNode(node) {
+      return node?.status === "false" || Boolean(node?.unresolvedRefLabels?.length);
     }
 
     function isSuppressedOutputSource(from, focus = null) {
-      return !focus && (from.status === "false" || from.blocked);
+      return !focus && from.blocked;
     }
 
     function isFocusedEdge(edge, focus = null) {
@@ -2509,7 +2128,7 @@
     }
 
     function isBlockingEdge(edge, from, focus = null) {
-      return isFalseSourceNode(from) && isFocusedEdge(edge, focus);
+      return from.blocked && isFocusedEdge(edge, focus);
     }
 
     function classForEdge(edge, from, to, focus = null) {
@@ -2675,8 +2294,6 @@
         applyRenderedNodeStatus(id, status);
         applyRenderedBlockedNodeStatuses();
         applyRenderedEdgeStatuses();
-        renderStats();
-        renderDetails();
         scheduleStatusRender();
         return;
       }
@@ -3183,130 +2800,6 @@
       return group;
     }
 
-    function renderStats() {
-      const counts = statusCounts(state.nodes);
-      const items = [
-        ["Nodes", state.nodes.length],
-        ["Edges", state.edges.length],
-        ["False", counts.false],
-        ["Blocked", counts.blocked]
-      ];
-      clear(els.stats);
-      for (const [label, value] of items) {
-        const div = document.createElement("div");
-        div.className = "stat";
-        const b = document.createElement("b");
-        b.textContent = String(value);
-        const span = document.createElement("span");
-        span.textContent = label;
-        div.append(b, span);
-        els.stats.appendChild(div);
-      }
-    }
-
-    function renderSummary() {
-      if (!state.nodes.length) {
-        els.graphSummary.textContent = "No graph loaded";
-        return;
-      }
-      const counts = statusCounts(state.nodes);
-      const duplicatePart = state.duplicateLabels.length ? " · " + state.duplicateLabels.length + " duplicate labels" : "";
-      const unresolvedPart = state.unresolvedRefs.length ? " · " + state.unresolvedRefs.length + " unresolved reference labels" : "";
-      els.graphSummary.textContent = state.nodes.length + " nodes · " + state.edges.length + " dependencies · " + counts.final + " final nodes" + duplicatePart + unresolvedPart;
-    }
-
-    function renderDetails() {
-      clear(els.details);
-      const node = state.nodes.find((item) => item.id === state.selectedId);
-      if (!node) {
-        const h = document.createElement("h2");
-        h.textContent = "No node selected";
-        const p = document.createElement("div");
-        p.className = "meta";
-        p.textContent = state.nodes.length ? "Select a node in the graph." : "Upload a TeX file to build its dependency graph.";
-        els.details.append(h, p);
-        if (state.duplicateLabels.length || state.unresolvedRefs.length) {
-          const issue = document.createElement("div");
-          issue.className = "snippet";
-          issue.textContent = [
-            state.duplicateLabels.length ? "Duplicate labels:\n" + state.duplicateLabels.slice(0, 8).map((item) => item.label + " -> " + item.first + " / " + item.second).join("\n") : "",
-            state.unresolvedRefs.length ? "Unresolved reference labels:\n" + state.unresolvedRefs.slice(0, 12).map((item) => item.from + " -> " + item.ref).join("\n") : ""
-          ].filter(Boolean).join("\n\n");
-          els.details.appendChild(issue);
-        }
-        return;
-      }
-
-      const h = document.createElement("h2");
-      h.textContent = node.title;
-      const meta = document.createElement("div");
-      meta.className = "meta";
-      meta.textContent = node.id + " · " + humanType(node.type) + " · line " + node.line;
-      const pills = document.createElement("div");
-      pills.className = "pill-row";
-      const status = document.createElement("span");
-      status.className = "pill status-" + node.status;
-      status.textContent = "status: " + node.status;
-      pills.appendChild(status);
-      if (node.isFinal) {
-        const final = document.createElement("span");
-        final.className = "pill";
-        final.textContent = "final";
-        pills.appendChild(final);
-      }
-      if (node.blocked && node.status !== "false") {
-        const blocked = document.createElement("span");
-        blocked.className = "pill status-blocked";
-        blocked.textContent = "blocked by false dependency";
-        pills.appendChild(blocked);
-      }
-
-      els.details.append(h, meta, pills);
-      appendLinkSection("Depends on", node.dependsOn);
-      appendLinkSection("Used by", node.dependents);
-      if (node.aliases.length > 1) {
-        const aliases = document.createElement("div");
-        aliases.className = "meta";
-        aliases.textContent = "Aliases: " + node.aliases.join(", ");
-        els.details.appendChild(aliases);
-      }
-      if (node.equationLabels?.length) {
-        const equationLabels = document.createElement("div");
-        equationLabels.className = "meta";
-        equationLabels.textContent = "Equation labels: " + node.equationLabels.join(", ");
-        els.details.appendChild(equationLabels);
-      }
-      if (node.refLabels?.length) {
-        const refLabels = document.createElement("div");
-        refLabels.className = "meta";
-        refLabels.textContent = "Reference labels: " + node.refLabels.join(", ");
-        els.details.appendChild(refLabels);
-      }
-      const snippet = document.createElement("div");
-      snippet.className = "snippet";
-      snippet.textContent = node.snippet;
-      els.details.appendChild(snippet);
-    }
-
-    function appendLinkSection(title, ids) {
-      const heading = document.createElement("div");
-      heading.className = "meta";
-      heading.textContent = title + " (" + ids.length + ")";
-      els.details.appendChild(heading);
-      if (!ids.length) return;
-      const list = document.createElement("div");
-      list.className = "link-list";
-      for (const id of ids) {
-        const target = state.nodes.find((node) => node.id === id);
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.textContent = target ? target.title + " · " + target.id : id;
-        btn.addEventListener("click", () => selectNode(id, true));
-        list.appendChild(btn);
-      }
-      els.details.appendChild(list);
-    }
-
     function clampZoom(value) {
       return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Number(value) || 1));
     }
@@ -3316,16 +2809,6 @@
         width: Math.max(1, els.graphScroll.clientWidth || 800),
         height: Math.max(1, els.graphScroll.clientHeight || 600)
       };
-    }
-
-    function graphContentInsetLeft() {
-      if (!els.sidebar) return 0;
-      const graphRect = els.graphScroll.getBoundingClientRect();
-      const sidebarRect = els.sidebar.getBoundingClientRect();
-      const verticalOverlap = sidebarRect.bottom > graphRect.top && sidebarRect.top < graphRect.bottom;
-      if (!verticalOverlap || sidebarRect.width > graphRect.width * 0.8) return 0;
-      const overlap = Math.max(0, Math.min(sidebarRect.right, graphRect.right) - graphRect.left);
-      return Math.min(Math.round(overlap + 28), Math.max(0, graphRect.width - 160));
     }
 
     function updateGraphViewportBox() {
@@ -3377,13 +2860,6 @@
       };
     }
 
-    function formatZoomPercent(value = state.zoom) {
-      const pct = Math.max(0, clampZoom(value) * 100);
-      if (pct >= 10) return Math.round(pct) + "%";
-      if (pct >= 1) return (Math.round(pct * 10) / 10).toFixed(1) + "%";
-      return Math.max(0.1, Math.round(pct * 10) / 10) + "%";
-    }
-
     function applyViewportTransform() {
       state.transformRaf = 0;
       updateGraphViewportBox();
@@ -3392,9 +2868,6 @@
       state.panX = pan.panX;
       state.panY = pan.panY;
       els.graphZoom.setAttribute("transform", "translate(" + state.panX + " " + state.panY + ") scale(" + state.zoom + ")");
-      const sliderValue = Math.min(10000, Math.max(1, Math.round(state.zoom * 100)));
-      els.zoomRange.value = String(sliderValue);
-      els.zoomRange.title = formatZoomPercent();
     }
 
     function scheduleViewportTransform() {
@@ -3432,17 +2905,6 @@
         normalizedZoom,
         viewportX - (viewportX - state.panX) * (normalizedZoom / currentZoom),
         viewportY - (viewportY - state.panY) * (normalizedZoom / currentZoom)
-      );
-    }
-
-    function centerNodeInViewport(node) {
-      const size = viewportSize();
-      const insetLeft = graphContentInsetLeft();
-      const usableWidth = Math.max(160, size.width - insetLeft);
-      setViewport(
-        state.zoom,
-        insetLeft + usableWidth / 2 - (node.x + NODE_W / 2) * state.zoom,
-        size.height / 2 - (node.y + NODE_H / 2) * state.zoom
       );
     }
 
@@ -3581,24 +3043,17 @@
         g.addEventListener("keydown", (event) => {
           if (event.key === "Enter") {
             event.preventDefault();
-            selectNode(node.id, false);
+            selectNode(node.id);
           }
         });
         els.nodesLayer.appendChild(g);
       }
 
-      renderStats();
-      renderSummary();
-      renderDetails();
     }
 
-    function selectNode(id, scrollIntoView) {
+    function selectNode(id) {
       state.selectedId = id;
-      const node = state.nodes.find((item) => item.id === id);
       renderGraph();
-      if (scrollIntoView && node) {
-        centerNodeInViewport(node);
-      }
     }
 
     function toggleNodeSelection(id) {
@@ -3606,7 +3061,7 @@
         clearSelection();
         return;
       }
-      selectNode(id, false);
+      selectNode(id);
     }
 
     function clearSelection() {
@@ -3623,17 +3078,6 @@
     function clampMenuTop(value, size, margin = MENU_VIEWPORT_EDGE_MARGIN) {
       const max = Math.max(margin, window.innerHeight - size - margin);
       return Math.max(margin, Math.min(max, value));
-    }
-
-    function openMenuAt(menu, x, y) {
-      delete menu.dataset.pinnedPosition;
-      menu.style.left = x + "px";
-      menu.style.top = y + "px";
-      menu.hidden = false;
-      menu.classList.add("visible");
-      const rect = menu.getBoundingClientRect();
-      menu.style.left = Math.round(clampMenuCoord(x, rect.width)) + "px";
-      menu.style.top = Math.round(clampMenuTop(y, rect.height)) + "px";
     }
 
     function pinnedContextMenuBottomOffset() {
@@ -3738,22 +3182,15 @@
       const maxX = Math.max(...state.nodes.map((node) => node.x + NODE_W)) + PAD;
       const maxY = Math.max(...state.nodes.map((node) => node.y + NODE_H)) + PAD;
       const size = viewportSize();
-      const insetLeft = graphContentInsetLeft();
-      const usableWidth = Math.max(160, size.width - insetLeft - 24);
+      const usableWidth = Math.max(160, size.width - 24);
       const zX = usableWidth / maxX;
       const zY = (size.height - 24) / maxY;
       const zoom = clampZoom(Math.min(zX, zY, 1));
       setViewport(
         zoom,
-        insetLeft + (usableWidth - maxX * zoom) / 2,
+        (usableWidth - maxX * zoom) / 2,
         (size.height - maxY * zoom) / 2
       );
-    }
-
-    function setZoom(value) {
-      if (!state.nodes.length) return;
-      const size = viewportSize();
-      zoomAroundViewportPoint(size.width / 2, size.height / 2, value);
     }
 
     function hashString(text) {
@@ -4129,6 +3566,7 @@
           equationLabels: node.equationLabels || [],
           refLabels: node.refLabels || node.dependencyLabels || [],
           ownedLabels: node.ownedLabels || node.aliases || [],
+          unresolvedRefLabels: Array.isArray(node.unresolvedRefLabels) ? node.unresolvedRefLabels : [],
           status: statusById[node.id] || node.status || "pending",
           dependents: Array.isArray(node.dependents) ? node.dependents : []
         }));
@@ -4136,6 +3574,7 @@
         rebuildDependents();
         state.duplicateLabels = data.duplicateLabels || [];
         state.unresolvedRefs = data.unresolvedRefs || [];
+        syncNodeUnresolvedRefLabels(state.nodes, state.unresolvedRefs);
         state.selectedId = null;
         if (data.viewport) {
           state.zoom = clampZoom(data.viewport.zoom);
@@ -4164,6 +3603,18 @@
         node.dependsOn = state.edges.filter((edge) => edge.to === node.id).map((edge) => edge.from);
         node.isLeaf = node.dependsOn.length === 0;
         node.isFinal = node.dependents.length === 0;
+      }
+    }
+
+    function syncNodeUnresolvedRefLabels(nodes, unresolvedRefs) {
+      const byId = new Map(nodes.map((node) => [node.id, node]));
+      for (const node of nodes) {
+        node.unresolvedRefLabels = unique(Array.isArray(node.unresolvedRefLabels) ? node.unresolvedRefLabels : []);
+      }
+      for (const item of Array.isArray(unresolvedRefs) ? unresolvedRefs : []) {
+        const node = byId.get(item?.from);
+        if (!node || !item?.ref) continue;
+        node.unresolvedRefLabels = unique([...node.unresolvedRefLabels, String(item.ref)]);
       }
     }
 
@@ -4744,12 +4195,6 @@
       event.returnValue = "";
     });
 
-    els.openTexBtn.addEventListener("click", () => openTexFile());
-    els.openGraphBtn.addEventListener("click", () => openGraphFile());
-    els.fitBtn.addEventListener("click", fitGraph);
-    els.zoomRange.addEventListener("input", () => setZoom(Number(els.zoomRange.value) / 100));
-    els.zoomOutBtn.addEventListener("click", () => setZoom(state.zoom / 1.1));
-    els.zoomInBtn.addEventListener("click", () => setZoom(state.zoom * 1.1));
     els.graphScroll.addEventListener("wheel", handleViewportWheel, { passive: false });
     els.graphScroll.addEventListener("mousedown", beginMousePan);
     els.graphScroll.addEventListener("pointerdown", beginTouchViewportGesture);
