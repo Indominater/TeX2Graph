@@ -3111,7 +3111,7 @@
         g.appendChild(makeStatusSlider(node));
 
         const idLines = wrapMeasuredText(node.id, "id", NODE_TEXT_WIDTH, 3, NODE_ID_MAX_CHARS);
-        const idStartY = NODE_H - NODE_HEADER_CENTER_Y - (idLines.length - 1) * NODE_TEXT_LINE_STEP;
+        const idStartY = NODE_H / 2 - ((idLines.length - 1) * NODE_TEXT_LINE_STEP) / 2;
         idLines.forEach((line, i) => {
           const text = makeSvg("text", { class: "id", x: BOARD_SHELL_PADDING * 2, y: idStartY + i * NODE_TEXT_LINE_STEP });
           text.textContent = line;
