@@ -1,14 +1,4378 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="refresh" content="0; url=proof-dependency-map.html?v=20260704-0324">
-    <title>TeX2Graph</title>
-    <script>
-      window.location.replace("proof-dependency-map.html?v=20260704-0324");
-    </script>
-  </head>
-  <body>
-    <p><a href="proof-dependency-map.html?v=20260704-0324">Open TeX2Graph</a></p>
-  </body>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>TeX2Graph</title>
+  <link rel="preload" href="fonts/Geist.woff2" as="font" type="font/woff2" crossorigin>
+  <style>
+    @font-face {
+      font-family: 'Geist Sans';
+      font-style: normal;
+      font-weight: 300 700;
+      font-display: swap;
+      src: url('fonts/Geist.woff2') format('woff2');
+    }
+
+    :root {
+      color-scheme: light;
+      --pixelied-white: #ffffff;
+      --pixelied-black: #1d1d1d;
+      --pixelied-muted: #636570;
+      --pixelied-surface: #f3f4f6;
+      --pixelied-border: #e5e7eb;
+      --pixelied-purple-rgb: 115, 91, 232;
+      --canvas-bg: #fcfcfc;
+      --bg: var(--canvas-bg);
+      --panel: var(--pixelied-surface);
+      --ink: var(--pixelied-black);
+      --muted: var(--pixelied-muted);
+      --graph-line: #000000;
+      --accent-rgb: var(--pixelied-purple-rgb);
+      --accent: rgb(var(--accent-rgb));
+      --accent-strong: var(--accent);
+      --accent-panel: rgba(var(--accent-rgb), 0.08);
+      --true-rgb: 183, 215, 214;
+      --true: rgb(var(--true-rgb));
+      --false-rgb: 244, 179, 221;
+      --false: rgb(var(--false-rgb));
+      --text-font-family: 'Geist Sans';
+      --text-font-style: normal;
+      --text-font-kerning: none;
+      --text-font-stretch: normal;
+      --text-font-variant-caps: normal;
+      --text-letter-spacing: 0px;
+      --text-direction: ltr;
+      --regular_text: 400;
+      --bold_text: 500;
+      --black_font: var(--pixelied-black);
+      --white_font_rgb: 29, 29, 29;
+      --firefox-menu-bg: var(--pixelied-white);
+      --firefox-menu-border: var(--pixelied-border);
+      --firefox-menu-text: var(--black_font);
+      --menu_hover_bg: var(--accent-panel);
+      --menu_pressed_bg: rgba(var(--accent-rgb), 0.14);
+      --firefox-menu-hover-bg: var(--menu_hover_bg);
+      --firefox-menu-active-bg: var(--menu_pressed_bg);
+      --firefox-menu-shadow:
+        0 18px 45px rgba(var(--accent-rgb), 0.13),
+        0 0 0 1px rgba(var(--accent-rgb), 0.08);
+      --control-hover-bg: rgba(255, 255, 255, 0.14);
+      --control-active-bg: rgba(255, 255, 255, 0.22);
+      --status-pending-fill: var(--firefox-menu-bg);
+      --status-pending-active-fill: var(--control-hover-bg);
+      --status-true-fill: #b7d7d6;
+      --status-true-active-fill: var(--control-hover-bg);
+      --status-false-fill: #f4b3dd;
+      --status-false-stroke: #f4b3dd;
+      --status-false-active-fill: var(--control-hover-bg);
+      --ui-radius: 25px;
+      --menu-shell-radius: var(--ui-radius);
+      --menu-shell-padding: 8px;
+      --menu-item-height: 32px;
+      --menu-item-padding: 0 8px;
+      --menu-item-radius: var(--ui-radius);
+      --menu-item-font-size: 13px;
+      --menu-item-letter-spacing: var(--text-letter-spacing);
+      --menu-item-line-height: 32px;
+      --smooth-slide-duration: 220ms;
+      --smooth-slide-ease: cubic-bezier(0.18, 0.9, 0.24, 1.18);
+      --highlight-nudge-x: 2px;
+      --selection-outline: var(--graph-line);
+      --safe-area-left: env(safe-area-inset-left, 0px);
+      --safe-area-right: env(safe-area-inset-right, 0px);
+      --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      margin: 0;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      min-height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--ink);
+      font: var(--text-font-style) var(--regular_text) var(--menu-item-font-size) var(--text-font-family);
+      font-kerning: var(--text-font-kerning);
+      font-stretch: var(--text-font-stretch);
+      font-variant-caps: var(--text-font-variant-caps);
+      letter-spacing: var(--text-letter-spacing);
+      direction: var(--text-direction);
+      overscroll-behavior: none;
+      touch-action: none;
+      user-select: none;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    html.home-default,
+    body.home-default {
+      overflow: auto;
+      overscroll-behavior: auto;
+      touch-action: auto;
+    }
+
+    html.home-default,
+    body.home-default {
+      background: var(--canvas-bg);
+    }
+
+    .app,
+    .app * {
+      cursor: default;
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+      letter-spacing: 0;
+    }
+
+    button {
+      border: 0;
+      border-radius: var(--ui-radius);
+      background: transparent;
+      color: inherit;
+      min-height: var(--menu-item-height);
+      padding: var(--menu-item-padding);
+      cursor: default;
+      outline: none;
+    }
+
+    button:hover {
+      background: var(--firefox-menu-hover-bg);
+    }
+
+    .app {
+      height: 100vh;
+      height: 100dvh;
+      display: grid;
+      grid-template-rows: minmax(0, 1fr);
+    }
+
+    .workspace {
+      position: relative;
+      display: block;
+      min-height: 0;
+      overflow: hidden;
+      background: var(--canvas-bg);
+    }
+
+    .graph-pane {
+      position: absolute;
+      inset: 0;
+      min-width: 0;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: minmax(0, 1fr);
+      background: var(--canvas-bg);
+    }
+
+    .graph-scroll {
+      min-height: 0;
+      overflow: hidden;
+      position: relative;
+      cursor: default;
+      touch-action: none;
+      user-select: none;
+      background: var(--canvas-bg);
+    }
+
+    .graph-scroll.home-default {
+      overflow: auto;
+      touch-action: auto;
+      user-select: auto;
+    }
+
+    .graph-scroll.space-pan,
+    .graph-scroll.panning {
+      cursor: default;
+    }
+
+    #graphSvg {
+      display: block;
+      min-width: 100%;
+      min-height: 100%;
+    }
+
+    .empty-state {
+      --home-vertical-gap: 28px;
+      --home-nav-block-size: 56px;
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      color: var(--muted);
+      overflow: hidden;
+    }
+
+    .graph-scroll.home-default .empty-state {
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .home-content-shell {
+      min-height: 100%;
+      width: 100%;
+      box-sizing: border-box;
+      display: grid;
+      place-items: center;
+      padding: var(--home-vertical-gap) clamp(18px, 7vw, 92px);
+    }
+
+    .empty-content {
+      width: 90%;
+      color: var(--firefox-menu-text);
+      line-height: 1.35;
+    }
+
+    .home-nav {
+      position: relative;
+      z-index: 2;
+      box-sizing: border-box;
+      min-height: var(--home-nav-block-size);
+      display: grid;
+      align-items: center;
+      justify-items: center;
+      padding: 6px clamp(18px, 7vw, 92px);
+      border-radius: 0;
+      background: var(--accent);
+      box-shadow: none;
+    }
+
+    .home-nav::before {
+      content: none;
+    }
+
+    .home-nav-content {
+      position: relative;
+      z-index: 1;
+      width: 90%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .home-brand {
+      position: relative;
+      z-index: 1;
+      display: inline-flex;
+      align-items: center;
+      color: var(--pixelied-white);
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .home-brand,
+    .home-title,
+    .home-subtitle,
+    .home-guidance,
+    .home-guidance * {
+      cursor: text;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    .home-open-button {
+      position: relative;
+      z-index: 1;
+      min-height: 40px;
+      padding: 0 20px;
+      border: 0;
+      border-radius: var(--ui-radius);
+      color: var(--accent);
+      background: var(--pixelied-white);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .home-open-button:hover,
+    .home-open-button:focus-visible {
+      background: var(--pixelied-white);
+      outline: none;
+      box-shadow: none;
+    }
+
+    .home-hero {
+      text-align: center;
+    }
+
+    .home-title {
+      max-width: 920px;
+      margin: 0 auto;
+      color: var(--black_font);
+      font-size: clamp(39px, 4.2vw, 57px);
+      line-height: 0.98;
+      font-weight: 700;
+      letter-spacing: -0.035em;
+    }
+
+    .home-subtitle {
+      max-width: 700px;
+      margin: var(--home-vertical-gap) auto 0;
+      color: var(--muted);
+      font-size: clamp(18px, 1.6vw, 21px);
+      line-height: 1.35;
+      font-weight: 600;
+    }
+
+    .home-dropzone {
+      --home-drop-dash-color: rgba(var(--accent-rgb), 0.65);
+      width: 100%;
+      min-height: clamp(240px, 25vh, 310px);
+      margin-top: var(--home-vertical-gap);
+      position: relative;
+      border: 0;
+      border-radius: var(--ui-radius);
+      display: grid;
+      place-items: center;
+      background: var(--panel);
+      cursor: pointer;
+      transition:
+        background-color 160ms ease,
+        box-shadow 160ms ease;
+    }
+
+    .home-dropzone:focus-visible {
+      outline: 3px solid rgba(var(--accent-rgb), 0.36);
+      outline-offset: 4px;
+    }
+
+    .home-drop-outline {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      pointer-events: none;
+    }
+
+    .home-drop-outline rect {
+      fill: none;
+      stroke: var(--home-drop-dash-color);
+      stroke-width: 2;
+      stroke-dasharray: 1 1;
+      stroke-linecap: butt;
+      vector-effect: non-scaling-stroke;
+      transition: stroke 160ms ease;
+    }
+
+    .home-dropzone.drag-over {
+      --home-drop-dash-color: var(--accent);
+      background: var(--accent-panel);
+      box-shadow: 0 16px 45px rgba(var(--accent-rgb), 0.16);
+    }
+
+    .home-drop-inner {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      justify-items: center;
+      gap: 14px;
+      padding: 30px;
+      pointer-events: none;
+    }
+
+    .home-upload-button {
+      width: min(100%, 380px);
+      min-height: 78px;
+      padding: 0 30px;
+      border-radius: var(--ui-radius);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      background: var(--accent);
+      color: var(--pixelied-white);
+      font-size: 22px;
+      font-weight: 700;
+      pointer-events: none;
+      box-shadow: 0 14px 32px rgba(var(--accent-rgb), 0.24);
+    }
+
+    .home-dropzone:hover .home-upload-button,
+    .home-dropzone:focus-visible .home-upload-button {
+      background: var(--accent-strong);
+    }
+
+    .home-upload-icon {
+      min-width: 44px;
+      color: currentColor;
+      display: inline-flex;
+      align-items: baseline;
+      justify-content: center;
+      font-family: "Latin Modern Roman", "Computer Modern Serif", "CMU Serif", "Times New Roman", Times, serif;
+      font-size: 27px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: 0;
+      font-variant-ligatures: none;
+    }
+
+    .home-upload-icon span {
+      display: inline-block;
+    }
+
+    .home-upload-icon .tex-e {
+      margin-left: -0.1667em;
+      transform: translateY(0.5ex);
+    }
+
+    .home-upload-icon .tex-x {
+      margin-left: -0.125em;
+    }
+
+    .home-guidance {
+      --home-guidance-gap: 10px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--home-guidance-gap);
+      margin-top: var(--home-vertical-gap);
+      color: var(--muted);
+      text-align: center;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .home-guidance-item {
+      padding: 16px;
+      border-radius: var(--ui-radius);
+      background: var(--panel);
+      border: 0;
+      text-align: center;
+    }
+
+    .home-guidance-item strong {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--black_font);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .home-command-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 5px;
+      margin-top: 8px;
+    }
+
+    .home-command-list code {
+      padding: 1px 7px;
+      border-radius: var(--ui-radius);
+      background: var(--accent-panel);
+      color: var(--accent);
+      font-family: inherit;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 820px) {
+      .empty-state {
+        --home-nav-block-size: 46px;
+      }
+
+      .home-content-shell {
+        padding: var(--home-vertical-gap) 16px;
+      }
+
+      .empty-content {
+        width: 100%;
+      }
+
+      .home-nav {
+        padding: 6px 16px;
+      }
+
+      .home-nav-content {
+        width: 100%;
+        gap: 12px;
+      }
+
+      .home-brand {
+        font-size: 20px;
+      }
+
+      .home-open-button {
+        min-height: 36px;
+        padding: 0 14px;
+        font-size: 13px;
+      }
+
+      .home-title {
+        font-size: clamp(33px, 10vw, 48px);
+      }
+
+      .home-subtitle {
+        font-size: 17px;
+      }
+
+      .home-dropzone {
+        min-height: 230px;
+      }
+
+      .home-upload-button {
+        width: min(100%, 310px);
+        min-height: 68px;
+        padding: 0 20px;
+        font-size: 19px;
+      }
+
+      .home-guidance {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .notice {
+      position: fixed;
+      left: 50%;
+      bottom: calc(96px + var(--safe-area-bottom));
+      z-index: 99998;
+      width: min(420px, calc(100vw - var(--safe-area-left) - var(--safe-area-right) - 24px));
+      padding: 10px 14px;
+      border: 1px solid var(--firefox-menu-border);
+      border-radius: var(--menu-shell-radius);
+      background: var(--firefox-menu-bg);
+      box-shadow: var(--firefox-menu-shadow);
+      color: var(--firefox-menu-text);
+      font-weight: var(--bold_text);
+      line-height: 1.35;
+      text-align: center;
+      opacity: 0;
+      transform: translate(-50%, 8px);
+      transition:
+        opacity 160ms ease,
+        transform 160ms ease;
+      pointer-events: none;
+    }
+
+    .notice.visible {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    .edge {
+      fill: none;
+      stroke: var(--graph-line);
+      stroke-width: 1;
+      opacity: 0.5;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .edge.relation {
+      stroke: var(--selection-outline);
+      stroke-width: 1;
+      opacity: 0.5;
+    }
+
+    .edge.relation.direct {
+      stroke: var(--selection-outline);
+      stroke-width: 1;
+      stroke-dasharray: none;
+      opacity: 0.5;
+    }
+
+    .edge.relation.indirect:not(.direct) {
+      stroke: var(--graph-line);
+      stroke-width: 1;
+      stroke-dasharray: none;
+      opacity: 0.5;
+    }
+
+    .edge.dependency {
+      stroke-dasharray: none;
+    }
+
+    .edge.dependent {
+      stroke-dasharray: none;
+    }
+
+    .edge.blocked {
+      stroke: var(--graph-line);
+      stroke-width: 1;
+      stroke-dasharray: none;
+      opacity: 0.5;
+    }
+
+    .edge.blocked.relation {
+      stroke: var(--graph-line);
+      opacity: 0.5;
+    }
+
+    .edge.blocked.relation.direct {
+      opacity: 0.5;
+    }
+
+    .edge.blocked.relation.indirect:not(.direct) {
+      opacity: 0.5;
+    }
+
+    .edge.suppressed {
+      display: none;
+      marker-end: none;
+      opacity: 0;
+    }
+
+    .edge.unrelated,
+    .edge.blocked.unrelated {
+      display: none;
+      marker-end: none;
+      opacity: 0;
+    }
+
+    .node {
+      --status-fill: var(--status-pending-fill);
+      --node-fill: #000000;
+      cursor: default;
+    }
+
+    .status-slider {
+      --status-fill: var(--status-pending-fill);
+      --status-active-fill: var(--status-pending-active-fill);
+    }
+
+    .status-slider.status-true {
+      --status-fill: var(--status-true-fill);
+      --status-active-fill: var(--status-true-active-fill);
+    }
+
+    .status-slider.status-false {
+      --status-fill: var(--status-false-fill);
+      --status-active-fill: var(--status-false-active-fill);
+    }
+
+    .node:focus {
+      outline: none;
+    }
+
+    .node.unrelated {
+      display: none;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .node.relation.direct {
+      opacity: 1;
+    }
+
+    .node.relation.indirect:not(.direct) {
+      opacity: 1;
+    }
+
+    .node.relation .body {
+      stroke-width: 0;
+    }
+
+    .node.relation.direct .body {
+      stroke-width: 0;
+      stroke-dasharray: none;
+    }
+
+    .node.relation.indirect:not(.direct) .body {
+      stroke-width: 0;
+      stroke-dasharray: none;
+    }
+
+    .node.relation.direct .selection-frame {
+      opacity: 0;
+      stroke: var(--selection-outline);
+      stroke-width: 0;
+      stroke-dasharray: none;
+    }
+
+    .node.relation.indirect:not(.direct) .selection-frame {
+      opacity: 0;
+      stroke-dasharray: none;
+    }
+
+    .node.dependency .body {
+      stroke-dasharray: none;
+    }
+
+    .node.dependent .body {
+      stroke-dasharray: none;
+    }
+
+    .node .body {
+      fill: var(--node-fill);
+      stroke: none;
+      stroke-width: 0;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .node .selection-frame {
+      fill: none;
+      stroke: var(--selection-outline);
+      stroke-width: 1;
+      opacity: 0;
+      pointer-events: none;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .node:focus-visible .selection-frame,
+    .node.selected .selection-frame {
+      opacity: 0;
+    }
+
+    .node.blocked .body {
+      stroke: none;
+      stroke-dasharray: none;
+    }
+
+    .node.final .body {
+      stroke-width: 0;
+    }
+
+    .node.selected {
+      opacity: 1;
+      filter: none;
+    }
+
+    .node.selected.relation.direct .body,
+    .node.selected.relation.indirect .body,
+    .node.selected.blocked .body,
+    .node.selected .body {
+      stroke-width: 1;
+      stroke-dasharray: none;
+    }
+
+    .node.selected.relation.direct .selection-frame,
+    .node.selected.relation.indirect .selection-frame,
+    .node.selected .selection-frame {
+      opacity: 0;
+      stroke: var(--selection-outline);
+      stroke-width: 0;
+      stroke-dasharray: none;
+    }
+
+    .node .id {
+      fill: #ffffff;
+      font-size: var(--menu-item-font-size);
+      dominant-baseline: central;
+    }
+
+    .node .type {
+      fill: #ffffff;
+      font-size: var(--menu-item-font-size);
+      font-weight: var(--bold_text);
+      text-transform: uppercase;
+      dominant-baseline: central;
+    }
+
+    .node .final-mark {
+      fill: #ffffff;
+    }
+
+    .node .blocked-mark {
+      fill: var(--status-false-stroke);
+    }
+
+    .status-slider {
+      cursor: pointer;
+      pointer-events: all;
+      touch-action: none;
+      outline: none;
+    }
+
+    .status-slider * {
+      pointer-events: none;
+    }
+
+    .status-slider .slider-hitbox {
+      fill: transparent;
+      cursor: pointer;
+      pointer-events: all;
+    }
+
+    .status-slider .status-shell {
+      fill: var(--node-fill);
+      stroke: none;
+      stroke-width: 1;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .status-slider.status-true .status-shell,
+    .status-slider.status-false .status-shell {
+      fill: var(--status-fill);
+    }
+
+    .status-slider .status-action {
+      --ui-highlight-nudge-transform: translateX(0);
+      transform: var(--ui-highlight-nudge-transform);
+      transform-box: fill-box;
+      transform-origin: center;
+      transition:
+        transform var(--smooth-slide-duration) var(--smooth-slide-ease),
+        color var(--smooth-slide-duration) var(--smooth-slide-ease);
+    }
+
+    .status-slider .status-action.hotspot-hover {
+      --ui-highlight-nudge-transform: translateX(var(--highlight-nudge-x));
+    }
+
+    .status-slider .status-action-bg {
+      fill: transparent;
+      transition: fill var(--smooth-slide-duration) var(--smooth-slide-ease);
+    }
+
+    .status-slider .status-action.hotspot-hover .status-action-bg,
+    .status-slider .status-action.active .status-action-bg {
+      fill: var(--status-active-fill);
+    }
+
+    .status-slider .status-action.hotspot-active .status-action-bg {
+      fill: var(--control-active-bg);
+      transition-duration: 0ms;
+    }
+
+    .status-slider .status-label {
+      fill: #ffffff;
+      font-size: var(--menu-item-font-size);
+      font-weight: var(--bold_text);
+      text-anchor: middle;
+      dominant-baseline: central;
+      transition: fill var(--smooth-slide-duration) var(--smooth-slide-ease);
+    }
+
+    .status-slider .status-action.hotspot-hover .status-label,
+    .status-slider .status-action.active .status-label {
+      fill: #ffffff;
+    }
+
+    .node.blocked .type {
+      fill: #ffffff;
+    }
+
+    .node.blocked .id {
+      fill: #ffffff;
+    }
+
+    .node.blocked .final-mark {
+      fill: #ffffff;
+    }
+
+    .node text {
+      fill: #ffffff;
+    }
+
+    .menu {
+      position: fixed;
+      z-index: 99999;
+      display: none;
+      width: auto;
+      max-width: calc(100vw - 24px);
+      background: var(--firefox-menu-bg);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      border: 1px solid var(--pixelied-black);
+      border-radius: var(--menu-shell-radius);
+      box-shadow: var(--firefox-menu-shadow);
+      color: var(--firefox-menu-text);
+      font-family: inherit;
+      padding: var(--menu-shell-padding);
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+      isolation: isolate;
+      clip-path: none;
+      filter: none;
+      transform: translateZ(0);
+      -webkit-mask-image: -webkit-radial-gradient(white, black);
+      mask-image: radial-gradient(white, black);
+    }
+
+    .menu.visible {
+      display: block;
+    }
+
+    .menu[data-pinned-position="bottom-center"] {
+      background: #000000;
+      border: 0;
+      box-shadow: none;
+    }
+
+    .menu[data-pinned-position="bottom-center"] .ctx-item {
+      color: #ffffff;
+      background: transparent;
+    }
+
+    .menu[data-pinned-position="bottom-center"] .ctx-item:hover,
+    .menu[data-pinned-position="bottom-center"] .ctx-item:focus-visible {
+      background: var(--control-hover-bg);
+      color: #ffffff;
+      outline: none;
+    }
+
+    .menu[data-pinned-position="bottom-center"] .ctx-item:active {
+      background: var(--control-active-bg);
+    }
+
+    #appActionGroup {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      white-space: nowrap;
+    }
+
+    .menu *,
+    .menu *::before,
+    .menu *::after {
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .ctx-item {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: auto;
+      height: var(--menu-item-height);
+      min-height: var(--menu-item-height);
+      padding: var(--menu-item-padding);
+      font: var(--text-font-style) var(--bold_text) var(--menu-item-font-size) var(--text-font-family);
+      line-height: var(--menu-item-line-height);
+      color: var(--pixelied-black);
+      background: transparent;
+      border: 0;
+      border-radius: var(--menu-item-radius);
+      text-align: left;
+      cursor: pointer;
+      letter-spacing: var(--menu-item-letter-spacing);
+      box-shadow: none;
+      --ui-highlight-nudge-transform: translateX(0);
+      transform: var(--ui-highlight-nudge-transform);
+      transition:
+        background-color var(--smooth-slide-duration) var(--smooth-slide-ease),
+        color var(--smooth-slide-duration) var(--smooth-slide-ease),
+        opacity var(--smooth-slide-duration) var(--smooth-slide-ease),
+        transform var(--smooth-slide-duration) var(--smooth-slide-ease);
+    }
+
+    .ctx-item:hover,
+    .ctx-item:focus-visible {
+      --ui-highlight-nudge-transform: translateX(var(--highlight-nudge-x));
+      background: var(--firefox-menu-hover-bg);
+      color: var(--pixelied-black);
+      box-shadow: none;
+      outline: none;
+    }
+
+    .ctx-item:active {
+      background: var(--firefox-menu-active-bg);
+      transition-duration: 0ms;
+    }
+
+    .ctx-label {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .ctx-shortcut {
+      color: rgba(var(--white_font_rgb), 0.7);
+      font: var(--text-font-style) var(--regular_text) var(--menu-item-font-size) var(--text-font-family);
+      line-height: inherit;
+      justify-self: end;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 520px) {
+      .menu {
+        max-width: calc(100vw - var(--safe-area-left) - var(--safe-area-right) - 24px);
+      }
+
+      .menu.visible {
+        display: block;
+      }
+
+      .menu.visible:not([data-pinned-position="bottom-center"]) {
+        width: calc(100vw - var(--safe-area-left) - var(--safe-area-right) - 24px);
+      }
+
+      #appActionGroup {
+        width: auto;
+      }
+
+      .ctx-item {
+        flex: 0 0 auto;
+        min-width: 0;
+        padding: var(--menu-item-padding);
+      }
+    }
+
+    @media (hover: none) {
+      button:hover,
+      .ctx-item:hover {
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body data-theme="light">
+  <div class="app">
+    <main class="workspace">
+      <section class="graph-pane" aria-label="Dependency graph">
+        <div id="graphScroll" class="graph-scroll">
+          <svg id="graphSvg" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Proof dependency graph">
+            <defs>
+              <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--graph-line)"></path>
+              </marker>
+              <marker id="arrowRelation" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--graph-line)"></path>
+              </marker>
+              <marker id="arrowBlocked" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--graph-line)"></path>
+              </marker>
+            </defs>
+            <g id="graphZoom">
+              <g id="edgesLayer"></g>
+              <g id="nodesLayer"></g>
+            </g>
+          </svg>
+          <div id="emptyState" class="empty-state">
+            <div class="home-nav">
+              <div class="home-nav-content">
+                <div class="home-brand">TeX2Graph</div>
+                <button id="homeOpenGraphBtn" class="home-open-button" type="button">Open HTML</button>
+              </div>
+            </div>
+            <div class="home-content-shell">
+              <div class="empty-content">
+                <section class="home-hero" aria-label="TeX dependency graph upload">
+                  <h1 class="home-title">TeX Dependency Graph Builder</h1>
+                  <p class="home-subtitle">Upload a TeX file to visualize its directed dependency graph.</p>
+                  <div class="home-guidance" aria-label="Upload requirements">
+                    <div class="home-guidance-item">
+                      <strong>References should point backwards.</strong>
+                      Avoid forward statements such as "this will be used in Lemma~\ref{x}".
+                    </div>
+                    <div class="home-guidance-item">
+                      <strong>Use supported reference commands inside theorem and proof environments.</strong>
+                      <span class="home-command-list">
+                        <code>\ref</code>
+                        <code>\eqref</code>
+                        <code>\cref</code>
+                        <code>\Cref</code>
+                        <code>\autoref</code>
+                        <code>\nameref</code>
+                        <code>\vref</code>
+                        <code>\Vref</code>
+                        <code>\subref</code>
+                      </span>
+                    </div>
+                  </div>
+                  <div id="homeDropZone" class="home-dropzone" role="button" tabindex="0" aria-label="Choose file">
+                    <svg class="home-drop-outline" aria-hidden="true" focusable="false">
+                      <rect pathLength="460"></rect>
+                    </svg>
+                    <div class="home-drop-inner">
+                      <div class="home-upload-button" aria-hidden="true">
+                        <span class="home-upload-icon" aria-hidden="true">T<span class="tex-e">E</span><span class="tex-x">X</span></span>
+                        <span>Choose File</span>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <input id="texFile" type="file" accept=".tex,.txt,text/plain" hidden>
+  <input id="graphFile" type="file" accept=".html,.htm,.json,.proofgraph,.proofmap,text/html,application/json" hidden>
+
+  <div id="notice" class="notice" hidden role="status" aria-live="polite"></div>
+
+  <div id="contextMenu" class="menu" hidden>
+    <div id="appActionGroup">
+      <button class="ctx-item" type="button" data-action="save-as"><span class="ctx-label">Export as HTML</span><span class="ctx-shortcut"></span></button>
+    </div>
+  </div>
+  <script id="embedded-graph-data" type="application/json">null</script>
+  <script id="app-script">
+    "use strict";
+
+    const SKIPPED_PROOF_ENVS = new Set(["document", "proof"]);
+
+    const UI_RADIUS = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--ui-radius")) || 25;
+    const BOARD_ITEM_SIZE = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--menu-item-height")) || 32;
+    const BOARD_SHELL_PADDING = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--menu-shell-padding")) || 8;
+    const GOLDEN_RATIO = (1 + Math.sqrt(5)) / 2;
+    const NODE_H = BOARD_ITEM_SIZE * 5;
+    const NODE_W = NODE_H * GOLDEN_RATIO;
+    const X_GAP = NODE_H;
+    const PAD = BOARD_ITEM_SIZE * 2;
+    const EDGE_PORT_MARGIN = BOARD_ITEM_SIZE * 0.75;
+    const EDGE_PORT_STEP = BOARD_ITEM_SIZE * 0.56;
+    const ZOOM_MIN = 0.01;
+    const ZOOM_MAX = 100;
+    const MIN_GRAPH_VISIBLE_PX = 1;
+    const MENU_VIEWPORT_EDGE_MARGIN = 12;
+    const PINNED_CONTEXT_MENU_BOTTOM_OFFSET_RATIO = 0.05;
+    const TOUCH_GESTURE_MOVE_THRESHOLD = 5;
+    const TOUCH_CLICK_SUPPRESS_MS = 320;
+    const GRAPH_DATA_KIND = "tex-proof-graph";
+    const LEGACY_MAP_DATA_KIND = "tex-proof-map";
+    const SMOOTH_SLIDE_DURATION_MS =
+      Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--smooth-slide-duration")) || 220;
+    const MENU_ITEM_FONT_SIZE = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--menu-item-font-size")) || 13;
+    const NODE_TEXT_WIDTH = NODE_W - BOARD_SHELL_PADDING * 4;
+    const NODE_ID_MAX_CHARS = Math.max(18, Math.floor(NODE_TEXT_WIDTH / (MENU_ITEM_FONT_SIZE * 0.62)));
+    const NODE_TEXT_LINE_STEP = 18;
+    const BOARDFISH_ACTION_ICON_SIZE = 20;
+    const STATUS_ACTION_SCALE = MENU_ITEM_FONT_SIZE / BOARDFISH_ACTION_ICON_SIZE;
+    const STATUS_ACTION_SIZE = Math.round(BOARD_ITEM_SIZE * STATUS_ACTION_SCALE);
+    const STATUS_ACTION_PADDING = Math.round(BOARD_SHELL_PADDING * STATUS_ACTION_SCALE);
+    const STATUS_ACTION_SEPARATOR = 1;
+    const STATUS_ACTION_SEPARATOR_GAP = STATUS_ACTION_PADDING;
+    const STATUS_ACTION_BORDER_ALLOWANCE = 2;
+    const STATUS_ACTION_BORDER_INSET = STATUS_ACTION_BORDER_ALLOWANCE / 2;
+    const STATUS_SLIDER_W =
+      STATUS_ACTION_BORDER_ALLOWANCE +
+      STATUS_ACTION_PADDING * 2 +
+      STATUS_ACTION_SIZE * 2 +
+      STATUS_ACTION_SEPARATOR_GAP * 2 +
+      STATUS_ACTION_SEPARATOR;
+    const STATUS_SLIDER_H = STATUS_ACTION_BORDER_ALLOWANCE + STATUS_ACTION_PADDING * 2 + STATUS_ACTION_SIZE;
+    const STATUS_SLIDER_CORNER_INSET = 8;
+    const STATUS_SLIDER = {
+      x: NODE_W - STATUS_SLIDER_W - STATUS_SLIDER_CORNER_INSET,
+      y: STATUS_SLIDER_CORNER_INSET,
+      width: STATUS_SLIDER_W,
+      height: STATUS_SLIDER_H,
+      rx: Math.min(UI_RADIUS, STATUS_SLIDER_H / 2),
+      itemSize: STATUS_ACTION_SIZE,
+      contentX: STATUS_ACTION_BORDER_INSET + STATUS_ACTION_PADDING,
+      contentY: STATUS_ACTION_BORDER_INSET + STATUS_ACTION_PADDING,
+      separatorWidth: STATUS_ACTION_SEPARATOR,
+      separatorGap: STATUS_ACTION_SEPARATOR_GAP,
+      leftX: STATUS_ACTION_BORDER_INSET + STATUS_ACTION_PADDING + STATUS_ACTION_SIZE / 2,
+      rightX:
+        STATUS_ACTION_BORDER_INSET +
+        STATUS_ACTION_PADDING +
+        STATUS_ACTION_SIZE +
+        STATUS_ACTION_SEPARATOR_GAP * 2 +
+        STATUS_ACTION_SEPARATOR +
+        STATUS_ACTION_SIZE / 2,
+      cy: STATUS_SLIDER_H / 2
+    };
+    const NODE_HEADER_CENTER_Y = STATUS_SLIDER.y + STATUS_SLIDER.cy;
+    const FINAL_MARK_SIZE = STATUS_SLIDER_H;
+    const FINAL_MARK_RADIUS = STATUS_SLIDER.rx;
+    const FINAL_MARK_X = NODE_W - STATUS_SLIDER_CORNER_INSET - FINAL_MARK_SIZE;
+    const FINAL_MARK_Y = NODE_H - STATUS_SLIDER_CORNER_INSET - FINAL_MARK_SIZE;
+    const COPY_JIGGLE_DEFAULTS = Object.freeze({
+      duration: 500,
+      translateXPx: 5.0,
+      translateYPx: 10.75,
+      yFreqHz: 3.55,
+      xFreqHz: 4.65,
+      yDamping: 0.24,
+      xDamping: 0.34,
+      yLagMs: 16,
+      attackMs: 26,
+      settleStart: 0.88,
+      sagGain: 0.18,
+      sagDecay: 2.15,
+      lateralCoupling: 0.16,
+      normalizePath: true
+    });
+    const copyJiggleNormalizerCache = new Map();
+
+    const state = {
+      sourceName: "unsaved",
+      sourceHash: "",
+      tex: "",
+      nodes: [],
+      edges: [],
+      selectedId: null,
+      saveTargetName: "",
+      saveFileHandle: null,
+      saveFileHandleRestore: null,
+      saveHandleGeneration: 0,
+      browserCloseWarningArmed: false,
+      zoom: 1,
+      panX: 0,
+      panY: 0,
+      graphWidth: 0,
+      graphHeight: 0,
+      transformRaf: 0,
+      copyJiggleRaf: 0,
+      copyJiggleMotions: new Map(),
+      statusRenderTimer: 0,
+      statusClickSuppress: null,
+      noticeTimer: 0,
+      viewportPointers: new Map(),
+      touchGesture: null,
+      viewportClickSuppressUntil: 0,
+      spaceDown: false,
+      panning: false,
+      duplicateLabels: [],
+      unresolvedRefs: []
+    };
+
+    const els = {
+      texFile: document.getElementById("texFile"),
+      graphFile: document.getElementById("graphFile"),
+      graphScroll: document.getElementById("graphScroll"),
+      graphSvg: document.getElementById("graphSvg"),
+      graphZoom: document.getElementById("graphZoom"),
+      edgesLayer: document.getElementById("edgesLayer"),
+      nodesLayer: document.getElementById("nodesLayer"),
+      emptyState: document.getElementById("emptyState"),
+      homeOpenGraphBtn: document.getElementById("homeOpenGraphBtn"),
+      homeDropZone: document.getElementById("homeDropZone"),
+      notice: document.getElementById("notice"),
+      contextMenu: document.getElementById("contextMenu"),
+      appActionGroup: document.getElementById("appActionGroup"),
+      embeddedData: document.getElementById("embedded-graph-data") || document.getElementById("embedded-map-data")
+    };
+
+    function lineStartsFor(text) {
+      const starts = [0];
+      for (let i = 0; i < text.length; i += 1) {
+        if (text[i] === "\n") starts.push(i + 1);
+      }
+      return starts;
+    }
+
+    function lineFromIndex(starts, index) {
+      let lo = 0;
+      let hi = starts.length - 1;
+      while (lo <= hi) {
+        const mid = (lo + hi) >> 1;
+        if (starts[mid] <= index) lo = mid + 1;
+        else hi = mid - 1;
+      }
+      return hi + 1;
+    }
+
+    function escapedAt(text, index) {
+      let count = 0;
+      for (let i = index - 1; i >= 0 && text[i] === "\\"; i -= 1) count += 1;
+      return count % 2 === 1;
+    }
+
+    function stripComments(text) {
+      let out = "";
+      let inComment = false;
+      for (let i = 0; i < text.length; i += 1) {
+        const ch = text[i];
+        if (ch === "\n") {
+          inComment = false;
+          out += ch;
+        } else if (inComment) {
+          out += " ";
+        } else if (ch === "%" && !escapedAt(text, i)) {
+          inComment = true;
+          out += " ";
+        } else {
+          out += ch;
+        }
+      }
+      return out;
+    }
+
+    function readOptionalBracket(text, index) {
+      let i = index;
+      while (i < text.length && /\s/.test(text[i])) i += 1;
+      if (text[i] !== "[") return { value: "", end: index };
+      let depth = 0;
+      let value = "";
+      for (; i < text.length; i += 1) {
+        const ch = text[i];
+        if (ch === "[" && !escapedAt(text, i)) {
+          if (depth > 0) value += ch;
+          depth += 1;
+        } else if (ch === "]" && !escapedAt(text, i)) {
+          depth -= 1;
+          if (depth === 0) return { value, end: i + 1 };
+          value += ch;
+        } else {
+          value += ch;
+        }
+      }
+      return { value: "", end: index };
+    }
+
+    function normalizeEnv(env) {
+      return env.toLowerCase().replace(/\*$/, "");
+    }
+
+    function discoverProofEnvironments(tex) {
+      const envs = new Set();
+      const newTheorem = /\\newtheorem\s*\*?\s*\{\s*([^}]+?)\s*\}/g;
+      let match;
+      while ((match = newTheorem.exec(tex))) envs.add(normalizeEnv(match[1].trim()));
+      return Array.from(envs).filter((env) => env && !SKIPPED_PROOF_ENVS.has(env));
+    }
+
+    function findEnvironmentEnd(text, env, start) {
+      const targetEnv = normalizeEnv(env);
+      const tag = /\\(begin|end)\s*\{\s*([^}]+?)\s*\}/g;
+      tag.lastIndex = start;
+      let depth = 1;
+      let match;
+      while ((match = tag.exec(text))) {
+        if (normalizeEnv(match[2].trim()) !== targetEnv) continue;
+        depth += match[1] === "begin" ? 1 : -1;
+        if (depth === 0) return { start: match.index, end: tag.lastIndex };
+      }
+      return null;
+    }
+
+    function findProofBlockBefore(text, start, end) {
+      const proofBegin = /\\begin\s*\{\s*proof\s*\}/g;
+      proofBegin.lastIndex = start;
+      const match = proofBegin.exec(text);
+      if (!match || match.index >= end) return null;
+      const proofEnd = findEnvironmentEnd(text, "proof", proofBegin.lastIndex);
+      return {
+        start: match.index,
+        end: proofEnd ? Math.min(proofEnd.end, end) : end
+      };
+    }
+
+    function cleanTitle(value) {
+      return value
+        .replace(/\\label\s*\{[^}]+\}/g, "")
+        .replace(/\\texorpdfstring\s*\{([^}]*)\}\s*\{([^}]*)\}/g, "$1")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function humanType(env) {
+      const base = normalizeEnv(env);
+      if (base === "externalinput") return "External input";
+      return base.replace(/(^|[-_\s])([a-z])/g, (_, sep, ch) => (sep ? " " : "") + ch.toUpperCase()).trim();
+    }
+
+    function nodeTypeLabel(node) {
+      const type = humanType(node?.type || "");
+      const number = String(node?.displayNumber || "").trim();
+      if (number) return type + " " + number;
+      return type;
+    }
+
+    function nodeAccessibleLabel(node) {
+      if (!node) return "";
+      return nodeTypeLabel(node) + ", " + node.id;
+    }
+
+    function normalizeDisplayNumber(value, fallback = 0) {
+      const number = String(value || "").trim();
+      return number || String(fallback);
+    }
+
+    function normalizeDisplayOrder(value, fallback = 0) {
+      const order = Number(value);
+      if (Number.isFinite(order) && order > 0) return order;
+      return fallback;
+    }
+
+    function displayMetadataByIdFromTex(tex, priorStatuses = {}) {
+      if (!tex) return new Map();
+      try {
+        const parsed = parseTex(tex, priorStatuses);
+        const byId = new Map();
+        parsed.nodes.forEach((node) => {
+          const metadata = {
+            displayNumber: node.displayNumber,
+            displayOrder: node.displayOrder
+          };
+          byId.set(node.id, metadata);
+          if (node.originalId && !byId.has(node.originalId)) byId.set(node.originalId, metadata);
+        });
+        return byId;
+      } catch {
+        return new Map();
+      }
+    }
+
+    function numberedSectionsIn(text) {
+      const sections = [];
+      const re = /\\section\b/g;
+      let sectionNumber = 0;
+      let match;
+      while ((match = re.exec(text))) {
+        let i = re.lastIndex;
+        while (i < text.length && /\s/.test(text[i])) i += 1;
+        if (text[i] === "*") continue;
+        const optional = readOptionalBracket(text, i);
+        if (optional.end !== i) i = optional.end;
+        while (i < text.length && /\s/.test(text[i])) i += 1;
+        if (text[i] !== "{") continue;
+        sectionNumber += 1;
+        sections.push({ index: match.index, number: sectionNumber });
+      }
+      return sections;
+    }
+
+    function isStructuralLabel(label) {
+      return /(^|:)(eq|equation|sec|subsec|subsection|fig|figure|tab|table|app|appendix|alg|algorithm|lst|listing):/i.test(label);
+    }
+
+    function isEquationLabel(label) {
+      return /(^|:)(eq|equation):/i.test(label);
+    }
+
+    function envLabelPattern(env) {
+      const base = normalizeEnv(env);
+      const map = {
+        theorem: /(^|:)(thm|theorem):/i,
+        lemma: /(^|:)(lem|lemma):/i,
+        proposition: /(^|:)(prop|proposition):/i,
+        corollary: /(^|:)(cor|corr|corollary):/i,
+        claim: /(^|:)claim:/i,
+        definition: /(^|:)(def|definition):/i,
+        conjecture: /(^|:)(conj|conjecture):/i,
+        remark: /(^|:)(rem|remark):/i,
+        externalinput: /(^|:)(ext|external|input):/i,
+        certificate: /(^|:)(cert|certificate):/i,
+        assumption: /(^|:)(ass|assump|assumption):/i,
+        fact: /(^|:)fact:/i,
+        axiom: /(^|:)axiom:/i
+      };
+      return map[base] || null;
+    }
+
+    function theoremLikeLabel(label, env) {
+      const pattern = envLabelPattern(env);
+      if (pattern && pattern.test(label)) return true;
+      return !isStructuralLabel(label) && /(^|:)(thm|theorem|lem|lemma|prop|proposition|cor|corollary|claim|def|definition|conj|remark|rem|ext|cert|assumption|fact|axiom):/i.test(label);
+    }
+
+    function unique(values) {
+      return Array.from(new Set(values.filter(Boolean)));
+    }
+
+    function labelsIn(text) {
+      const labels = [];
+      const re = /\\label\s*\{([^}]+)\}/g;
+      let match;
+      while ((match = re.exec(text))) labels.push(match[1].trim());
+      return labels;
+    }
+
+    function refLabelsIn(text) {
+      const labels = [];
+      const re = /\\(?:eqref|Cref|cref|autoref|nameref|Vref|vref|subref|ref)\s*\{([^}]+)\}/g;
+      let match;
+      while ((match = re.exec(text))) {
+        match[1].split(",")
+          .map((value) => value.trim())
+          .filter(Boolean)
+          .forEach((label) => labels.push(label));
+      }
+      return unique(labels);
+    }
+
+    function labelsAttachedToBegin(text, index) {
+      let i = index;
+      const optional = readOptionalBracket(text, i);
+      if (optional.end !== i) i = optional.end;
+      const labels = [];
+      while (i < text.length) {
+        while (i < text.length && /\s/.test(text[i])) i += 1;
+        const match = /^\\label\s*\{([^}]+)\}/.exec(text.slice(i));
+        if (!match) break;
+        labels.push(match[1].trim());
+        i += match[0].length;
+      }
+      return labels;
+    }
+
+    function addOwner(map, key, id) {
+      if (!key) return;
+      if (!map.has(key)) map.set(key, []);
+      const owners = map.get(key);
+      if (!owners.includes(id)) owners.push(id);
+    }
+
+    function firstExternalOwner(map, key, fromId) {
+      return (map.get(key) || []).find((id) => id !== fromId) || "";
+    }
+
+    function choosePrimaryLabel(labels, env) {
+      const pattern = envLabelPattern(env);
+      if (pattern) {
+        const exact = labels.find((label) => pattern.test(label));
+        if (exact) return exact;
+      }
+      const theoremLike = labels.find((label) => theoremLikeLabel(label, env));
+      if (theoremLike) return theoremLike;
+      const nonStructural = labels.find((label) => !isStructuralLabel(label));
+      return nonStructural || "";
+    }
+
+    function snippetFor(block) {
+      return block
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 650);
+    }
+
+    function parseTex(tex, priorStatuses = {}) {
+      const stripped = stripComments(tex);
+      const starts = lineStartsFor(stripped);
+      const envSet = new Set(discoverProofEnvironments(stripped));
+      const begin = /\\begin\s*\{\s*([^}]+?)\s*\}/g;
+      const sectionBreaks = numberedSectionsIn(stripped);
+      const useSectionNumbers = sectionBreaks.length > 0;
+      let documentCounter = 0;
+      let sectionCursor = 0;
+      let currentSectionNumber = 0;
+      let sectionCounter = 0;
+      const blockStarts = [];
+      const blocks = [];
+      let match;
+
+      while ((match = begin.exec(stripped))) {
+        const rawEnv = match[1].trim();
+        const env = normalizeEnv(rawEnv);
+        if (!envSet.has(env)) continue;
+        blockStarts.push({
+          index: match.index,
+          beginEnd: begin.lastIndex,
+          rawEnv,
+          env
+        });
+      }
+
+      blockStarts.forEach((blockStart, index) => {
+        const { rawEnv, env } = blockStart;
+        while (sectionCursor < sectionBreaks.length && sectionBreaks[sectionCursor].index < blockStart.index) {
+          currentSectionNumber = sectionBreaks[sectionCursor].number;
+          sectionCounter = 0;
+          sectionCursor += 1;
+        }
+        const nextBlock = blockStarts[index + 1];
+        const nextBlockStart = nextBlock ? nextBlock.index : stripped.length;
+        const optional = readOptionalBracket(stripped, blockStart.beginEnd);
+        const contentStart = optional.end === blockStart.beginEnd ? blockStart.beginEnd : optional.end;
+        const theoremEnd = findEnvironmentEnd(stripped, rawEnv, blockStart.beginEnd);
+        const theoremBlockEnd = theoremEnd ? Math.min(theoremEnd.end, nextBlockStart) : nextBlockStart;
+        const proofBlock = findProofBlockBefore(stripped, theoremBlockEnd, nextBlockStart);
+        const blockEnd = proofBlock ? proofBlock.end : theoremBlockEnd;
+        const nodeBlock = stripped.slice(blockStart.index, blockEnd);
+        const body = stripped.slice(contentStart, blockEnd);
+        const labels = unique(labelsAttachedToBegin(stripped, blockStart.beginEnd));
+        const allLabels = unique(labelsIn(nodeBlock));
+        const refLabels = refLabelsIn(nodeBlock);
+        const equationLabels = allLabels.filter(isEquationLabel);
+        const title = cleanTitle(optional.value);
+        documentCounter += 1;
+        sectionCounter += 1;
+        const displayNumber = useSectionNumbers ? currentSectionNumber + "." + sectionCounter : String(documentCounter);
+        blocks.push({
+          env,
+          displayNumber,
+          displayOrder: documentCounter,
+          title,
+          labels,
+          allLabels,
+          equationLabels,
+          refLabels,
+          body,
+          block: nodeBlock,
+          startIndex: blockStart.index,
+          line: lineFromIndex(starts, blockStart.index)
+        });
+      });
+
+      const usedIds = new Map();
+      const nodes = blocks.map((block, index) => {
+        let id = choosePrimaryLabel(block.labels, block.env);
+        if (!id) id = "unlabeled:" + block.env + ":" + (index + 1);
+        const seen = usedIds.get(id) || 0;
+        usedIds.set(id, seen + 1);
+        const uniqueId = seen ? id + "::" + (seen + 1) : id;
+        const aliases = unique(block.labels.filter((label) => theoremLikeLabel(label, block.env)));
+        if (!aliases.includes(uniqueId) && !uniqueId.startsWith("unlabeled:")) aliases.unshift(uniqueId);
+        const ownedLabels = unique([...aliases, ...block.equationLabels]);
+        return {
+          id: uniqueId,
+          originalId: id,
+          title: block.title,
+          displayNumber: block.displayNumber,
+          displayOrder: block.displayOrder,
+          type: block.env,
+          line: block.line,
+          labels: block.labels,
+          allLabels: block.allLabels,
+          equationLabels: block.equationLabels,
+          aliases,
+          ownedLabels,
+          refLabels: block.refLabels,
+          unresolvedRefLabels: [],
+          dependsOn: [],
+          dependents: [],
+          status: priorStatuses[uniqueId] || priorStatuses[id] || "pending",
+          snippet: snippetFor(block.block),
+          x: 0,
+          y: 0,
+          isLeaf: false,
+          isFinal: false,
+          blocked: false
+        };
+      });
+
+      const labelToIds = new Map();
+      const duplicateLabels = [];
+      for (const node of nodes) {
+        for (const label of node.allLabels) {
+          const existingOwner = firstExternalOwner(labelToIds, label, node.id);
+          if (existingOwner) {
+            duplicateLabels.push({ label, first: existingOwner, second: node.id });
+          }
+          addOwner(labelToIds, label, node.id);
+        }
+      }
+
+      const unresolvedRefs = [];
+      for (const node of nodes) {
+        const deps = [];
+        for (const label of node.refLabels) {
+          const target = firstExternalOwner(labelToIds, label, node.id);
+          const owners = labelToIds.get(label) || [];
+          if (target) deps.push(target);
+          else if (!owners.length) {
+            unresolvedRefs.push({ from: node.id, ref: label });
+            node.unresolvedRefLabels.push(label);
+          }
+        }
+        node.dependsOn = unique(deps);
+        node.unresolvedRefLabels = unique(node.unresolvedRefLabels);
+      }
+
+      const edges = [];
+      const byId = new Map(nodes.map((node) => [node.id, node]));
+      for (const node of nodes) {
+        for (const depId of node.dependsOn) {
+          const dep = byId.get(depId);
+          if (!dep) continue;
+          dep.dependents.push(node.id);
+          edges.push({ from: depId, to: node.id });
+        }
+      }
+
+      for (const node of nodes) {
+        node.isLeaf = node.dependsOn.length === 0;
+        node.isFinal = node.dependents.length === 0;
+      }
+
+      return { nodes, edges: uniqueEdges(edges), duplicateLabels, unresolvedRefs };
+    }
+
+    function stronglyConnectedComponents(nodes, edges) {
+      const nodeIds = new Set(nodes.map((node) => node.id));
+      const adjacency = new Map(nodes.map((node) => [node.id, []]));
+      for (const edge of edges) {
+        if (nodeIds.has(edge.from) && nodeIds.has(edge.to)) adjacency.get(edge.from).push(edge.to);
+      }
+
+      const components = [];
+      const indices = new Map();
+      const lowlinks = new Map();
+      const stack = [];
+      const onStack = new Set();
+      let nextIndex = 0;
+
+      function visit(id) {
+        indices.set(id, nextIndex);
+        lowlinks.set(id, nextIndex);
+        nextIndex += 1;
+        stack.push(id);
+        onStack.add(id);
+
+        for (const next of adjacency.get(id) || []) {
+          if (!indices.has(next)) {
+            visit(next);
+            lowlinks.set(id, Math.min(lowlinks.get(id), lowlinks.get(next)));
+          } else if (onStack.has(next)) {
+            lowlinks.set(id, Math.min(lowlinks.get(id), indices.get(next)));
+          }
+        }
+
+        if (lowlinks.get(id) !== indices.get(id)) return;
+        const component = [];
+        while (stack.length) {
+          const member = stack.pop();
+          onStack.delete(member);
+          component.push(member);
+          if (member === id) break;
+        }
+        components.push(component);
+      }
+
+      for (const node of nodes) {
+        if (!indices.has(node.id)) visit(node.id);
+      }
+      return components;
+    }
+
+    function compareNodeIdsByLine(a, b, byId) {
+      const nodeA = byId.get(a);
+      const nodeB = byId.get(b);
+      return (nodeA?.line ?? 0) - (nodeB?.line ?? 0) || String(a).localeCompare(String(b));
+    }
+
+    function orderCyclicComponent(component, edges, byId) {
+      const remaining = new Set(component);
+      const internalEdges = edges.filter((edge) => remaining.has(edge.from) && remaining.has(edge.to));
+      const front = [];
+      const back = [];
+
+      function degree(id) {
+        let incoming = 0;
+        let outgoing = 0;
+        for (const edge of internalEdges) {
+          if (!remaining.has(edge.from) || !remaining.has(edge.to)) continue;
+          if (edge.from === id) outgoing += 1;
+          if (edge.to === id) incoming += 1;
+        }
+        return { incoming, outgoing };
+      }
+
+      while (remaining.size) {
+        let changed = true;
+        while (changed) {
+          changed = false;
+          const sinks = Array.from(remaining)
+            .filter((id) => degree(id).outgoing === 0)
+            .sort((a, b) => compareNodeIdsByLine(b, a, byId));
+          for (const id of sinks) {
+            if (!remaining.has(id)) continue;
+            remaining.delete(id);
+            back.unshift(id);
+            changed = true;
+          }
+
+          const sources = Array.from(remaining)
+            .filter((id) => degree(id).incoming === 0)
+            .sort((a, b) => compareNodeIdsByLine(a, b, byId));
+          for (const id of sources) {
+            if (!remaining.has(id)) continue;
+            remaining.delete(id);
+            front.push(id);
+            changed = true;
+          }
+        }
+
+        if (!remaining.size) break;
+        const best = Array.from(remaining)
+          .sort((a, b) => {
+            const degreeA = degree(a);
+            const degreeB = degree(b);
+            return (degreeB.outgoing - degreeB.incoming) - (degreeA.outgoing - degreeA.incoming)
+              || compareNodeIdsByLine(a, b, byId);
+          })[0];
+        remaining.delete(best);
+        front.push(best);
+      }
+
+      return front.concat(back);
+    }
+
+    function topoLayout(nodes, edges) {
+      const byId = new Map(nodes.map((node) => [node.id, node]));
+      const components = stronglyConnectedComponents(nodes, edges);
+      const componentById = new Map();
+      components.forEach((component, index) => {
+        component.forEach((id) => componentById.set(id, index));
+      });
+
+      const memberLevels = new Map();
+      const componentSpan = components.map((component) => {
+        if (component.length === 1) {
+          memberLevels.set(component[0], 0);
+          return 1;
+        }
+
+        const ordered = orderCyclicComponent(component, edges, byId);
+        ordered.forEach((id, index) => memberLevels.set(id, index));
+        return ordered.length || 1;
+      });
+
+      const outgoing = new Map(components.map((_, index) => [index, new Set()]));
+      const indegree = new Map(components.map((_, index) => [index, 0]));
+      const componentGaps = new Map();
+      for (const edge of edges) {
+        const fromComponent = componentById.get(edge.from);
+        const toComponent = componentById.get(edge.to);
+        if (fromComponent === undefined || toComponent === undefined || fromComponent === toComponent) continue;
+        const exits = outgoing.get(fromComponent);
+        if (!exits.has(toComponent)) {
+          exits.add(toComponent);
+          indegree.set(toComponent, (indegree.get(toComponent) || 0) + 1);
+        }
+        const key = fromComponent + "->" + toComponent;
+        const requiredGap = Math.max(1, (memberLevels.get(edge.from) || 0) - (memberLevels.get(edge.to) || 0) + 1);
+        componentGaps.set(key, Math.max(componentGaps.get(key) || 1, requiredGap));
+      }
+
+      const componentStart = new Map(components.map((_, index) => [index, 0]));
+      const componentLine = components.map((component) => Math.min(...component.map((id) => byId.get(id)?.line ?? 0)));
+      const queue = components
+        .map((_, index) => index)
+        .filter((index) => (indegree.get(index) || 0) === 0)
+        .sort((a, b) => componentLine[a] - componentLine[b]);
+
+      for (let cursor = 0; cursor < queue.length; cursor += 1) {
+        const component = queue[cursor];
+        for (const next of outgoing.get(component) || []) {
+          const requiredStart = (componentStart.get(component) || 0) + (componentGaps.get(component + "->" + next) || componentSpan[component] || 1);
+          if ((componentStart.get(next) || 0) < requiredStart) componentStart.set(next, requiredStart);
+          indegree.set(next, (indegree.get(next) || 0) - 1);
+          if ((indegree.get(next) || 0) === 0) {
+            queue.push(next);
+            const pending = queue.splice(cursor + 1);
+            pending.sort((a, b) => (componentStart.get(a) || 0) - (componentStart.get(b) || 0) || componentLine[a] - componentLine[b]);
+            queue.push(...pending);
+          }
+        }
+      }
+
+      const rows = new Map();
+      const rawLevels = nodes.map((node) => (componentStart.get(componentById.get(node.id)) || 0) + (memberLevels.get(node.id) || 0));
+      const compactLevel = new Map(Array.from(new Set(rawLevels)).sort((a, b) => a - b).map((level, index) => [level, index]));
+      for (const node of nodes) {
+        const rawLevel = (componentStart.get(componentById.get(node.id)) || 0) + (memberLevels.get(node.id) || 0);
+        const nodeLevel = compactLevel.get(rawLevel) || 0;
+        if (!rows.has(nodeLevel)) rows.set(nodeLevel, []);
+        rows.get(nodeLevel).push(node);
+      }
+
+      const orderedLevels = Array.from(rows.keys()).sort((a, b) => a - b);
+      let maxRows = 0;
+      for (const lev of orderedLevels) {
+        const rowNodes = rows.get(lev);
+        rowNodes.sort((a, b) =>
+          a.line - b.line ||
+          (a.displayOrder || 0) - (b.displayOrder || 0) ||
+          a.id.localeCompare(b.id)
+        );
+        maxRows = Math.max(maxRows, rowNodes.length);
+      }
+
+      const siblingGap = X_GAP / 4;
+      const levelGap = X_GAP;
+      const rowStep = NODE_H + siblingGap;
+      const graphStackHeight = Math.max(1, maxRows) * NODE_H + Math.max(0, maxRows - 1) * siblingGap;
+      for (const lev of orderedLevels) {
+        const rowNodes = rows.get(lev);
+        const rowStackHeight = rowNodes.length * NODE_H + Math.max(0, rowNodes.length - 1) * siblingGap;
+        const rowOffsetY = Math.max(0, (graphStackHeight - rowStackHeight) / 2);
+        rowNodes.forEach((node, row) => {
+          node.x = PAD + lev * (NODE_W + levelGap);
+          node.y = PAD + rowOffsetY + row * rowStep;
+        });
+      }
+
+      const width = PAD * 2 + Math.max(1, orderedLevels.length) * NODE_W + Math.max(0, orderedLevels.length - 1) * levelGap;
+      const height = PAD * 2 + Math.max(1, maxRows) * NODE_H + Math.max(0, maxRows - 1) * siblingGap;
+      return { width, height };
+    }
+
+    function computeBlocked(nodes) {
+      const byId = new Map(nodes.map((node) => [node.id, node]));
+      nodes.forEach((node) => {
+        node.blocked = false;
+      });
+      for (const node of nodes) {
+        if (!isBlockingSourceNode(node)) continue;
+        const queue = [node.id];
+        const seen = new Set();
+        while (queue.length) {
+          const id = queue.shift();
+          if (seen.has(id)) continue;
+          seen.add(id);
+          const blockedNode = byId.get(id);
+          if (!blockedNode) continue;
+          blockedNode.blocked = true;
+          queue.push(...blockedNode.dependents);
+        }
+      }
+    }
+
+    function makeSvg(tag, attrs = {}) {
+      const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+      for (const [key, value] of Object.entries(attrs)) {
+        el.setAttribute(key, String(value));
+      }
+      return el;
+    }
+
+    function clear(el) {
+      while (el.firstChild) el.removeChild(el.firstChild);
+    }
+
+    function measureNodeText(className, text) {
+      if (!els.graphSvg) return NaN;
+      if (!measureNodeText.group) {
+        const group = makeSvg("g", {
+          class: "node",
+          opacity: "0",
+          "aria-hidden": "true",
+          transform: "translate(-10000 -10000)"
+        });
+        group.style.pointerEvents = "none";
+        const measureText = makeSvg("text");
+        group.appendChild(measureText);
+        els.graphSvg.appendChild(group);
+        measureNodeText.group = group;
+        measureNodeText.text = measureText;
+      } else if (!measureNodeText.group.parentNode) {
+        els.graphSvg.appendChild(measureNodeText.group);
+      }
+      const measureText = measureNodeText.text;
+      measureText.setAttribute("class", className);
+      measureText.textContent = text;
+      try {
+        return measureText.getComputedTextLength();
+      } catch {
+        return NaN;
+      }
+    }
+
+    function textFitsWidth(className, text, maxWidth, fallbackMaxChars) {
+      const value = String(text || "").trimEnd();
+      const width = measureNodeText(className, value);
+      if (Number.isFinite(width) && width > 0) return width <= maxWidth;
+      return value.length <= fallbackMaxChars;
+    }
+
+    function ellipsizeTextToWidth(text, className, maxWidth, fallbackMaxChars) {
+      const value = String(text || "").trim();
+      if (!value || textFitsWidth(className, value, maxWidth, fallbackMaxChars)) return value;
+      let lo = 0;
+      let hi = value.length;
+      while (lo < hi) {
+        const mid = Math.ceil((lo + hi) / 2);
+        if (textFitsWidth(className, value.slice(0, mid).trimEnd() + "…", maxWidth, fallbackMaxChars)) lo = mid;
+        else hi = mid - 1;
+      }
+      return value.slice(0, lo).trimEnd() + "…";
+    }
+
+    function textWrapSegments(text) {
+      const value = String(text || "").trim().replace(/\s+/g, " ");
+      const segments = [];
+      let segment = "";
+      for (const ch of value) {
+        segment += ch;
+        if (ch === ":" || ch === "-" || ch === "_" || ch === " ") {
+          segments.push(segment);
+          segment = "";
+        }
+      }
+      if (segment) segments.push(segment);
+      return segments;
+    }
+
+    function splitSegmentToWidth(segment, className, maxWidth, fallbackMaxChars) {
+      const value = String(segment || "").trimStart();
+      if (!value) return { line: "", remainder: "" };
+      let lo = 1;
+      let hi = value.length;
+      while (lo < hi) {
+        const mid = Math.ceil((lo + hi) / 2);
+        if (textFitsWidth(className, value.slice(0, mid), maxWidth, fallbackMaxChars)) lo = mid;
+        else hi = mid - 1;
+      }
+      const line = value.slice(0, lo).trimEnd() || value[0];
+      return {
+        line,
+        remainder: value.slice(line.length).trimStart()
+      };
+    }
+
+    function wrapMeasuredText(text, className, maxWidth, maxLines, fallbackMaxChars) {
+      const value = String(text || "").trim().replace(/\s+/g, " ");
+      if (!value) return [""];
+      if (textFitsWidth(className, value, maxWidth, fallbackMaxChars)) return [value];
+      const segments = textWrapSegments(value);
+      const lines = [];
+      let line = "";
+      let index = 0;
+      while (index < segments.length && lines.length < maxLines) {
+        const isLastLine = lines.length === maxLines - 1;
+        if (isLastLine) {
+          lines.push(ellipsizeTextToWidth(line + segments.slice(index).join(""), className, maxWidth, fallbackMaxChars));
+          break;
+        }
+        const nextLine = line + segments[index];
+        if (textFitsWidth(className, nextLine, maxWidth, fallbackMaxChars)) {
+          line = nextLine;
+          index += 1;
+          continue;
+        }
+        if (line) {
+          lines.push(line.trimEnd());
+          line = "";
+          continue;
+        }
+        const split = splitSegmentToWidth(segments[index], className, maxWidth, fallbackMaxChars);
+        lines.push(split.line);
+        if (split.remainder) segments[index] = split.remainder;
+        else index += 1;
+      }
+      if (line && lines.length < maxLines) {
+        lines.push(line.trimEnd());
+      }
+      return lines.length ? lines : [""];
+    }
+
+    function edgeKey(from, to) {
+      return from + "\u0000" + to;
+    }
+
+    function edgePath(from, to, fromPortOffset = 0, toPortOffset = 0) {
+      const x1 = from.x + NODE_W;
+      const y1 = from.y + NODE_H / 2 + fromPortOffset;
+      const x2 = to.x;
+      const y2 = to.y + NODE_H / 2 + toPortOffset;
+      const dx = Math.max(54, (x2 - x1) * 0.48);
+      return "M " + x1 + " " + y1 + " C " + (x1 + dx) + " " + y1 + ", " + (x2 - dx) + " " + y2 + ", " + x2 + " " + y2;
+    }
+
+    function uniqueEdges(edges) {
+      const seen = new Set();
+      const result = [];
+      for (const edge of Array.isArray(edges) ? edges : []) {
+        if (!edge || edge.from == null || edge.to == null) continue;
+        const from = String(edge.from);
+        const to = String(edge.to);
+        if (!from || !to) continue;
+        const key = edgeKey(from, to);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        result.push({ ...edge, from, to });
+      }
+      return result;
+    }
+
+    function edgePortOffsets(count) {
+      if (count <= 1) return [0];
+      const usableHeight = Math.max(0, NODE_H - EDGE_PORT_MARGIN * 2);
+      const step = Math.min(EDGE_PORT_STEP, usableHeight / (count - 1));
+      const center = (count - 1) / 2;
+      return Array.from({ length: count }, (_, index) => Math.round((index - center) * step));
+    }
+
+    function compareEdgePortOrder(a, b, direction) {
+      const aNode = direction === "outgoing" ? a.to : a.from;
+      const bNode = direction === "outgoing" ? b.to : b.from;
+      return (
+        (aNode.y + NODE_H / 2) - (bNode.y + NODE_H / 2) ||
+        aNode.x - bNode.x ||
+        a.key.localeCompare(b.key)
+      );
+    }
+
+    function assignEdgePortOffsets(renderedEdges) {
+      const outgoing = new Map();
+      const incoming = new Map();
+      for (const item of renderedEdges) {
+        item.fromPortOffset = 0;
+        item.toPortOffset = 0;
+        if (!outgoing.has(item.from.id)) outgoing.set(item.from.id, []);
+        if (!incoming.has(item.to.id)) incoming.set(item.to.id, []);
+        outgoing.get(item.from.id).push(item);
+        incoming.get(item.to.id).push(item);
+      }
+
+      for (const items of outgoing.values()) {
+        items.sort((a, b) => compareEdgePortOrder(a, b, "outgoing"));
+        const offsets = edgePortOffsets(items.length);
+        items.forEach((item, index) => {
+          item.fromPortOffset = offsets[index];
+        });
+      }
+
+      for (const items of incoming.values()) {
+        items.sort((a, b) => compareEdgePortOrder(a, b, "incoming"));
+        const offsets = edgePortOffsets(items.length);
+        items.forEach((item, index) => {
+          item.toPortOffset = offsets[index];
+        });
+      }
+    }
+
+    function collectSelectionFocus(startId) {
+      const byId = new Map(state.nodes.map((node) => [node.id, node]));
+      const incoming = new Map();
+      const outgoing = new Map();
+      for (const node of state.nodes) {
+        incoming.set(node.id, []);
+        outgoing.set(node.id, []);
+      }
+      for (const edge of state.edges) {
+        if (!byId.has(edge.from) || !byId.has(edge.to)) continue;
+        incoming.get(edge.to).push(edge.from);
+        outgoing.get(edge.from).push(edge.to);
+      }
+
+      const directDependencies = new Set((incoming.get(startId) || []).filter((id) => byId.has(id)));
+      const directDependents = new Set((outgoing.get(startId) || []).filter((id) => byId.has(id)));
+      const directDependencyEdges = new Set(Array.from(directDependencies).map((id) => edgeKey(id, startId)));
+      const directDependentEdges = new Set(Array.from(directDependents).map((id) => edgeKey(startId, id)));
+      const dependencies = new Set();
+      const dependents = new Set();
+      const dependencyEdges = new Set(directDependencyEdges);
+      const dependentEdges = new Set(directDependentEdges);
+
+      const dependencyQueue = [startId];
+      const dependencyVisited = new Set([startId]);
+      while (dependencyQueue.length) {
+        const id = dependencyQueue.shift();
+        for (const depId of incoming.get(id) || []) {
+          if (dependencyVisited.has(depId)) continue;
+          dependencyVisited.add(depId);
+          if (depId !== startId) dependencies.add(depId);
+          dependencyQueue.push(depId);
+        }
+      }
+
+      const dependentQueue = [startId];
+      const dependentVisited = new Set([startId]);
+      while (dependentQueue.length) {
+        const id = dependentQueue.shift();
+        for (const dependentId of outgoing.get(id) || []) {
+          if (dependentVisited.has(dependentId)) continue;
+          dependentVisited.add(dependentId);
+          if (dependentId !== startId) dependents.add(dependentId);
+          dependentQueue.push(dependentId);
+        }
+      }
+
+      const related = new Set([startId, ...dependencies, ...dependents]);
+      return {
+        selectedId: startId,
+        dependencies,
+        dependents,
+        directDependencies,
+        directDependents,
+        dependencyEdges,
+        dependentEdges,
+        directDependencyEdges,
+        directDependentEdges,
+        related
+      };
+    }
+
+    function selectionFocusSets() {
+      if (!state.selectedId) return null;
+      const selected = state.nodes.find((node) => node.id === state.selectedId);
+      if (!selected) return null;
+      return collectSelectionFocus(state.selectedId);
+    }
+
+    function classForNode(node, focus = null) {
+      const classes = ["node", "status-" + node.status];
+      if (node.isLeaf) classes.push("leaf");
+      if (node.isFinal) classes.push("final");
+      if (node.blocked) classes.push("blocked");
+      if (node.id === state.selectedId) classes.push("selected");
+      if (focus) {
+        const dependency = focus.dependencies.has(node.id);
+        const dependent = focus.dependents.has(node.id);
+        const directDependency = focus.directDependencies.has(node.id);
+        const directDependent = focus.directDependents.has(node.id);
+        const direct = directDependency || directDependent;
+        if (dependency || dependent) classes.push("relation", direct ? "direct" : "indirect");
+        if (dependency) classes.push("dependency");
+        if (dependent) classes.push("dependent");
+        if (!focus.related.has(node.id)) classes.push("unrelated");
+      }
+      return classes.join(" ");
+    }
+
+    function isBlockingSourceNode(node) {
+      return node?.status === "false" || Boolean(node?.unresolvedRefLabels?.length);
+    }
+
+    function isSuppressedOutputSource(from, focus = null) {
+      return !focus && from.blocked;
+    }
+
+    function isFocusedEdge(edge, focus = null) {
+      if (!focus) return true;
+      const key = edgeKey(edge.from, edge.to);
+      return focus.dependencyEdges.has(key) || focus.dependentEdges.has(key);
+    }
+
+    function isBlockingEdge(edge, from, focus = null) {
+      return from.blocked && isFocusedEdge(edge, focus);
+    }
+
+    function classForEdge(edge, from, to, focus = null) {
+      const classes = ["edge"];
+      if (isSuppressedOutputSource(from, focus)) classes.push("suppressed");
+      const blockedEdge = isBlockingEdge(edge, from, focus);
+      if (blockedEdge) classes.push("blocked");
+      if (focus) {
+        const key = edgeKey(edge.from, edge.to);
+        const dependencyEdge = focus.dependencyEdges.has(key);
+        const dependentEdge = focus.dependentEdges.has(key);
+        const directEdge = focus.directDependencyEdges.has(key) || focus.directDependentEdges.has(key);
+        if (dependencyEdge) classes.push("relation", "dependency", directEdge ? "direct" : "indirect");
+        if (dependentEdge) classes.push("relation", "dependent", directEdge ? "direct" : "indirect");
+        if (!dependencyEdge && !dependentEdge) classes.push("unrelated");
+      }
+      return classes.join(" ");
+    }
+
+    function classTokenSet(className) {
+      return new Set(className.split(/\s+/).filter(Boolean));
+    }
+
+    function focusRenderRank(className) {
+      const tokens = classTokenSet(className);
+      if (tokens.has("selected")) return 3;
+      if (tokens.has("direct")) return 2;
+      if (tokens.has("indirect")) return 1;
+      return 0;
+    }
+
+    function edgePaintLayerRank(className) {
+      return 0;
+    }
+
+    function markerForEdgeClass(edgeClass, blockedEdge) {
+      const tokens = classTokenSet(edgeClass);
+      if (tokens.has("suppressed")) return "none";
+      if (blockedEdge) return "url(#arrowBlocked)";
+      if (!tokens.has("relation")) return "url(#arrow)";
+      return tokens.has("direct") ? "url(#arrowRelation)" : "url(#arrow)";
+    }
+
+    function normalizeStatus(value) {
+      return value === "true" || value === "false" ? value : "pending";
+    }
+
+    function statusSliderValue(status) {
+      if (status === "true") return 0;
+      if (status === "false") return 2;
+      return 1;
+    }
+
+    function replaceStatusClass(element, status) {
+      if (!element) return;
+      element.classList.remove("status-pending", "status-false", "status-true");
+      element.classList.add("status-" + status);
+    }
+
+    function outputMarkClassForNode(node) {
+      return node?.blocked ? "blocked-mark" : (node?.isFinal ? "final-mark" : "");
+    }
+
+    function makeOutputMark(className) {
+      return makeSvg("rect", {
+        class: className,
+        x: FINAL_MARK_X,
+        y: FINAL_MARK_Y,
+        width: FINAL_MARK_SIZE,
+        height: FINAL_MARK_SIZE,
+        rx: FINAL_MARK_RADIUS,
+        ry: FINAL_MARK_RADIUS
+      });
+    }
+
+    function syncRenderedOutputMark(nodeEl, node) {
+      if (!nodeEl) return;
+      nodeEl.querySelectorAll(".final-mark, .blocked-mark").forEach((mark) => mark.remove());
+      const outputMarkClass = outputMarkClassForNode(node);
+      if (!outputMarkClass) return;
+      const slider = nodeEl.querySelector(".status-slider");
+      const mark = makeOutputMark(outputMarkClass);
+      if (slider) nodeEl.insertBefore(mark, slider);
+      else nodeEl.appendChild(mark);
+    }
+
+    function applyRenderedNodeStatus(id, status) {
+      const nodeEl = findRenderedNodeElement(id);
+      if (!nodeEl) return;
+      const node = state.nodes.find((item) => item.id === id);
+      replaceStatusClass(nodeEl, status);
+      nodeEl.classList.toggle("blocked", !!node?.blocked);
+      syncRenderedOutputMark(nodeEl, node);
+      const slider = nodeEl.querySelector(".status-slider");
+      replaceStatusClass(slider, status);
+      if (slider) {
+        slider.setAttribute("aria-valuenow", String(statusSliderValue(status)));
+        slider.setAttribute("aria-valuetext", status);
+        slider.querySelector(".false-action")?.classList.toggle("active", status === "false");
+        slider.querySelector(".true-action")?.classList.toggle("active", status === "true");
+      }
+      nodeEl.setAttribute("aria-label", (nodeAccessibleLabel(node) || id) + ", " + status);
+    }
+
+    function applyRenderedBlockedNodeStatuses() {
+      const byId = new Map(state.nodes.map((node) => [node.id, node]));
+      for (const nodeEl of els.nodesLayer.children) {
+        const node = byId.get(nodeEl.dataset?.nodeId);
+        if (!node) continue;
+        nodeEl.classList.toggle("blocked", !!node.blocked);
+        syncRenderedOutputMark(nodeEl, node);
+      }
+    }
+
+    function applyRenderedEdgeStatuses() {
+      const byId = new Map(state.nodes.map((node) => [node.id, node]));
+      const focus = selectionFocusSets();
+      const paths = Array.from(els.edgesLayer.querySelectorAll(".edge"));
+      paths.forEach((path) => {
+        const edge = {
+          from: path.dataset.edgeFrom,
+          to: path.dataset.edgeTo
+        };
+        const from = byId.get(edge.from);
+        const to = byId.get(edge.to);
+        if (!from || !to) return;
+        const edgeClass = classForEdge(edge, from, to, focus);
+        const blockedEdge = isBlockingEdge(edge, from, focus);
+        path.setAttribute("class", edgeClass);
+        path.setAttribute("marker-end", markerForEdgeClass(edgeClass, blockedEdge));
+      });
+      paths
+        .map((path, index) => ({ path, index, edgeClass: path.getAttribute("class") || "" }))
+        .sort((a, b) => {
+          const layerDelta = edgePaintLayerRank(a.edgeClass) - edgePaintLayerRank(b.edgeClass);
+          if (layerDelta) return layerDelta;
+          const focusDelta = focusRenderRank(a.edgeClass) - focusRenderRank(b.edgeClass);
+          return focusDelta || a.index - b.index;
+        })
+        .forEach(({ path }) => els.edgesLayer.appendChild(path));
+    }
+
+    function scheduleStatusRender() {
+      clearTimeout(state.statusRenderTimer);
+      state.statusRenderTimer = setTimeout(() => {
+        state.statusRenderTimer = 0;
+        renderGraph();
+      }, SMOOTH_SLIDE_DURATION_MS + 40);
+    }
+
+    function setNodeStatus(id, nextStatus, toggle = true, options = {}) {
+      const node = state.nodes.find((item) => item.id === id);
+      if (!node) return;
+      const priorStatus = normalizeStatus(node.status);
+      const normalized = normalizeStatus(nextStatus);
+      const status = toggle && priorStatus === normalized ? "pending" : normalized;
+      if (priorStatus === status) return;
+      node.status = status;
+      armBrowserCloseWarning();
+      saveLocalStatuses();
+      if (options.deferRender) {
+        computeBlocked(state.nodes);
+        applyRenderedNodeStatus(id, status);
+        applyRenderedBlockedNodeStatuses();
+        applyRenderedEdgeStatuses();
+        scheduleStatusRender();
+        return;
+      }
+      clearTimeout(state.statusRenderTimer);
+      state.statusRenderTimer = 0;
+      renderGraph();
+    }
+
+    function stopStatusControlEvent(event) {
+      if (event.button !== undefined && event.button !== 0) return;
+      event.preventDefault();
+      if (event.stopImmediatePropagation) event.stopImmediatePropagation();
+      event.stopPropagation();
+    }
+
+    function fallbackCopyText(value) {
+      const textarea = document.createElement("textarea");
+      textarea.value = value;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "fixed";
+      textarea.style.left = "-9999px";
+      textarea.style.top = "0";
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      let copied = false;
+      try {
+        copied = document.execCommand("copy");
+      } catch {
+        copied = false;
+      }
+      textarea.remove();
+      return copied;
+    }
+
+    async function copyText(value) {
+      if (navigator.clipboard?.writeText) {
+        try {
+          await navigator.clipboard.writeText(value);
+          return true;
+        } catch {
+          return fallbackCopyText(value);
+        }
+      }
+      return fallbackCopyText(value);
+    }
+
+    function motionNow() {
+      return performance?.now ? performance.now() : Date.now();
+    }
+
+    function clamp01(value) {
+      return Math.max(0, Math.min(1, value));
+    }
+
+    function smoothstep(value) {
+      const t = clamp01(value);
+      return t * t * (3 - 2 * t);
+    }
+
+    function numberInRange(value, fallback, min, max) {
+      if (value == null || value === "") return fallback;
+      const numeric = Number(value);
+      if (!Number.isFinite(numeric)) return fallback;
+      return Math.max(min, Math.min(max, numeric));
+    }
+
+    function prefersReducedMotion() {
+      try {
+        return !!window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+      } catch {
+        return false;
+      }
+    }
+
+    function normalizeCopyJiggleParams(options = {}, base = COPY_JIGGLE_DEFAULTS) {
+      return {
+        yFreqHz: numberInRange(options.yFreqHz, base.yFreqHz, 0.1, 12),
+        xFreqHz: numberInRange(options.xFreqHz, base.xFreqHz, 0.1, 12),
+        yDamping: numberInRange(options.yDamping, base.yDamping, 0.001, 0.999),
+        xDamping: numberInRange(options.xDamping, base.xDamping, 0.001, 0.999),
+        yLagMs: numberInRange(options.yLagMs, base.yLagMs, 0, 160),
+        attackMs: numberInRange(options.attackMs, base.attackMs, 0, 240),
+        settleStart: numberInRange(options.settleStart, base.settleStart, 0, 0.99),
+        sagGain: numberInRange(options.sagGain, base.sagGain, -1, 1),
+        sagDecay: numberInRange(options.sagDecay, base.sagDecay, 0, 12),
+        lateralCoupling: numberInRange(options.lateralCoupling, base.lateralCoupling, -1, 1),
+        normalizePath: options.normalizePath == null ? base.normalizePath : options.normalizePath !== false
+      };
+    }
+
+    function copyJiggleParamKey(p) {
+      return [
+        p.duration,
+        p.yFreqHz,
+        p.xFreqHz,
+        p.yDamping,
+        p.xDamping,
+        p.yLagMs,
+        p.attackMs,
+        p.settleStart,
+        p.sagGain,
+        p.sagDecay,
+        p.lateralCoupling,
+        p.normalizePath ? 1 : 0
+      ].join("|");
+    }
+
+    function dampedSpringImpulse(timeSec, freqHz, dampingRatio) {
+      const zeta = numberInRange(dampingRatio, 0.5, 0.001, 0.999);
+      const omega0 = 2 * Math.PI * freqHz;
+      const omegaD = omega0 * Math.sqrt(1 - zeta * zeta);
+      return Math.exp(-zeta * omega0 * timeSec) * Math.sin(omegaD * timeSec);
+    }
+
+    function copyJiggleUnit(t, p) {
+      const durationSec = p.duration / 1000;
+      const timeSec = t * durationSec;
+      const attack = smoothstep(timeSec / Math.max(0.001, p.attackMs / 1000));
+      const settle = 1 - smoothstep((t - p.settleStart) / Math.max(0.001, 1 - p.settleStart));
+      const yTimeSec = Math.max(0, timeSec - p.yLagMs / 1000);
+      const xBase = dampedSpringImpulse(timeSec, p.xFreqHz, p.xDamping);
+      const yBase = dampedSpringImpulse(yTimeSec, p.yFreqHz, p.yDamping);
+      const coupledX = (
+        dampedSpringImpulse(yTimeSec, p.yFreqHz * 1.32, p.yDamping + 0.08)
+        * p.lateralCoupling
+      );
+      const sag = (
+        Math.sin(t * Math.PI)
+        * Math.exp(-p.sagDecay * timeSec)
+        * p.sagGain
+      );
+      return {
+        x: (xBase + coupledX) * attack * settle,
+        y: (yBase + sag) * attack * settle
+      };
+    }
+
+    function getCopyJiggleNormalizer(p) {
+      if (!p.normalizePath) return { x: 1, y: 1 };
+      const key = copyJiggleParamKey(p);
+      const cached = copyJiggleNormalizerCache.get(key);
+      if (cached) return cached;
+      let maxX = 0.0001;
+      let maxY = 0.0001;
+      const samples = 192;
+      for (let i = 0; i <= samples; i += 1) {
+        const point = copyJiggleUnit(i / samples, p);
+        maxX = Math.max(maxX, Math.abs(point.x));
+        maxY = Math.max(maxY, Math.abs(point.y));
+      }
+      const normalizer = Object.freeze({
+        x: 1 / maxX,
+        y: 1 / maxY
+      });
+      if (copyJiggleNormalizerCache.size > 32) copyJiggleNormalizerCache.clear();
+      copyJiggleNormalizerCache.set(key, normalizer);
+      return normalizer;
+    }
+
+    function copyJiggleActionOptions(options = {}) {
+      return {
+        duration: numberInRange(options.duration, COPY_JIGGLE_DEFAULTS.duration, 180, 1200),
+        translateXPx: numberInRange(options.translateXPx, COPY_JIGGLE_DEFAULTS.translateXPx, 0, 48),
+        translateYPx: numberInRange(options.translateYPx, COPY_JIGGLE_DEFAULTS.translateYPx, 0, 48),
+        ...normalizeCopyJiggleParams(options)
+      };
+    }
+
+    function copyJiggleMotionFields(options = {}, baseMotion = {}) {
+      const translateXPx = numberInRange(options.translateXPx, 0, 0, 48);
+      const translateYPx = numberInRange(options.translateYPx, 0, 0, 48);
+      if (!translateXPx && !translateYPx) {
+        return { translateXPx, translateYPx };
+      }
+      const params = normalizeCopyJiggleParams(options);
+      return {
+        ...params,
+        translateXPx,
+        translateYPx,
+        copyJiggleNormalizer: getCopyJiggleNormalizer({
+          ...baseMotion,
+          ...params,
+          translateXPx,
+          translateYPx
+        })
+      };
+    }
+
+    function motionProgress(motion, cutoff) {
+      const elapsed = cutoff - motion.startedAt - motion.delay;
+      if (elapsed < 0) return { waiting: true, done: false, t: 0 };
+      const raw = elapsed / motion.duration;
+      return { waiting: false, done: raw >= 1, t: clamp01(raw) };
+    }
+
+    function screenPxToWorldValue(value) {
+      const safeZoom = Number.isFinite(state.zoom) && state.zoom > 0 ? state.zoom : 1;
+      return value / safeZoom;
+    }
+
+    function findRenderedNodeElement(id) {
+      for (const nodeEl of els.nodesLayer.children) {
+        if (nodeEl.dataset?.nodeId === id) return nodeEl;
+      }
+      return null;
+    }
+
+    function copyJiggleTransformForMotion(motion, t) {
+      const point = copyJiggleUnit(t, motion);
+      const normalizer = motion.copyJiggleNormalizer || getCopyJiggleNormalizer(motion);
+      return {
+        translateX: motion.translateXPx
+          ? screenPxToWorldValue(point.x * normalizer.x * motion.translateXPx)
+          : 0,
+        translateY: motion.translateYPx
+          ? screenPxToWorldValue(point.y * normalizer.y * motion.translateYPx)
+          : 0
+      };
+    }
+
+    function setNodeTransform(node, translateX = 0, translateY = 0) {
+      const nodeEl = findRenderedNodeElement(node.id);
+      if (!nodeEl) return;
+      nodeEl.setAttribute("transform", "translate(" + (node.x + translateX) + " " + (node.y + translateY) + ")");
+    }
+
+    function applyCopyJiggleFrame() {
+      state.copyJiggleRaf = 0;
+      if (!state.copyJiggleMotions.size || prefersReducedMotion()) {
+        state.copyJiggleMotions.clear();
+        return;
+      }
+      const cutoff = motionNow();
+      for (const [id, motion] of state.copyJiggleMotions) {
+        const node = state.nodes.find((item) => item.id === id);
+        if (!node) {
+          state.copyJiggleMotions.delete(id);
+          continue;
+        }
+        const progress = motionProgress(motion, cutoff);
+        if (progress.done) {
+          state.copyJiggleMotions.delete(id);
+          setNodeTransform(node);
+          continue;
+        }
+        if (progress.waiting) {
+          setNodeTransform(node);
+          continue;
+        }
+        const transform = copyJiggleTransformForMotion(motion, progress.t);
+        setNodeTransform(node, transform.translateX, transform.translateY);
+      }
+      if (state.copyJiggleMotions.size) {
+        state.copyJiggleRaf = requestAnimationFrame(applyCopyJiggleFrame);
+      }
+    }
+
+    function requestCopyJiggleFrame() {
+      if (state.copyJiggleRaf || prefersReducedMotion()) return;
+      state.copyJiggleRaf = requestAnimationFrame(applyCopyJiggleFrame);
+    }
+
+    function startNodeCopyJiggle(node) {
+      if (!node?.id || prefersReducedMotion()) return;
+      const options = copyJiggleActionOptions({ action: "copy-text-object" });
+      const baseMotion = {
+        phase: "pulse",
+        startedAt: motionNow(),
+        delay: 0,
+        duration: options.duration
+      };
+      state.copyJiggleMotions.set(node.id, {
+        ...baseMotion,
+        ...copyJiggleMotionFields(options, baseMotion)
+      });
+      requestCopyJiggleFrame();
+    }
+
+    function copyNodeId(node) {
+      copyText(node.id).then((copied) => {
+        if (copied) startNodeCopyJiggle(node);
+      });
+    }
+
+    function hasEditableCopyTarget() {
+      const target = document.activeElement;
+      if (!target) return false;
+      if (target.isContentEditable) return true;
+      return ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName);
+    }
+
+    function handleNodeCopyShortcut(event) {
+      if (!(event.metaKey || event.ctrlKey) || event.altKey || event.shiftKey) return;
+      if (String(event.key || "").toLowerCase() !== "c") return;
+      if (hasEditableCopyTarget()) return;
+      const selection = window.getSelection?.();
+      if (selection && !selection.isCollapsed && String(selection).trim()) return;
+      const node = state.nodes.find((item) => item.id === state.selectedId);
+      if (!node) return;
+      event.preventDefault();
+      copyNodeId(node);
+    }
+
+    function handleSaveShortcut(event) {
+      if (!(event.metaKey || event.ctrlKey) || event.altKey) return;
+      if (String(event.key || "").toLowerCase() !== "s") return;
+      event.preventDefault();
+      event.stopPropagation();
+      closeContextMenu();
+      if (event.shiftKey) saveAsHtml();
+      else exportHtml();
+    }
+
+    function statusFromSliderPointer(event, slider) {
+      const hitbox = slider.querySelector(".slider-hitbox");
+      const rect = (hitbox || slider).getBoundingClientRect();
+      const x = rect.width ? (event.clientX - rect.left) / rect.width : 0.5;
+      return x < 0.5 ? "true" : "false";
+    }
+
+    function updateStatusSliderHotspotState(event, slider, active = false) {
+      const hotStatus = statusFromSliderPointer(event, slider);
+      slider.querySelectorAll(".status-action").forEach((action) => {
+        const hot = action.classList.contains(hotStatus + "-action");
+        action.classList.toggle("hotspot-hover", hot);
+        action.classList.toggle("hotspot-active", active && hot);
+      });
+    }
+
+    function clearStatusSliderHotspotState(slider) {
+      slider.querySelectorAll(".status-action").forEach((action) => {
+        action.classList.remove("hotspot-hover", "hotspot-active");
+      });
+    }
+
+    function attachStatusSliderEvents(slider, node) {
+      let activePointer = null;
+      let suppressClick = false;
+
+      function releasePointer(event) {
+        slider.classList.remove("pressed");
+        if (activePointer !== null && slider.releasePointerCapture) {
+          try {
+            slider.releasePointerCapture(activePointer);
+          } catch {
+            // Pointer capture may already be released if the SVG was re-rendered.
+          }
+        }
+        activePointer = null;
+        clearStatusSliderHotspotState(slider);
+        event.preventDefault();
+        event.stopPropagation();
+      }
+
+      slider.addEventListener("pointermove", (event) => {
+        updateStatusSliderHotspotState(event, slider, activePointer !== null);
+      });
+
+      slider.addEventListener("pointerleave", () => {
+        if (activePointer === null) clearStatusSliderHotspotState(slider);
+      });
+
+      slider.addEventListener("pointerdown", (event) => {
+        if (event.button !== undefined && event.button !== 0) return;
+        event.preventDefault();
+        event.stopPropagation();
+        activePointer = event.pointerId;
+        slider.classList.add("pressed");
+        updateStatusSliderHotspotState(event, slider, true);
+        if (slider.setPointerCapture) {
+          try {
+            slider.setPointerCapture(event.pointerId);
+          } catch {
+            // Some embedded SVG contexts do not support pointer capture.
+          }
+        }
+      });
+
+      slider.addEventListener("pointerup", (event) => {
+        if (activePointer === null) return;
+        const status = statusFromSliderPointer(event, slider);
+        releasePointer(event);
+        suppressClick = true;
+        state.statusClickSuppress = {
+          id: node.id,
+          until: Date.now() + 260
+        };
+        setTimeout(() => {
+          suppressClick = false;
+        }, 0);
+        setNodeStatus(node.id, status, true, { deferRender: true });
+      });
+
+      slider.addEventListener("pointercancel", releasePointer);
+      slider.addEventListener("mousedown", stopStatusControlEvent);
+      slider.addEventListener("mouseup", stopStatusControlEvent);
+      slider.addEventListener("click", (event) => {
+        stopStatusControlEvent(event);
+        const suppressed = state.statusClickSuppress;
+        if (suppressed && suppressed.id === node.id && Date.now() <= suppressed.until) {
+          state.statusClickSuppress = null;
+          return;
+        }
+        if (suppressClick) {
+          suppressClick = false;
+          return;
+        }
+        state.statusClickSuppress = null;
+        const status = statusFromSliderPointer(event, slider);
+        setNodeStatus(node.id, status, true, { deferRender: true });
+      });
+      slider.addEventListener("dblclick", stopStatusControlEvent);
+
+      slider.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowUp" || event.key === "ArrowLeft") {
+          stopStatusControlEvent(event);
+          setNodeStatus(node.id, "true", true);
+        } else if (event.key === "ArrowDown" || event.key === "ArrowRight") {
+          stopStatusControlEvent(event);
+          setNodeStatus(node.id, "false", true);
+        } else if (event.key === "Home") {
+          stopStatusControlEvent(event);
+          setNodeStatus(node.id, "true", false);
+        } else if (event.key === "End") {
+          stopStatusControlEvent(event);
+          setNodeStatus(node.id, "false", false);
+        } else if (event.key === "Escape") {
+          stopStatusControlEvent(event);
+          setNodeStatus(node.id, "pending", false);
+        } else if (event.key === "Enter" || event.key === " ") {
+          stopStatusControlEvent(event);
+          setNodeStatus(node.id, node.status === "true" ? "false" : "true", false);
+        }
+      });
+    }
+
+    function makeStatusSlider(node) {
+      const slider = STATUS_SLIDER;
+      const status = normalizeStatus(node.status);
+      const group = makeSvg("g", {
+        class: "status-slider status-" + status,
+        transform: "translate(" + slider.x + " " + slider.y + ")",
+        tabindex: "0",
+        role: "slider",
+        "aria-label": nodeAccessibleLabel(node) + " status",
+        "aria-valuemin": "0",
+        "aria-valuemax": "2",
+        "aria-valuenow": String(statusSliderValue(status)),
+        "aria-valuetext": status
+      });
+
+      group.appendChild(makeSvg("rect", {
+        class: "slider-hitbox",
+        x: 0,
+        y: 0,
+        width: slider.width,
+        height: slider.height,
+        rx: slider.rx,
+        ry: slider.rx
+      }));
+
+      group.appendChild(makeSvg("rect", {
+        class: "status-shell",
+        x: 0,
+        y: 0,
+        width: slider.width,
+        height: slider.height,
+        rx: slider.rx,
+        ry: slider.rx
+      }));
+
+      const trueAction = makeSvg("g", { class: "status-action true-action" + (status === "true" ? " active" : "") });
+      trueAction.appendChild(makeSvg("rect", {
+        class: "status-action-bg",
+        x: slider.contentX,
+        y: slider.contentY,
+        width: slider.itemSize,
+        height: slider.itemSize,
+        rx: Math.min(UI_RADIUS, slider.itemSize / 2),
+        ry: Math.min(UI_RADIUS, slider.itemSize / 2)
+      }));
+      const trueLabel = makeSvg("text", { class: "status-label true-label", x: slider.leftX, y: slider.cy });
+      trueLabel.textContent = "T";
+      trueAction.appendChild(trueLabel);
+      group.appendChild(trueAction);
+
+      const falseAction = makeSvg("g", { class: "status-action false-action" + (status === "false" ? " active" : "") });
+      falseAction.appendChild(makeSvg("rect", {
+        class: "status-action-bg",
+        x: slider.contentX + slider.itemSize + slider.separatorGap * 2 + slider.separatorWidth,
+        y: slider.contentY,
+        width: slider.itemSize,
+        height: slider.itemSize,
+        rx: Math.min(UI_RADIUS, slider.itemSize / 2),
+        ry: Math.min(UI_RADIUS, slider.itemSize / 2)
+      }));
+      const falseLabel = makeSvg("text", { class: "status-label false-label", x: slider.rightX, y: slider.cy });
+      falseLabel.textContent = "F";
+      falseAction.appendChild(falseLabel);
+      group.appendChild(falseAction);
+
+      attachStatusSliderEvents(group, node);
+      return group;
+    }
+
+    function clampZoom(value) {
+      return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Number(value) || 1));
+    }
+
+    function viewportSize() {
+      return {
+        width: Math.max(1, els.graphScroll.clientWidth || 800),
+        height: Math.max(1, els.graphScroll.clientHeight || 600)
+      };
+    }
+
+    function updateGraphViewportBox() {
+      const size = viewportSize();
+      els.graphSvg.setAttribute("width", size.width);
+      els.graphSvg.setAttribute("height", size.height);
+      els.graphSvg.setAttribute("viewBox", "0 0 " + size.width + " " + size.height);
+    }
+
+    function graphContentBounds() {
+      if (!state.nodes.length) return null;
+
+      let minX = Infinity;
+      let minY = Infinity;
+      let maxX = -Infinity;
+      let maxY = -Infinity;
+      for (const node of state.nodes) {
+        if (!Number.isFinite(node.x) || !Number.isFinite(node.y)) continue;
+        minX = Math.min(minX, node.x);
+        minY = Math.min(minY, node.y);
+        maxX = Math.max(maxX, node.x + NODE_W);
+        maxY = Math.max(maxY, node.y + NODE_H);
+      }
+
+      if (!Number.isFinite(minX) || !Number.isFinite(minY) || !Number.isFinite(maxX) || !Number.isFinite(maxY)) {
+        return null;
+      }
+      return { minX, minY, maxX, maxY };
+    }
+
+    function clampPanAxisToVisibleGraph(pan, graphMin, graphMax, zoom, viewportSize) {
+      const scaledGraphSize = Math.max(0, (graphMax - graphMin) * zoom);
+      if (scaledGraphSize <= 0) return pan;
+
+      const minVisible = Math.min(MIN_GRAPH_VISIBLE_PX, scaledGraphSize, viewportSize);
+      const minPan = minVisible - graphMax * zoom;
+      const maxPan = viewportSize - minVisible - graphMin * zoom;
+      return Math.min(maxPan, Math.max(minPan, pan));
+    }
+
+    function clampViewportPan(zoom, panX, panY) {
+      const bounds = graphContentBounds();
+      if (!bounds) return { panX, panY };
+
+      const size = viewportSize();
+      return {
+        panX: clampPanAxisToVisibleGraph(panX, bounds.minX, bounds.maxX, zoom, size.width),
+        panY: clampPanAxisToVisibleGraph(panY, bounds.minY, bounds.maxY, zoom, size.height)
+      };
+    }
+
+    function applyViewportTransform() {
+      state.transformRaf = 0;
+      updateGraphViewportBox();
+      state.zoom = clampZoom(state.zoom);
+      const pan = clampViewportPan(state.zoom, state.panX, state.panY);
+      state.panX = pan.panX;
+      state.panY = pan.panY;
+      els.graphZoom.setAttribute("transform", "translate(" + state.panX + " " + state.panY + ") scale(" + state.zoom + ")");
+    }
+
+    function scheduleViewportTransform() {
+      if (state.transformRaf) return;
+      state.transformRaf = requestAnimationFrame(applyViewportTransform);
+    }
+
+    function setViewport(nextZoom, nextPanX, nextPanY) {
+      const zoom = clampZoom(nextZoom);
+      const requestedPanX = Number.isFinite(nextPanX) ? nextPanX : state.panX;
+      const requestedPanY = Number.isFinite(nextPanY) ? nextPanY : state.panY;
+      const pan = clampViewportPan(zoom, requestedPanX, requestedPanY);
+      state.zoom = zoom;
+      state.panX = pan.panX;
+      state.panY = pan.panY;
+      scheduleViewportTransform();
+    }
+
+    function panBy(dx = 0, dy = 0) {
+      setViewport(state.zoom, state.panX + (Number(dx) || 0), state.panY + (Number(dy) || 0));
+    }
+
+    function viewportPointFromClient(clientX, clientY) {
+      const rect = els.graphScroll.getBoundingClientRect();
+      return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+      };
+    }
+
+    function zoomAroundViewportPoint(viewportX, viewportY, nextZoom) {
+      const currentZoom = Math.max(state.zoom || 1, 0.0001);
+      const normalizedZoom = clampZoom(nextZoom);
+      setViewport(
+        normalizedZoom,
+        viewportX - (viewportX - state.panX) * (normalizedZoom / currentZoom),
+        viewportY - (viewportY - state.panY) * (normalizedZoom / currentZoom)
+      );
+    }
+
+    function renderGraph() {
+      clear(els.edgesLayer);
+      clear(els.nodesLayer);
+      computeBlocked(state.nodes);
+      const size = topoLayout(state.nodes, state.edges);
+      state.graphWidth = size.width;
+      state.graphHeight = size.height;
+      const homeDefault = !state.nodes.length;
+      document.documentElement.classList.toggle("home-default", homeDefault);
+      document.body.classList.toggle("home-default", homeDefault);
+      els.graphScroll.classList.toggle("home-default", homeDefault);
+      els.emptyState.style.display = homeDefault ? "grid" : "none";
+      updateGraphViewportBox();
+      applyViewportTransform();
+      syncContextMenuForGraphState();
+
+      const focus = selectionFocusSets();
+      const byId = new Map(state.nodes.map((node) => [node.id, node]));
+      const renderedEdges = state.edges
+        .map((edge, index) => {
+          const from = byId.get(edge.from);
+          const to = byId.get(edge.to);
+          if (!from || !to) return null;
+          const edgeClass = classForEdge(edge, from, to, focus);
+          return {
+            index,
+            key: edgeKey(edge.from, edge.to),
+            from,
+            to,
+            edgeClass,
+            blockedEdge: isBlockingEdge(edge, from, focus)
+          };
+        })
+        .filter(Boolean);
+
+      assignEdgePortOffsets(renderedEdges);
+      renderedEdges.sort((a, b) => {
+        const layerDelta = edgePaintLayerRank(a.edgeClass) - edgePaintLayerRank(b.edgeClass);
+        if (layerDelta) return layerDelta;
+        const focusDelta = focusRenderRank(a.edgeClass) - focusRenderRank(b.edgeClass);
+        return focusDelta || a.index - b.index;
+      });
+
+      for (const item of renderedEdges) {
+        const { from, to, edgeClass, blockedEdge, fromPortOffset, toPortOffset } = item;
+        const path = makeSvg("path", {
+          class: edgeClass,
+          "data-edge-from": from.id,
+          "data-edge-to": to.id,
+          d: edgePath(from, to, fromPortOffset, toPortOffset),
+          "marker-end": markerForEdgeClass(edgeClass, blockedEdge)
+        });
+        els.edgesLayer.appendChild(path);
+      }
+
+      const renderedNodes = state.nodes
+        .map((node, index) => ({
+          node,
+          index,
+          nodeClass: classForNode(node, focus)
+        }))
+        .sort((a, b) => {
+          const rankDelta = focusRenderRank(a.nodeClass) - focusRenderRank(b.nodeClass);
+          return rankDelta || a.index - b.index;
+        });
+
+      for (const item of renderedNodes) {
+        const { node, nodeClass } = item;
+        const g = makeSvg("g", {
+          class: nodeClass,
+          transform: "translate(" + node.x + " " + node.y + ")",
+          "data-node-id": node.id,
+          tabindex: "0",
+          role: "button",
+          "aria-label": nodeAccessibleLabel(node) + ", " + node.status
+        });
+
+        const rect = makeSvg("rect", {
+          class: "body",
+          x: 0,
+          y: 0,
+          width: NODE_W,
+          height: NODE_H,
+          rx: UI_RADIUS,
+          ry: UI_RADIUS
+        });
+        g.appendChild(rect);
+
+        g.appendChild(makeSvg("rect", {
+          class: "selection-frame",
+          x: 0,
+          y: 0,
+          width: NODE_W,
+          height: NODE_H,
+          rx: UI_RADIUS,
+          ry: UI_RADIUS
+        }));
+
+        const typeText = makeSvg("text", { class: "type", x: BOARD_SHELL_PADDING * 2, y: NODE_HEADER_CENTER_Y });
+        typeText.textContent = nodeTypeLabel(node);
+        g.appendChild(typeText);
+
+        const outputMarkClass = outputMarkClassForNode(node);
+        if (outputMarkClass) {
+          g.appendChild(makeOutputMark(outputMarkClass));
+        }
+
+        g.appendChild(makeStatusSlider(node));
+
+        const idLines = wrapMeasuredText(node.id, "id", NODE_TEXT_WIDTH, 3, NODE_ID_MAX_CHARS);
+        const idStartY = NODE_H / 2 - ((idLines.length - 1) * NODE_TEXT_LINE_STEP) / 2;
+        idLines.forEach((line, i) => {
+          const text = makeSvg("text", { class: "id", x: BOARD_SHELL_PADDING * 2, y: idStartY + i * NODE_TEXT_LINE_STEP });
+          text.textContent = line;
+          g.appendChild(text);
+        });
+
+        g.addEventListener("click", (event) => {
+          if (isViewportClickSuppressed()) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+          }
+          event.stopPropagation();
+          toggleNodeSelection(node.id);
+        });
+        g.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            selectNode(node.id);
+          }
+        });
+        els.nodesLayer.appendChild(g);
+      }
+
+    }
+
+    function selectNode(id) {
+      state.selectedId = id;
+      renderGraph();
+    }
+
+    function toggleNodeSelection(id) {
+      if (state.selectedId === id) {
+        clearSelection();
+        return;
+      }
+      selectNode(id);
+    }
+
+    function clearSelection() {
+      if (!state.selectedId) return;
+      state.selectedId = null;
+      renderGraph();
+    }
+
+    function clampMenuCoord(value, size, margin = MENU_VIEWPORT_EDGE_MARGIN) {
+      const max = Math.max(margin, window.innerWidth - size - margin);
+      return Math.max(margin, Math.min(max, value));
+    }
+
+    function clampMenuTop(value, size, margin = MENU_VIEWPORT_EDGE_MARGIN) {
+      const max = Math.max(margin, window.innerHeight - size - margin);
+      return Math.max(margin, Math.min(max, value));
+    }
+
+    function pinnedContextMenuBottomOffset() {
+      const viewportOffset = window.innerHeight * PINNED_CONTEXT_MENU_BOTTOM_OFFSET_RATIO;
+      const safeArea = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--safe-area-bottom")) || 0;
+      return Math.max(MENU_VIEWPORT_EDGE_MARGIN, viewportOffset + safeArea);
+    }
+
+    function positionMenuBottomCenter(menu) {
+      const rect = menu.getBoundingClientRect();
+      const x = (window.innerWidth - rect.width) / 2;
+      const y = window.innerHeight - rect.height - pinnedContextMenuBottomOffset();
+      menu.style.left = Math.round(clampMenuCoord(x, rect.width)) + "px";
+      menu.style.top = Math.round(clampMenuTop(y, rect.height)) + "px";
+    }
+
+    function openMenuBottomCenter(menu) {
+      menu.style.left = "0px";
+      menu.style.top = "0px";
+      menu.hidden = false;
+      menu.classList.add("visible");
+      menu.dataset.pinnedPosition = "bottom-center";
+      positionMenuBottomCenter(menu);
+    }
+
+    function pinContextMenu() {
+      els.appActionGroup.hidden = false;
+      delete els.contextMenu.dataset.nodeId;
+      openMenuBottomCenter(els.contextMenu);
+    }
+
+    function closeContextMenu() {
+      delete els.contextMenu.dataset.nodeId;
+      if (els.contextMenu.dataset.pinnedPosition === "bottom-center") {
+        els.appActionGroup.hidden = false;
+        positionMenuBottomCenter(els.contextMenu);
+        return;
+      }
+      els.contextMenu.classList.remove("visible");
+      els.contextMenu.hidden = true;
+      delete els.contextMenu.dataset.pinnedPosition;
+    }
+
+    function hideContextMenu() {
+      delete els.contextMenu.dataset.nodeId;
+      delete els.contextMenu.dataset.pinnedPosition;
+      els.contextMenu.classList.remove("visible");
+      els.contextMenu.hidden = true;
+    }
+
+    function syncContextMenuForGraphState() {
+      if (!state.nodes.length) {
+        hideContextMenu();
+        return;
+      }
+      if (els.contextMenu.hidden || els.contextMenu.dataset.pinnedPosition !== "bottom-center") {
+        pinContextMenu();
+      }
+    }
+
+    function armBrowserCloseWarning() {
+      state.browserCloseWarningArmed = true;
+    }
+
+    function disarmBrowserCloseWarning() {
+      state.browserCloseWarningArmed = false;
+    }
+
+    function getPriorStatuses({ includeStored = true, includeCurrent = true } = {}) {
+      const prior = {};
+      if (includeCurrent) {
+        for (const node of state.nodes) prior[node.id] = node.status;
+      }
+      const stored = includeStored ? loadLocalStatuses() : {};
+      return { ...stored, ...prior };
+    }
+
+    function runParse(options = {}) {
+      const {
+        usePriorStatuses = true,
+        selectFirstNode = true,
+        saveStatuses = true
+      } = options;
+      const tex = state.tex;
+      const priorStatuses = usePriorStatuses ? getPriorStatuses() : {};
+      const parsed = parseTex(tex, priorStatuses);
+      state.tex = tex;
+      state.sourceHash = hashString(tex);
+      state.nodes = parsed.nodes;
+      state.edges = parsed.edges;
+      state.duplicateLabels = parsed.duplicateLabels;
+      state.unresolvedRefs = parsed.unresolvedRefs;
+      state.selectedId = selectFirstNode ? state.nodes[0]?.id || null : null;
+      state.statusClickSuppress = null;
+      if (saveStatuses) saveLocalStatuses();
+      renderGraph();
+      fitGraph();
+    }
+
+    function fitGraph() {
+      if (!state.nodes.length) return;
+      const maxX = Math.max(...state.nodes.map((node) => node.x + NODE_W)) + PAD;
+      const maxY = Math.max(...state.nodes.map((node) => node.y + NODE_H)) + PAD;
+      const size = viewportSize();
+      const usableWidth = Math.max(160, size.width - 24);
+      const zX = usableWidth / maxX;
+      const zY = (size.height - 24) / maxY;
+      const zoom = clampZoom(Math.min(zX, zY, 1));
+      setViewport(
+        zoom,
+        (usableWidth - maxX * zoom) / 2,
+        (size.height - maxY * zoom) / 2
+      );
+    }
+
+    function hashString(text) {
+      let hash = 2166136261;
+      for (let i = 0; i < text.length; i += 1) {
+        hash ^= text.charCodeAt(i);
+        hash = Math.imul(hash, 16777619);
+      }
+      return (hash >>> 0).toString(16);
+    }
+
+    function isGraphData(data) {
+      return data?.kind === GRAPH_DATA_KIND || data?.kind === LEGACY_MAP_DATA_KIND;
+    }
+
+    function localStatusKey(kind = GRAPH_DATA_KIND) {
+      return kind + ":statuses:" + (state.sourceHash || "unsaved");
+    }
+
+    function saveLocalStatuses() {
+      if (!state.sourceHash && state.tex) state.sourceHash = hashString(state.tex);
+      if (!state.sourceHash) return;
+      const statuses = {};
+      for (const node of state.nodes) statuses[node.id] = node.status;
+      try {
+        localStorage.setItem(localStatusKey(), JSON.stringify(statuses));
+      } catch {
+        // localStorage can be unavailable for some file:// privacy settings.
+      }
+    }
+
+    function loadLocalStatuses() {
+      if (!state.sourceHash && state.tex) {
+        state.sourceHash = hashString(state.tex);
+      }
+      if (!state.sourceHash) return {};
+      try {
+        const stored =
+          localStorage.getItem(localStatusKey()) ||
+          localStorage.getItem(localStatusKey(LEGACY_MAP_DATA_KIND)) ||
+          "{}";
+        return JSON.parse(stored) || {};
+      } catch {
+        return {};
+      }
+    }
+
+    function exportData() {
+      const statusById = {};
+      for (const node of state.nodes) statusById[node.id] = node.status;
+      return {
+        version: 1,
+        kind: GRAPH_DATA_KIND,
+        exportedAt: new Date().toISOString(),
+        sourceName: state.sourceName,
+        sourceHash: state.sourceHash,
+        tex: state.tex,
+        viewport: {
+          panX: state.panX,
+          panY: state.panY,
+          zoom: state.zoom
+        },
+        statusById,
+        nodes: state.nodes,
+        edges: state.edges,
+        duplicateLabels: state.duplicateLabels,
+        unresolvedRefs: state.unresolvedRefs
+      };
+    }
+
+    function safeJson(data) {
+      return JSON.stringify(data, null, 2).replace(/</g, "\\u003c");
+    }
+
+    function download(filename, mime, text) {
+      const blob = new Blob([text], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function supportsFileSystemAccess() {
+      return Boolean(window.showOpenFilePicker && window.showSaveFilePicker);
+    }
+
+    function isAbortError(error) {
+      return error?.name === "AbortError";
+    }
+
+    async function readFileHandle(handle) {
+      const file = await handle.getFile();
+      return {
+        file,
+        text: await readFile(file)
+      };
+    }
+
+    async function canWriteFileHandle(handle) {
+      if (!handle) return false;
+      const options = { mode: "readwrite" };
+      if (await handle.queryPermission?.(options) === "granted") return true;
+      return await handle.requestPermission?.(options) === "granted";
+    }
+
+    async function writeFileHandle(handle, mime, text) {
+      const writable = await handle.createWritable();
+      try {
+        await writable.write(new Blob([text], { type: mime }));
+      } finally {
+        await writable.close();
+      }
+    }
+
+    function randomHexCode(length = 6) {
+      const bytes = new Uint8Array(Math.ceil(length / 2));
+      if (window.crypto?.getRandomValues) {
+        window.crypto.getRandomValues(bytes);
+      } else {
+        for (let i = 0; i < bytes.length; i += 1) bytes[i] = Math.floor(Math.random() * 256);
+      }
+      return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("").slice(0, length);
+    }
+
+    function randomGraphHtmlFilename() {
+      return "tex2graph_" + randomHexCode(6) + ".html";
+    }
+
+    function defaultGraphHtmlFilename() {
+      return randomGraphHtmlFilename();
+    }
+
+    function setDocumentTitleForSaveName(filename) {
+      const name = String(filename || "").trim();
+      if (name) document.title = name;
+    }
+
+    function prepareSaveFilename(filename = randomGraphHtmlFilename()) {
+      const normalized = normalizeGraphHtmlFilename(filename);
+      state.saveTargetName = normalized;
+      setDocumentTitleForSaveName(normalized);
+      return normalized;
+    }
+
+    function normalizeGraphHtmlFilename(name) {
+      const trimmed = String(name || "").trim();
+      if (!trimmed) return "";
+      return /\.(?:html?|proofgraph)$/i.test(trimmed) ? trimmed : trimmed + ".html";
+    }
+
+    function currentDocumentFilename() {
+      const raw = (window.location.pathname || "").split("/").pop() || "";
+      try {
+        return decodeURIComponent(raw);
+      } catch {
+        return raw;
+      }
+    }
+
+    function openHandleDatabase() {
+      return new Promise((resolve, reject) => {
+        if (!window.indexedDB) {
+          resolve(null);
+          return;
+        }
+        const request = indexedDB.open("tex2graph-file-handles", 1);
+        request.onupgradeneeded = () => {
+          request.result.createObjectStore("handles");
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    function closeHandleDatabase(db) {
+      if (db) db.close();
+    }
+
+    async function readStoredSaveFileHandle() {
+      const db = await openHandleDatabase();
+      if (!db) return null;
+      try {
+        return await new Promise((resolve, reject) => {
+          const request = db.transaction("handles", "readonly").objectStore("handles").get("graph-html");
+          request.onsuccess = () => resolve(request.result || null);
+          request.onerror = () => reject(request.error);
+        });
+      } finally {
+        closeHandleDatabase(db);
+      }
+    }
+
+    async function storeSaveFileHandle(handle) {
+      if (!handle) return;
+      const db = await openHandleDatabase();
+      if (!db) return;
+      try {
+        await new Promise((resolve, reject) => {
+          const transaction = db.transaction("handles", "readwrite");
+          transaction.objectStore("handles").put(handle, "graph-html");
+          transaction.oncomplete = resolve;
+          transaction.onerror = () => reject(transaction.error);
+        });
+      } finally {
+        closeHandleDatabase(db);
+      }
+    }
+
+    async function clearStoredSaveFileHandle() {
+      const db = await openHandleDatabase();
+      if (!db) return;
+      try {
+        await new Promise((resolve, reject) => {
+          const transaction = db.transaction("handles", "readwrite");
+          transaction.objectStore("handles").delete("graph-html");
+          transaction.oncomplete = resolve;
+          transaction.onerror = () => reject(transaction.error);
+        });
+      } finally {
+        closeHandleDatabase(db);
+      }
+    }
+
+    async function restoreSaveFileHandle() {
+      if (!supportsFileSystemAccess()) return;
+      const generation = state.saveHandleGeneration;
+      try {
+        const handle = await readStoredSaveFileHandle();
+        if (!handle) return;
+        if (state.saveHandleGeneration !== generation) return;
+        state.saveFileHandle = handle;
+        state.saveTargetName = handle.name || state.saveTargetName;
+      } catch (error) {
+        console.warn("Could not restore saved file handle", error);
+      }
+    }
+
+    function htmlWithEmbeddedGraphData(data) {
+      const selectedId = state.selectedId;
+      if (selectedId) {
+        state.selectedId = null;
+        renderGraph();
+      }
+      try {
+        els.embeddedData.textContent = safeJson(data);
+        return "<!doctype html>\n" + document.documentElement.outerHTML;
+      } finally {
+        els.embeddedData.textContent = "null";
+        if (selectedId) {
+          state.selectedId = selectedId;
+          renderGraph();
+        }
+      }
+    }
+
+    function graphHtmlText() {
+      if (!state.nodes.length) {
+        runParse({ selectFirstNode: false });
+      }
+      const data = exportData();
+      return htmlWithEmbeddedGraphData(data);
+    }
+
+    async function saveGraphHtmlToHandle(handle) {
+      if (!await canWriteFileHandle(handle)) return false;
+      setDocumentTitleForSaveName(handle.name || state.saveTargetName);
+      await writeFileHandle(handle, "text/html;charset=utf-8", graphHtmlText());
+      state.saveFileHandle = handle;
+      state.saveTargetName = handle.name || state.saveTargetName;
+      try {
+        await storeSaveFileHandle(handle);
+      } catch (error) {
+        console.warn("Could not remember save file", error);
+      }
+      disarmBrowserCloseWarning();
+      return true;
+    }
+
+    function saveGraphHtmlDownload(filename) {
+      setDocumentTitleForSaveName(filename);
+      download(filename, "text/html;charset=utf-8", graphHtmlText());
+      disarmBrowserCloseWarning();
+      return true;
+    }
+
+    async function pickGraphHtmlSaveHandle(suggestedName) {
+      return await window.showSaveFilePicker({
+        suggestedName,
+        types: [{
+          description: "HTML graph",
+          accept: { "text/html": [".html", ".htm"] }
+        }]
+      });
+    }
+
+    async function exportHtml() {
+      try {
+        if (state.saveFileHandleRestore) {
+          await state.saveFileHandleRestore;
+          state.saveFileHandleRestore = null;
+        }
+        if (state.saveFileHandle && await saveGraphHtmlToHandle(state.saveFileHandle)) return true;
+        const filename = prepareSaveFilename();
+        if (supportsFileSystemAccess()) {
+          const handle = await pickGraphHtmlSaveHandle(filename);
+          return await saveGraphHtmlToHandle(handle);
+        }
+        return saveGraphHtmlDownload(filename);
+      } catch (error) {
+        if (isAbortError(error)) return false;
+        console.warn("Could not save graph", error);
+        return false;
+      }
+    }
+
+    async function saveAsHtml() {
+      try {
+        const suggestedName = prepareSaveFilename(defaultGraphHtmlFilename());
+        if (supportsFileSystemAccess()) {
+          const handle = await pickGraphHtmlSaveHandle(suggestedName);
+          return await saveGraphHtmlToHandle(handle);
+        }
+        const filename = normalizeGraphHtmlFilename(window.prompt("Save graph as", suggestedName));
+        if (!filename) return false;
+        return saveGraphHtmlDownload(filename);
+      } catch (error) {
+        if (isAbortError(error)) return false;
+        console.warn("Could not save graph as", error);
+        return false;
+      }
+    }
+
+    function setSaveFileHandle(handle, name = "", options = {}) {
+      if (options.cancelRestore !== false) {
+        state.saveHandleGeneration += 1;
+        state.saveFileHandleRestore = null;
+      }
+      state.saveFileHandle = handle || null;
+      state.saveTargetName = handle?.name || name || "";
+      if (handle) {
+        storeSaveFileHandle(handle).catch((error) => {
+          console.warn("Could not remember save file", error);
+        });
+        return;
+      }
+      if (options.clearStoredHandle !== false) {
+        clearStoredSaveFileHandle().catch((error) => {
+          console.warn("Could not clear saved file", error);
+        });
+      }
+    }
+
+    function loadGraphData(data, options = {}) {
+      if (!isGraphData(data)) {
+        return;
+      }
+      setSaveFileHandle(options.saveFileHandle || null, options.saveTargetName || "", {
+        clearStoredHandle: options.clearStoredHandle,
+        cancelRestore: options.cancelRestore
+      });
+      state.sourceName = data.sourceName || "imported.proofgraph";
+      state.sourceHash = data.sourceHash || hashString(data.tex || "");
+      state.tex = data.tex || "";
+      if (Array.isArray(data.nodes) && Array.isArray(data.edges)) {
+        const statusById = data.statusById || {};
+        const displayMetadataById = displayMetadataByIdFromTex(state.tex, statusById);
+        state.nodes = data.nodes.map((node, index) => {
+          const displayMetadata = displayMetadataById.get(node.id) || displayMetadataById.get(node.originalId);
+          return {
+            ...node,
+            displayNumber: normalizeDisplayNumber(displayMetadata?.displayNumber || node.displayNumber, index + 1),
+            displayOrder: normalizeDisplayOrder(displayMetadata?.displayOrder || node.displayOrder, index + 1),
+            aliases: node.aliases || [],
+            equationLabels: node.equationLabels || [],
+            refLabels: node.refLabels || node.dependencyLabels || [],
+            ownedLabels: node.ownedLabels || node.aliases || [],
+            unresolvedRefLabels: Array.isArray(node.unresolvedRefLabels) ? node.unresolvedRefLabels : [],
+            status: statusById[node.id] || node.status || "pending",
+            dependents: Array.isArray(node.dependents) ? node.dependents : []
+          };
+        });
+        state.edges = uniqueEdges(data.edges);
+        rebuildDependents();
+        state.duplicateLabels = data.duplicateLabels || [];
+        state.unresolvedRefs = data.unresolvedRefs || [];
+        syncNodeUnresolvedRefLabels(state.nodes, state.unresolvedRefs);
+        state.selectedId = null;
+        if (data.viewport) {
+          state.zoom = clampZoom(data.viewport.zoom);
+          state.panX = Number.isFinite(data.viewport.panX) ? data.viewport.panX : 0;
+          state.panY = Number.isFinite(data.viewport.panY) ? data.viewport.panY : 0;
+        }
+        saveLocalStatuses();
+        renderGraph();
+        if (!data.viewport) fitGraph();
+      } else {
+        runParse({ selectFirstNode: false });
+      }
+      disarmBrowserCloseWarning();
+    }
+
+    function rebuildDependents() {
+      const byId = new Map(state.nodes.map((node) => [node.id, node]));
+      state.nodes.forEach((node) => {
+        node.dependents = [];
+      });
+      for (const edge of state.edges) {
+        const from = byId.get(edge.from);
+        if (from && !from.dependents.includes(edge.to)) from.dependents.push(edge.to);
+      }
+      for (const node of state.nodes) {
+        node.dependsOn = state.edges.filter((edge) => edge.to === node.id).map((edge) => edge.from);
+        node.isLeaf = node.dependsOn.length === 0;
+        node.isFinal = node.dependents.length === 0;
+      }
+    }
+
+    function syncNodeUnresolvedRefLabels(nodes, unresolvedRefs) {
+      const byId = new Map(nodes.map((node) => [node.id, node]));
+      for (const node of nodes) {
+        node.unresolvedRefLabels = unique(Array.isArray(node.unresolvedRefLabels) ? node.unresolvedRefLabels : []);
+      }
+      for (const item of Array.isArray(unresolvedRefs) ? unresolvedRefs : []) {
+        const node = byId.get(item?.from);
+        if (!node || !item?.ref) continue;
+        node.unresolvedRefLabels = unique([...node.unresolvedRefLabels, String(item.ref)]);
+      }
+    }
+
+    function readFile(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = () => reject(reader.error);
+        reader.readAsText(file);
+      });
+    }
+
+    function decodeHtmlEntities(text) {
+      const textarea = document.createElement("textarea");
+      textarea.innerHTML = text;
+      return textarea.value;
+    }
+
+    function graphDataFromRawJson(raw) {
+      const trimmed = String(raw || "").trim();
+      if (!trimmed || trimmed === "null") return null;
+      const candidates = [trimmed];
+      const decoded = decodeHtmlEntities(trimmed);
+      if (decoded !== trimmed) candidates.push(decoded);
+      for (const candidate of candidates) {
+        try {
+          const data = JSON.parse(candidate);
+          if (isGraphData(data)) return data;
+        } catch {
+        }
+      }
+      return null;
+    }
+
+    function extractEmbeddedGraphScriptTexts(text) {
+      const values = [];
+      const scriptPattern = /<script\b[^>]*\bid\s*=\s*(["'])(embedded-(?:graph|map)-data)\1[^>]*>([\s\S]*?)<\/script>/gi;
+      let match;
+      while ((match = scriptPattern.exec(text))) {
+        values.push(match[3]);
+      }
+      return values;
+    }
+
+    function extractGraphJsonFromHtml(text) {
+      const doc = new DOMParser().parseFromString(text, "text/html");
+      const script = doc.getElementById("embedded-graph-data") || doc.getElementById("embedded-map-data");
+      const candidates = [];
+      if (script) candidates.push(script.textContent);
+      candidates.push(...extractEmbeddedGraphScriptTexts(text));
+      for (const raw of candidates) {
+        const data = graphDataFromRawJson(raw);
+        if (data) return data;
+      }
+      return null;
+    }
+
+    function looksLikeHtmlFile(file, text) {
+      const name = (file?.name || "").toLowerCase();
+      const type = (file?.type || "").toLowerCase();
+      const trimmed = text.trimStart();
+      return (
+        name.endsWith(".html") ||
+        name.endsWith(".htm") ||
+        type === "text/html" ||
+        /^<!doctype\s+html/i.test(trimmed) ||
+        /^<html[\s>]/i.test(trimmed)
+      );
+    }
+
+    function parseGraphJson(text) {
+      return graphDataFromRawJson(text);
+    }
+
+    function parseGraphFileData(file, text) {
+      const parsers = looksLikeHtmlFile(file, text)
+        ? [extractGraphJsonFromHtml, parseGraphJson]
+        : [parseGraphJson, extractGraphJsonFromHtml];
+      for (const parse of parsers) {
+        try {
+          const data = parse(text);
+          if (isGraphData(data)) return data;
+        } catch {
+        }
+      }
+      return null;
+    }
+
+    function showNotice(message) {
+      if (!els.notice) return;
+      clearTimeout(state.noticeTimer);
+      els.notice.textContent = message;
+      els.notice.hidden = false;
+      requestAnimationFrame(() => els.notice.classList.add("visible"));
+      state.noticeTimer = setTimeout(() => {
+        els.notice.classList.remove("visible");
+        state.noticeTimer = setTimeout(() => {
+          els.notice.hidden = true;
+          state.noticeTimer = 0;
+        }, 180);
+      }, 3600);
+    }
+
+    function openGraphFailureMessage(file, text) {
+      const name = file?.name || "that file";
+      if (looksLikeHtmlFile(file, text)) {
+        return name + " is HTML, but it does not contain a saved TeX2Graph graph.";
+      }
+      return name + " is not a saved TeX2Graph graph.";
+    }
+
+    function isEditableTarget(target) {
+      if (!target || target === document.body) return false;
+      const tag = target.tagName ? target.tagName.toLowerCase() : "";
+      return tag === "input" || tag === "textarea" || tag === "select" || tag === "button" || tag === "a" || target.isContentEditable;
+    }
+
+    function clearDocumentTextSelection() {
+      const selection = window.getSelection?.();
+      if (selection && !selection.isCollapsed) selection.removeAllRanges();
+    }
+
+    function isHomeSelectableTextTarget(target) {
+      if (!target?.closest) return false;
+      return Boolean(target.closest(".home-brand, .home-title, .home-subtitle, .home-guidance-item, .home-command-list code"));
+    }
+
+    function handleEmptyStatePointerDown(event) {
+      if (event.button !== undefined && event.button !== 0) return;
+      if (isEditableTarget(event.target) || isHomeSelectableTextTarget(event.target)) return;
+      clearDocumentTextSelection();
+    }
+
+    function handleViewportWheel(event) {
+      if (!els.graphScroll.contains(event.target)) return;
+      if (!state.nodes.length) return;
+      event.preventDefault();
+      closeContextMenu();
+
+      if (event.ctrlKey || event.metaKey) {
+        const factor = Math.abs(event.deltaY) < 30
+          ? Math.pow(0.995, event.deltaY)
+          : event.deltaY < 0 ? 1.1 : 1 / 1.1;
+        const point = viewportPointFromClient(event.clientX, event.clientY);
+        zoomAroundViewportPoint(point.x, point.y, state.zoom * factor);
+        return;
+      }
+
+      panBy(-event.deltaX, -event.deltaY);
+    }
+
+    function suppressMenuZoom(event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    function suppressGraphViewportZoom(event) {
+      if (!state.nodes.length) return;
+      suppressMenuZoom(event);
+    }
+
+    function syncSpacePanCursor() {
+      els.graphScroll.classList.toggle("space-pan", state.spaceDown && !state.panning);
+      els.graphScroll.classList.toggle("panning", state.panning);
+    }
+
+    function handleSpaceKeyDown(event) {
+      if (!state.nodes.length) return;
+      if (event.code !== "Space" || event.repeat || isEditableTarget(event.target)) return;
+      state.spaceDown = true;
+      event.preventDefault();
+      syncSpacePanCursor();
+    }
+
+    function handleSpaceKeyUp(event) {
+      if (event.code !== "Space") return;
+      state.spaceDown = false;
+      syncSpacePanCursor();
+    }
+
+    function handleEscapeKeyDown(event) {
+      if (event.key !== "Escape") return;
+      const hadSelection = Boolean(state.selectedId);
+      closeContextMenu();
+      clearSelection();
+      if (hadSelection) event.preventDefault();
+    }
+
+    function beginMousePan(event) {
+      if (!state.nodes.length) return;
+      if (event.button !== 0 || !state.spaceDown) return;
+      event.preventDefault();
+      closeContextMenu();
+      const startX = event.clientX;
+      const startY = event.clientY;
+      const startPanX = state.panX;
+      const startPanY = state.panY;
+      const startZoom = state.zoom;
+      let moved = false;
+      state.panning = true;
+      syncSpacePanCursor();
+
+      function move(moveEvent) {
+        moveEvent.preventDefault();
+        if (!moved && Math.hypot(moveEvent.clientX - startX, moveEvent.clientY - startY) >= TOUCH_GESTURE_MOVE_THRESHOLD) {
+          moved = true;
+        }
+        if (moved) suppressViewportClick();
+        setViewport(
+          startZoom,
+          startPanX + moveEvent.clientX - startX,
+          startPanY + moveEvent.clientY - startY
+        );
+      }
+
+      function end() {
+        if (moved) suppressViewportClick();
+        state.panning = false;
+        syncSpacePanCursor();
+        document.removeEventListener("mousemove", move, true);
+        document.removeEventListener("mouseup", end, true);
+      }
+
+      document.addEventListener("mousemove", move, true);
+      document.addEventListener("mouseup", end, true);
+    }
+
+    function isTouchViewportPointer(event) {
+      return event.pointerType === "touch" || event.pointerType === "pen";
+    }
+
+    function activeViewportPointerPoints() {
+      return Array.from(state.viewportPointers.values());
+    }
+
+    function pointerDistance(a, b) {
+      return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+    }
+
+    function pointerCenter(a, b) {
+      return {
+        x: (a.clientX + b.clientX) / 2,
+        y: (a.clientY + b.clientY) / 2
+      };
+    }
+
+    function suppressViewportClick() {
+      state.viewportClickSuppressUntil = Math.max(
+        state.viewportClickSuppressUntil,
+        Date.now() + TOUCH_CLICK_SUPPRESS_MS
+      );
+    }
+
+    function isViewportClickSuppressed() {
+      return Date.now() <= state.viewportClickSuppressUntil;
+    }
+
+    function startTouchPanGesture(point) {
+      state.touchGesture = {
+        mode: "pan",
+        lastX: point.clientX,
+        lastY: point.clientY,
+        totalX: 0,
+        totalY: 0,
+        moved: false
+      };
+    }
+
+    function startTouchPinchGesture(points) {
+      if (points.length < 2) return;
+      const center = pointerCenter(points[0], points[1]);
+      const zoom = Math.max(state.zoom || 1, 0.0001);
+      state.touchGesture = {
+        mode: "pinch",
+        centerX: center.x,
+        centerY: center.y,
+        startDistance: Math.max(1, pointerDistance(points[0], points[1])),
+        startZoom: zoom,
+        worldX: (center.x - state.panX) / zoom,
+        worldY: (center.y - state.panY) / zoom,
+        moved: false
+      };
+    }
+
+    function beginTouchViewportGesture(event) {
+      if (!state.nodes.length) return;
+      if (!isTouchViewportPointer(event)) return;
+      if (event.button !== undefined && event.button !== 0) return;
+      state.viewportPointers.set(event.pointerId, {
+        clientX: event.clientX,
+        clientY: event.clientY
+      });
+      if (els.graphScroll.setPointerCapture) {
+        try {
+          els.graphScroll.setPointerCapture(event.pointerId);
+        } catch {
+          // Some browsers reject capture when a child SVG target owns the pointer.
+        }
+      }
+      const points = activeViewportPointerPoints();
+      if (points.length === 1) {
+        startTouchPanGesture(points[0]);
+      } else if (points.length >= 2) {
+        event.preventDefault();
+        startTouchPinchGesture(points);
+        suppressViewportClick();
+      }
+    }
+
+    function updateTouchViewportGesture(event) {
+      if (!state.nodes.length) return;
+      if (!isTouchViewportPointer(event) || !state.viewportPointers.has(event.pointerId)) return;
+      const previous = state.viewportPointers.get(event.pointerId);
+      state.viewportPointers.set(event.pointerId, {
+        clientX: event.clientX,
+        clientY: event.clientY
+      });
+
+      const points = activeViewportPointerPoints();
+      if (points.length === 1) {
+        if (!state.touchGesture || state.touchGesture.mode !== "pan") {
+          startTouchPanGesture(points[0]);
+          return;
+        }
+        const dx = event.clientX - previous.clientX;
+        const dy = event.clientY - previous.clientY;
+        state.touchGesture.totalX += dx;
+        state.touchGesture.totalY += dy;
+        if (
+          !state.touchGesture.moved &&
+          Math.hypot(state.touchGesture.totalX, state.touchGesture.totalY) >= TOUCH_GESTURE_MOVE_THRESHOLD
+        ) {
+          state.touchGesture.moved = true;
+        }
+        if (state.touchGesture.moved) {
+          event.preventDefault();
+          suppressViewportClick();
+          panBy(dx, dy);
+        }
+        return;
+      }
+
+      if (points.length >= 2) {
+        if (!state.touchGesture || state.touchGesture.mode !== "pinch") {
+          startTouchPinchGesture(points);
+        }
+        const gesture = state.touchGesture;
+        const center = pointerCenter(points[0], points[1]);
+        const distance = Math.max(1, pointerDistance(points[0], points[1]));
+        const zoom = clampZoom(gesture.startZoom * (distance / gesture.startDistance));
+        const moved =
+          Math.abs(distance - gesture.startDistance) >= TOUCH_GESTURE_MOVE_THRESHOLD ||
+          Math.hypot(center.x - gesture.centerX, center.y - gesture.centerY) >= TOUCH_GESTURE_MOVE_THRESHOLD;
+        if (moved) {
+          event.preventDefault();
+          gesture.moved = true;
+          suppressViewportClick();
+          setViewport(
+            zoom,
+            center.x - gesture.worldX * zoom,
+            center.y - gesture.worldY * zoom
+          );
+        }
+      }
+    }
+
+    function endTouchViewportGesture(event) {
+      if (!isTouchViewportPointer(event) || !state.viewportPointers.has(event.pointerId)) return;
+      if (state.touchGesture?.moved) {
+        event.preventDefault();
+        suppressViewportClick();
+      }
+      if (els.graphScroll.releasePointerCapture) {
+        try {
+          els.graphScroll.releasePointerCapture(event.pointerId);
+        } catch {
+        }
+      }
+      state.viewportPointers.delete(event.pointerId);
+      const points = activeViewportPointerPoints();
+      if (points.length === 1) {
+        startTouchPanGesture(points[0]);
+      } else if (points.length >= 2) {
+        startTouchPinchGesture(points);
+      } else {
+        state.touchGesture = null;
+      }
+    }
+
+    function bootEmbeddedGraph() {
+      const documentFilename = currentDocumentFilename();
+      if (documentFilename) state.saveTargetName = documentFilename;
+      state.saveFileHandleRestore = restoreSaveFileHandle();
+      const raw = els.embeddedData.textContent.trim();
+      if (!raw || raw === "null") {
+        renderGraph();
+        return;
+      }
+      try {
+        loadGraphData(JSON.parse(raw), {
+          saveTargetName: state.saveTargetName,
+          clearStoredHandle: false,
+          cancelRestore: false
+        });
+      } catch {
+        renderGraph();
+      }
+    }
+
+    function loadTexText(name, text) {
+      state.sourceName = name;
+      state.sourceHash = "";
+      state.tex = text;
+      setSaveFileHandle(null, randomGraphHtmlFilename());
+      runParse({
+        usePriorStatuses: false,
+        selectFirstNode: false
+      });
+      armBrowserCloseWarning();
+    }
+
+    function loadGraphFile(file, text, handle = null) {
+      const data = parseGraphFileData(file, text);
+      if (!data) {
+        showNotice(openGraphFailureMessage(file, text));
+        return false;
+      }
+      const htmlFile = looksLikeHtmlFile(file, text);
+      loadGraphData(data, {
+        saveTargetName: htmlFile ? file.name : "",
+        saveFileHandle: htmlFile ? handle : null,
+        clearStoredHandle: Boolean(!handle)
+      });
+      return true;
+    }
+
+    async function openTexFile() {
+      if (!supportsFileSystemAccess()) {
+        els.texFile.click();
+        return;
+      }
+      try {
+        const [handle] = await window.showOpenFilePicker({
+          multiple: false,
+          types: [{
+            description: "TeX source",
+            accept: { "text/plain": [".tex", ".txt"] }
+          }]
+        });
+        const { file, text } = await readFileHandle(handle);
+        loadTexText(file.name, text);
+      } catch (error) {
+        if (!isAbortError(error)) console.warn("Could not open TeX file", error);
+      }
+    }
+
+    async function openGraphFile() {
+      if (!supportsFileSystemAccess()) {
+        els.graphFile.click();
+        return;
+      }
+      try {
+        const [handle] = await window.showOpenFilePicker({
+          multiple: false,
+          types: [{
+            description: "Graph files",
+            accept: {
+              "text/html": [".html", ".htm"],
+              "application/json": [".json"],
+              "application/octet-stream": [".proofgraph", ".proofmap"]
+            }
+          }]
+        });
+        const { file, text } = await readFileHandle(handle);
+        loadGraphFile(file, text, handle);
+      } catch (error) {
+        if (!isAbortError(error)) {
+          console.warn("Could not open graph file", error);
+          showNotice("Could not open that graph file.");
+        }
+      }
+    }
+
+    function firstSupportedTexDropFile(files) {
+      return Array.from(files || []).find((file) => {
+        const name = (file.name || "").toLowerCase();
+        const type = (file.type || "").toLowerCase();
+        return name.endsWith(".tex") || name.endsWith(".txt") || type === "text/plain";
+      }) || null;
+    }
+
+    function setHomeDropActive(active) {
+      els.homeDropZone?.classList.toggle("drag-over", Boolean(active));
+    }
+
+    function updateHomeDropOutline() {
+      const outline = els.homeDropZone?.querySelector(".home-drop-outline");
+      const rect = outline?.querySelector("rect");
+      if (!outline || !rect || !els.homeDropZone) return;
+      const width = Math.max(2, Math.round(els.homeDropZone.offsetWidth || els.homeDropZone.clientWidth || 0));
+      const height = Math.max(2, Math.round(els.homeDropZone.offsetHeight || els.homeDropZone.clientHeight || 0));
+      const strokeWidth = 2;
+      const inset = strokeWidth / 2;
+      const radius = parseFloat(getComputedStyle(els.homeDropZone).borderRadius) || UI_RADIUS;
+      outline.setAttribute("viewBox", "0 0 " + width + " " + height);
+      rect.setAttribute("x", inset);
+      rect.setAttribute("y", inset);
+      rect.setAttribute("width", Math.max(0, width - strokeWidth));
+      rect.setAttribute("height", Math.max(0, height - strokeWidth));
+      rect.setAttribute("rx", Math.max(0, radius - inset));
+      rect.setAttribute("ry", Math.max(0, radius - inset));
+    }
+
+    function handleHomeDrag(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.type === "dragenter" || event.type === "dragover") setHomeDropActive(true);
+      else if (event.type === "dragleave") setHomeDropActive(false);
+    }
+
+    async function handleHomeDrop(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      setHomeDropActive(false);
+      const file = firstSupportedTexDropFile(event.dataTransfer?.files);
+      if (!file) {
+        showNotice("Drop a .tex or .txt file.");
+        return;
+      }
+      try {
+        const text = await readFile(file);
+        loadTexText(file.name, text);
+      } catch (error) {
+        console.warn("Could not read dropped TeX file", error);
+        showNotice("Could not open that TeX file.");
+      }
+    }
+
+    function handleHomeDropZoneClick(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (isViewportClickSuppressed() || state.spaceDown || state.panning) return;
+      openTexFile();
+    }
+
+    function handleHomeDropZoneKeyDown(event) {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      event.stopPropagation();
+      openTexFile();
+    }
+
+    async function runContextMenuAction(action) {
+      if (action !== "save-as") return;
+      closeContextMenu();
+      await saveAsHtml();
+    }
+
+    els.homeOpenGraphBtn?.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      openGraphFile();
+    });
+    if (els.homeDropZone) {
+      ["dragenter", "dragover", "dragleave"].forEach((type) => {
+        els.homeDropZone.addEventListener(type, handleHomeDrag);
+      });
+      els.homeDropZone.addEventListener("click", handleHomeDropZoneClick);
+      els.homeDropZone.addEventListener("keydown", handleHomeDropZoneKeyDown);
+      els.homeDropZone.addEventListener("drop", handleHomeDrop);
+      requestAnimationFrame(updateHomeDropOutline);
+    }
+    els.emptyState.addEventListener("pointerdown", handleEmptyStatePointerDown);
+
+    window.addEventListener("beforeunload", (event) => {
+      if (!state.browserCloseWarningArmed) return;
+      event.preventDefault();
+      event.returnValue = "";
+    });
+
+    els.graphScroll.addEventListener("wheel", handleViewportWheel, { passive: false });
+    els.graphScroll.addEventListener("mousedown", beginMousePan);
+    els.graphScroll.addEventListener("pointerdown", beginTouchViewportGesture);
+    els.graphScroll.addEventListener("pointermove", updateTouchViewportGesture);
+    els.graphScroll.addEventListener("pointerup", endTouchViewportGesture);
+    els.graphScroll.addEventListener("pointercancel", endTouchViewportGesture);
+    els.graphScroll.addEventListener("click", (event) => {
+      if (isViewportClickSuppressed()) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+      const suppressed = state.statusClickSuppress;
+      if (suppressed && Date.now() <= suppressed.until) {
+        event.preventDefault();
+        event.stopPropagation();
+        state.statusClickSuppress = null;
+        return;
+      }
+      if (event.target === els.graphScroll || event.target === els.graphSvg) clearSelection();
+    });
+    els.graphScroll.addEventListener("gesturestart", suppressGraphViewportZoom, { passive: false });
+    els.graphScroll.addEventListener("gesturechange", suppressGraphViewportZoom, { passive: false });
+    els.graphScroll.addEventListener("gestureend", suppressGraphViewportZoom, { passive: false });
+
+    els.texFile.addEventListener("change", async () => {
+      const file = els.texFile.files?.[0];
+      if (!file) return;
+      const text = await readFile(file);
+      loadTexText(file.name, text);
+      els.texFile.value = "";
+    });
+
+    els.graphFile.addEventListener("change", async () => {
+      const file = els.graphFile.files?.[0];
+      if (!file) return;
+      try {
+        const text = await readFile(file);
+        loadGraphFile(file, text);
+      } catch (error) {
+        console.warn("Could not load graph file", error);
+        showNotice("Could not open that graph file.");
+      } finally {
+        els.graphFile.value = "";
+      }
+    });
+
+    els.contextMenu.addEventListener("click", (event) => {
+      const button = event.target.closest("button");
+      if (!button) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if (button.dataset.action) runContextMenuAction(button.dataset.action);
+    });
+
+    els.contextMenu.addEventListener("wheel", suppressMenuZoom, { passive: false });
+    els.contextMenu.addEventListener("gesturestart", suppressMenuZoom, { passive: false });
+    els.contextMenu.addEventListener("gesturechange", suppressMenuZoom, { passive: false });
+    els.contextMenu.addEventListener("gestureend", suppressMenuZoom, { passive: false });
+
+    document.addEventListener("click", (event) => {
+      if (!els.contextMenu.hidden && !els.contextMenu.contains(event.target)) closeContextMenu();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      handleSaveShortcut(event);
+      handleNodeCopyShortcut(event);
+      handleEscapeKeyDown(event);
+      handleSpaceKeyDown(event);
+    });
+    document.addEventListener("keyup", handleSpaceKeyUp);
+
+    window.addEventListener("resize", () => {
+      if (state.nodes.length) renderGraph();
+      else {
+        updateGraphViewportBox();
+      }
+      updateHomeDropOutline();
+      if (!els.contextMenu.hidden && els.contextMenu.dataset.pinnedPosition === "bottom-center") {
+        positionMenuBottomCenter(els.contextMenu);
+      }
+    });
+
+    bootEmbeddedGraph();
+    syncContextMenuForGraphState();
+  </script>
+</body>
 </html>
