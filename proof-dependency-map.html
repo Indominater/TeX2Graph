@@ -758,15 +758,10 @@
       stroke-dasharray: none;
     }
 
-    .node .title {
-      font-weight: var(--bold_text);
-      fill: #ffffff;
-      font-size: var(--menu-item-font-size);
-    }
-
     .node .id {
       fill: #ffffff;
       font-size: var(--menu-item-font-size);
+      dominant-baseline: central;
     }
 
     .node .type {
@@ -857,7 +852,6 @@
       fill: #ffffff;
     }
 
-    .node.blocked .title,
     .node.blocked .type {
       fill: #ffffff;
     }
@@ -1124,7 +1118,7 @@
     const GOLDEN_RATIO = (1 + Math.sqrt(5)) / 2;
     const NODE_H = BOARD_ITEM_SIZE * 5;
     const NODE_W = NODE_H * GOLDEN_RATIO;
-    const X_GAP = BOARD_ITEM_SIZE * 5;
+    const X_GAP = NODE_H;
     const PAD = BOARD_ITEM_SIZE * 2;
     const EDGE_PORT_MARGIN = BOARD_ITEM_SIZE * 0.75;
     const EDGE_PORT_STEP = BOARD_ITEM_SIZE * 0.56;
@@ -1141,7 +1135,6 @@
       Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--smooth-slide-duration")) || 220;
     const MENU_ITEM_FONT_SIZE = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--menu-item-font-size")) || 13;
     const NODE_TEXT_WIDTH = NODE_W - BOARD_SHELL_PADDING * 4;
-    const NODE_TITLE_FALLBACK_MAX_CHARS = Math.max(18, Math.floor(NODE_TEXT_WIDTH / (MENU_ITEM_FONT_SIZE * 0.5)));
     const NODE_ID_MAX_CHARS = Math.max(18, Math.floor(NODE_TEXT_WIDTH / (MENU_ITEM_FONT_SIZE * 0.62)));
     const NODE_TEXT_LINE_STEP = 18;
     const BOARDFISH_ACTION_ICON_SIZE = 20;
@@ -1372,6 +1365,67 @@
       return base.replace(/(^|[-_\s])([a-z])/g, (_, sep, ch) => (sep ? " " : "") + ch.toUpperCase()).trim();
     }
 
+    function nodeTypeLabel(node) {
+      const type = humanType(node?.type || "");
+      const number = String(node?.displayNumber || "").trim();
+      if (number) return type + " " + number;
+      return type;
+    }
+
+    function nodeAccessibleLabel(node) {
+      if (!node) return "";
+      return nodeTypeLabel(node) + ", " + node.id;
+    }
+
+    function normalizeDisplayNumber(value, fallback = 0) {
+      const number = String(value || "").trim();
+      return number || String(fallback);
+    }
+
+    function normalizeDisplayOrder(value, fallback = 0) {
+      const order = Number(value);
+      if (Number.isFinite(order) && order > 0) return order;
+      return fallback;
+    }
+
+    function displayMetadataByIdFromTex(tex, priorStatuses = {}) {
+      if (!tex) return new Map();
+      try {
+        const parsed = parseTex(tex, priorStatuses);
+        const byId = new Map();
+        parsed.nodes.forEach((node) => {
+          const metadata = {
+            displayNumber: node.displayNumber,
+            displayOrder: node.displayOrder
+          };
+          byId.set(node.id, metadata);
+          if (node.originalId && !byId.has(node.originalId)) byId.set(node.originalId, metadata);
+        });
+        return byId;
+      } catch {
+        return new Map();
+      }
+    }
+
+    function numberedSectionsIn(text) {
+      const sections = [];
+      const re = /\\section\b/g;
+      let sectionNumber = 0;
+      let match;
+      while ((match = re.exec(text))) {
+        let i = re.lastIndex;
+        while (i < text.length && /\s/.test(text[i])) i += 1;
+        if (text[i] === "*") continue;
+        const optional = readOptionalBracket(text, i);
+        if (optional.end !== i) i = optional.end;
+        while (i < text.length && /\s/.test(text[i])) i += 1;
+        if (text[i] !== "{") continue;
+        sectionNumber += 1;
+        sections.push({ index: match.index, number: sectionNumber });
+      }
+      return sections;
+    }
+
     function isStructuralLabel(label) {
       return /(^|:)(eq|equation|sec|subsec|subsection|fig|figure|tab|table|app|appendix|alg|algorithm|lst|listing):/i.test(label);
     }
@@ -1481,7 +1535,12 @@
       const starts = lineStartsFor(stripped);
       const envSet = new Set(discoverProofEnvironments(stripped));
       const begin = /\\begin\s*\{\s*([^}]+?)\s*\}/g;
-      const counters = new Map();
+      const sectionBreaks = numberedSectionsIn(stripped);
+      const useSectionNumbers = sectionBreaks.length > 0;
+      let documentCounter = 0;
+      let sectionCursor = 0;
+      let currentSectionNumber = 0;
+      let sectionCounter = 0;
       const blockStarts = [];
       const blocks = [];
       let match;
@@ -1500,6 +1559,11 @@
 
       blockStarts.forEach((blockStart, index) => {
         const { rawEnv, env } = blockStart;
+        while (sectionCursor < sectionBreaks.length && sectionBreaks[sectionCursor].index < blockStart.index) {
+          currentSectionNumber = sectionBreaks[sectionCursor].number;
+          sectionCounter = 0;
+          sectionCursor += 1;
+        }
         const nextBlock = blockStarts[index + 1];
         const nextBlockStart = nextBlock ? nextBlock.index : stripped.length;
         const optional = readOptionalBracket(stripped, blockStart.beginEnd);
@@ -1514,10 +1578,14 @@
         const allLabels = unique(labelsIn(nodeBlock));
         const refLabels = refLabelsIn(nodeBlock);
         const equationLabels = allLabels.filter(isEquationLabel);
-        const title = cleanTitle(optional.value) || humanType(env) + " " + ((counters.get(env) || 0) + 1);
-        counters.set(env, (counters.get(env) || 0) + 1);
+        const title = cleanTitle(optional.value);
+        documentCounter += 1;
+        sectionCounter += 1;
+        const displayNumber = useSectionNumbers ? currentSectionNumber + "." + sectionCounter : String(documentCounter);
         blocks.push({
           env,
+          displayNumber,
+          displayOrder: documentCounter,
           title,
           labels,
           allLabels,
@@ -1544,6 +1612,8 @@
           id: uniqueId,
           originalId: id,
           title: block.title,
+          displayNumber: block.displayNumber,
+          displayOrder: block.displayOrder,
           type: block.env,
           line: block.line,
           labels: block.labels,
@@ -1795,11 +1865,15 @@
       let maxRows = 0;
       for (const lev of orderedLevels) {
         const rowNodes = rows.get(lev);
-        rowNodes.sort((a, b) => a.line - b.line || a.title.localeCompare(b.title));
+        rowNodes.sort((a, b) =>
+          a.line - b.line ||
+          (a.displayOrder || 0) - (b.displayOrder || 0) ||
+          a.id.localeCompare(b.id)
+        );
         maxRows = Math.max(maxRows, rowNodes.length);
       }
 
-      const siblingGap = 40;
+      const siblingGap = X_GAP / 4;
       const levelGap = X_GAP;
       const rowStep = NODE_H + siblingGap;
       const graphStackHeight = Math.max(1, maxRows) * NODE_H + Math.max(0, maxRows - 1) * siblingGap;
@@ -1880,9 +1954,10 @@
     }
 
     function textFitsWidth(className, text, maxWidth, fallbackMaxChars) {
-      const width = measureNodeText(className, text);
+      const value = String(text || "").trimEnd();
+      const width = measureNodeText(className, value);
       if (Number.isFinite(width) && width > 0) return width <= maxWidth;
-      return String(text || "").length <= fallbackMaxChars;
+      return value.length <= fallbackMaxChars;
     }
 
     function ellipsizeTextToWidth(text, className, maxWidth, fallbackMaxChars) {
@@ -1898,52 +1973,70 @@
       return value.slice(0, lo).trimEnd() + "…";
     }
 
-    function wrapText(text, className, maxWidth, maxLines, fallbackMaxChars) {
-      const words = String(text || "").split(/\s+/).filter(Boolean);
-      const lines = [];
-      const remaining = words.slice();
-      while (remaining.length && lines.length < maxLines) {
-        let line = "";
-        while (remaining.length) {
-          const next = line ? line + " " + remaining[0] : remaining[0];
-          if (!textFitsWidth(className, next, maxWidth, fallbackMaxChars)) break;
-          line = next;
-          remaining.shift();
+    function textWrapSegments(text) {
+      const value = String(text || "").trim().replace(/\s+/g, " ");
+      const segments = [];
+      let segment = "";
+      for (const ch of value) {
+        segment += ch;
+        if (ch === ":" || ch === "-" || ch === "_" || ch === " ") {
+          segments.push(segment);
+          segment = "";
         }
-        if (!line) {
-          line = ellipsizeTextToWidth(remaining.shift(), className, maxWidth, fallbackMaxChars);
-        } else if (lines.length === maxLines - 1 && remaining.length) {
-          line = ellipsizeTextToWidth([line, ...remaining].join(" "), className, maxWidth, fallbackMaxChars);
-          remaining.length = 0;
-        }
-        lines.push(line);
       }
-      return lines.length ? lines : [""];
+      if (segment) segments.push(segment);
+      return segments;
     }
 
-    function wrapIdText(text, maxChars, maxLines) {
-      let remaining = String(text || "").trim().replace(/\s+/g, " ");
-      if (!remaining) return [""];
+    function splitSegmentToWidth(segment, className, maxWidth, fallbackMaxChars) {
+      const value = String(segment || "").trimStart();
+      if (!value) return { line: "", remainder: "" };
+      let lo = 1;
+      let hi = value.length;
+      while (lo < hi) {
+        const mid = Math.ceil((lo + hi) / 2);
+        if (textFitsWidth(className, value.slice(0, mid), maxWidth, fallbackMaxChars)) lo = mid;
+        else hi = mid - 1;
+      }
+      const line = value.slice(0, lo).trimEnd() || value[0];
+      return {
+        line,
+        remainder: value.slice(line.length).trimStart()
+      };
+    }
+
+    function wrapMeasuredText(text, className, maxWidth, maxLines, fallbackMaxChars) {
+      const value = String(text || "").trim().replace(/\s+/g, " ");
+      if (!value) return [""];
+      if (textFitsWidth(className, value, maxWidth, fallbackMaxChars)) return [value];
+      const segments = textWrapSegments(value);
       const lines = [];
-      while (remaining && lines.length < maxLines) {
+      let line = "";
+      let index = 0;
+      while (index < segments.length && lines.length < maxLines) {
         const isLastLine = lines.length === maxLines - 1;
-        if (remaining.length <= maxChars) {
-          lines.push(remaining);
-          break;
-        }
         if (isLastLine) {
-          lines.push(remaining.slice(0, Math.max(1, maxChars - 1)) + "…");
+          lines.push(ellipsizeTextToWidth(line + segments.slice(index).join(""), className, maxWidth, fallbackMaxChars));
           break;
         }
-        const breakAt = Math.max(
-          remaining.lastIndexOf(":", maxChars - 1),
-          remaining.lastIndexOf("-", maxChars - 1),
-          remaining.lastIndexOf("_", maxChars - 1),
-          remaining.lastIndexOf(" ", maxChars)
-        );
-        const lineEnd = breakAt > Math.floor(maxChars * 0.45) ? breakAt + 1 : maxChars;
-        lines.push(remaining.slice(0, lineEnd).trimEnd());
-        remaining = remaining.slice(lineEnd).trimStart();
+        const nextLine = line + segments[index];
+        if (textFitsWidth(className, nextLine, maxWidth, fallbackMaxChars)) {
+          line = nextLine;
+          index += 1;
+          continue;
+        }
+        if (line) {
+          lines.push(line.trimEnd());
+          line = "";
+          continue;
+        }
+        const split = splitSegmentToWidth(segments[index], className, maxWidth, fallbackMaxChars);
+        lines.push(split.line);
+        if (split.remainder) segments[index] = split.remainder;
+        else index += 1;
+      }
+      if (line && lines.length < maxLines) {
+        lines.push(line.trimEnd());
       }
       return lines.length ? lines : [""];
     }
@@ -2230,7 +2323,7 @@
         slider.querySelector(".false-action")?.classList.toggle("active", status === "false");
         slider.querySelector(".true-action")?.classList.toggle("active", status === "true");
       }
-      nodeEl.setAttribute("aria-label", (node?.title || id) + ", " + status);
+      nodeEl.setAttribute("aria-label", (nodeAccessibleLabel(node) || id) + ", " + status);
     }
 
     function applyRenderedBlockedNodeStatuses() {
@@ -2573,8 +2666,8 @@
       requestCopyJiggleFrame();
     }
 
-    function copyNodeTitle(node) {
-      copyText(node.title).then((copied) => {
+    function copyNodeId(node) {
+      copyText(node.id).then((copied) => {
         if (copied) startNodeCopyJiggle(node);
       });
     }
@@ -2595,7 +2688,7 @@
       const node = state.nodes.find((item) => item.id === state.selectedId);
       if (!node) return;
       event.preventDefault();
-      copyNodeTitle(node);
+      copyNodeId(node);
     }
 
     function handleSaveShortcut(event) {
@@ -2739,7 +2832,7 @@
         transform: "translate(" + slider.x + " " + slider.y + ")",
         tabindex: "0",
         role: "slider",
-        "aria-label": node.title + " status",
+        "aria-label": nodeAccessibleLabel(node) + " status",
         "aria-valuemin": "0",
         "aria-valuemax": "2",
         "aria-valuenow": String(statusSliderValue(status)),
@@ -2982,7 +3075,7 @@
           "data-node-id": node.id,
           tabindex: "0",
           role: "button",
-          "aria-label": node.title + ", " + node.status
+          "aria-label": nodeAccessibleLabel(node) + ", " + node.status
         });
 
         const rect = makeSvg("rect", {
@@ -3007,7 +3100,7 @@
         }));
 
         const typeText = makeSvg("text", { class: "type", x: BOARD_SHELL_PADDING * 2, y: NODE_HEADER_CENTER_Y });
-        typeText.textContent = humanType(node.type);
+        typeText.textContent = nodeTypeLabel(node);
         g.appendChild(typeText);
 
         const outputMarkClass = outputMarkClassForNode(node);
@@ -3017,16 +3110,10 @@
 
         g.appendChild(makeStatusSlider(node));
 
-        const titleLines = wrapText(node.title, "title", NODE_TEXT_WIDTH, 3, NODE_TITLE_FALLBACK_MAX_CHARS);
-        titleLines.forEach((line, i) => {
-          const text = makeSvg("text", { class: "title", x: BOARD_SHELL_PADDING * 2, y: 58 + i * NODE_TEXT_LINE_STEP });
-          text.textContent = line;
-          g.appendChild(text);
-        });
-
-        const idLines = wrapIdText(node.id, NODE_ID_MAX_CHARS, 2);
+        const idLines = wrapMeasuredText(node.id, "id", NODE_TEXT_WIDTH, 3, NODE_ID_MAX_CHARS);
+        const idStartY = NODE_H - NODE_HEADER_CENTER_Y - (idLines.length - 1) * NODE_TEXT_LINE_STEP;
         idLines.forEach((line, i) => {
-          const text = makeSvg("text", { class: "id", x: BOARD_SHELL_PADDING * 2, y: NODE_H - 44 + i * NODE_TEXT_LINE_STEP });
+          const text = makeSvg("text", { class: "id", x: BOARD_SHELL_PADDING * 2, y: idStartY + i * NODE_TEXT_LINE_STEP });
           text.textContent = line;
           g.appendChild(text);
         });
@@ -3560,16 +3647,22 @@
       state.tex = data.tex || "";
       if (Array.isArray(data.nodes) && Array.isArray(data.edges)) {
         const statusById = data.statusById || {};
-        state.nodes = data.nodes.map((node) => ({
-          ...node,
-          aliases: node.aliases || [],
-          equationLabels: node.equationLabels || [],
-          refLabels: node.refLabels || node.dependencyLabels || [],
-          ownedLabels: node.ownedLabels || node.aliases || [],
-          unresolvedRefLabels: Array.isArray(node.unresolvedRefLabels) ? node.unresolvedRefLabels : [],
-          status: statusById[node.id] || node.status || "pending",
-          dependents: Array.isArray(node.dependents) ? node.dependents : []
-        }));
+        const displayMetadataById = displayMetadataByIdFromTex(state.tex, statusById);
+        state.nodes = data.nodes.map((node, index) => {
+          const displayMetadata = displayMetadataById.get(node.id) || displayMetadataById.get(node.originalId);
+          return {
+            ...node,
+            displayNumber: normalizeDisplayNumber(displayMetadata?.displayNumber || node.displayNumber, index + 1),
+            displayOrder: normalizeDisplayOrder(displayMetadata?.displayOrder || node.displayOrder, index + 1),
+            aliases: node.aliases || [],
+            equationLabels: node.equationLabels || [],
+            refLabels: node.refLabels || node.dependencyLabels || [],
+            ownedLabels: node.ownedLabels || node.aliases || [],
+            unresolvedRefLabels: Array.isArray(node.unresolvedRefLabels) ? node.unresolvedRefLabels : [],
+            status: statusById[node.id] || node.status || "pending",
+            dependents: Array.isArray(node.dependents) ? node.dependents : []
+          };
+        });
         state.edges = uniqueEdges(data.edges);
         rebuildDependents();
         state.duplicateLabels = data.duplicateLabels || [];
