@@ -3361,7 +3361,9 @@
       document.body.appendChild(a);
       a.click();
       a.remove();
-      URL.revokeObjectURL(url);
+      // The browser consumes the Blob asynchronously. Revoking its URL in the
+      // same task can leave the downloaded file incomplete on some browsers.
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
     }
 
     function supportsFileSystemAccess() {
